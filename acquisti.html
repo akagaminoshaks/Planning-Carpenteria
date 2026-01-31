@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Acquisti - Gestionale</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        /* RESET & BASE */
+        body { 
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background: #050505; 
+            color: #ccc; 
+            margin: 0; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        input, select, button, table, textarea { font-family: 'Segoe UI', sans-serif; font-weight: 400; }
+
+        /* NUMERI TABULARI */
+        .kpi-val, .dip-total, .dip-cost-inp, .rate-inp, .col-ore, .col-data, .pct-val-h, .pct-val-c {
+            font-variant-numeric: tabular-nums; 
+            letter-spacing: 0.5px; 
+        }
+
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        :root {
+            --elegant-border: 1px solid rgba(255, 255, 255, 0.15);
+            --neon-green: #00ff88;
+            --neon-red: #e74c3c;
+            --neon-blue: #00e5ff;
+        }
+
+        /* HEADER */
+        .header-bar { padding: 10px 20px; background: #0f0f0f; border-bottom: var(--elegant-border); display: flex; justify-content: space-between; align-items: center; height: 50px; flex-shrink: 0; }
+        .btn-back { background: transparent; border: 1px solid #444; color: #ccc; padding: 6px 20px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .btn-back:hover { border-color: white; color: white; }
+        .page-title { letter-spacing: 1px; color: var(--neon-green); text-transform: uppercase; font-size: 14px; font-weight: 600; }
+
+        /* LAYOUT PRINCIPALE */
+        .main-container { display: flex; flex: 1; padding: 15px; gap: 15px; overflow: hidden; }
+        .col-left { flex: 1.3; display: flex; flex-direction: column; gap: 15px; min-width: 0; }
+        
+        /* BOX RICERCA */
+        .search-box { background: #111; border: var(--elegant-border); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .search-title { font-size: 12px; color: #fff; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; font-weight: 600; }
+        .row-inputs { display: flex; gap: 10px; }
+        .input-group { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .lbl { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .inp-dark { background: #080808; border: 1px solid #333; color: white; padding: 8px; border-radius: 4px; font-size: 13px; outline: none; transition: 0.2s; }
+        .inp-dark:focus { border-color: var(--neon-green); }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.6; }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+        .btn-search { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); padding: 10px; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.2s; margin-top: 5px; letter-spacing: 1px; font-weight: 600; }
+        .btn-search:hover { background: var(--neon-green); color: black; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+
+        /* TABELLA RISULTATI */
+        .table-box { flex: 1; background: #111; border: var(--elegant-border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+        .table-scroll { overflow-y: auto; flex: 1; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; color: #ccc; }
+        th { text-align: left; padding: 10px; color: #888; border-bottom: var(--elegant-border); position: sticky; top: 0; background: #161616; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; cursor: pointer; }
+        tr:hover td { background: rgba(255,255,255,0.08); color: white; }
+        .col-data { white-space: nowrap; width: 85px; font-size: 11px; }
+        .col-ore { color: #fff; text-align: center; width: 50px; }
+
+        /* COLONNA DESTRA */
+        .col-right { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 0; }
+
+        /* KPI BAR */
+        .kpi-box { background: #111; border: var(--elegant-border); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-around; flex-shrink: 0; }
+        .kpi-item { text-align: center; }
+        .kpi-lbl { font-size: 9px; color: #666; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.5px; }
+        .kpi-val { font-size: 17px; color: white; font-weight: 500; }
+        .kpi-green { color: var(--neon-green); }
+        .kpi-cyan { color: var(--neon-blue); }
+        .kpi-op { color: #444; font-size: 14px; margin: 0 5px; }
+        .rate-inp { width: 40px; text-align: center; background: #000; border: 1px solid #333; color: white; padding: 4px; border-radius: 3px; font-size: 15px; }
+        .rate-inp:focus { border-color: var(--neon-blue); outline: none; }
+
+        /* GRIGLIA DIPENDENTI */
+        .dip-grid-box { flex: 1; background: #111; border: var(--elegant-border); border-radius: 8px; padding: 10px; overflow-y: auto; min-height: 0; }
+        .dip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .dip-card { background: #161616; border: 1px solid #2a2a2a; border-radius: 6px; padding: 10px 8px; display: grid; grid-template-columns: 0.8fr 1fr 0.5fr; gap: 5px; align-items: center; transition: 0.2s; font-size: 13px; color: #fff; }
+        .dip-card:hover { border-color: #555; background: #1a1a1a; }
+        .dip-col { display: flex; flex-direction: column; justify-content: center; height: 100%; gap: 4px; }
+        .dip-col:not(:last-child) { border-right: 1px solid #2a2a2a; padding-right: 5px; }
+        .dip-col:not(:first-child) { padding-left: 5px; }
+        .dip-name { text-transform: capitalize; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+        .dip-cost-row { display: flex; align-items: center; gap: 3px; color: #fff; }
+        .dip-cost-inp { width: 30px; background: #000; border: 1px solid #333; color: #fff; text-align: center; padding: 1px; border-radius: 2px; font-size: 13px; }
+        .dip-meta { color: #fff; text-align: center; font-size: 13px; }
+        .dip-total { color: #fff; text-align: center; font-weight: 500; }
+        .dip-stats { text-align: right; }
+        .pct-val { color: #fff; font-size: 13px; }
+
+        /* UTILIZZO FUTURO */
+        .future-box { height: 120px; background: #080808; border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--neon-red); font-size: 12px; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 10px rgba(231, 76, 60, 0.05) inset; flex-shrink: 0; }
+
+        /* --- STILI MODALE READ-ONLY (Style Copiato da Planning) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        .modal-read-box { 
+            background: #1e1e1e; 
+            width: 500px; 
+            max-width: 95%; 
+            padding: 30px; 
+            border-radius: 12px; 
+            border: 1px solid #444; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            border-left: 10px solid #ccc; /* Colore dinamico via JS */
+        }
+        .m-row { display: flex; gap: 15px; }
+        .m-group { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .m-label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+        .m-inp { 
+            background: #111; border: 1px solid #333; color: #aaa; /* Colore grigio per indicare read-only */
+            padding: 12px; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; 
+            pointer-events: none; /* Disabilita click */
+        }
+        .m-title { font-size: 20px; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 5px; text-transform: uppercase; color: #fff; }
+        .btn-close-modal { 
+            background: transparent; border: 1px solid #555; color: #ccc; 
+            padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; 
+            text-transform: uppercase; width: 100%; margin-top: 10px; transition: 0.2s; 
+        }
+        .btn-close-modal:hover { border-color: white; color: white; background: rgba(255,255,255,0.05); }
+
+    </style>
+</head>
+<body>
+
+    <div id="modal-read" class="modal-overlay">
+        <div class="modal-read-box" id="m-box-visual">
+            <h3 class="m-title" id="m-title">DETTAGLIO</h3>
+            
+            <div class="m-row">
+                <div class="m-group">
+                    <label class="m-label">DATA</label>
+                    <input type="text" id="m-date" class="m-inp" readonly>
+                </div>
+                <div class="m-group">
+                    <label class="m-label">TOTALE ORE</label>
+                    <input type="text" id="m-hours" class="m-inp" readonly>
+                </div>
+            </div>
+
+            <div class="m-group">
+                <label class="m-label">COMMESSA</label>
+                <input type="text" id="m-comm" class="m-inp" readonly>
+            </div>
+
+            <div class="m-group">
+                <label class="m-label">CLIENTE</label>
+                <input type="text" id="m-client" class="m-inp" readonly>
+            </div>
+
+            <div class="m-group">
+                <label class="m-label">NOTE / DESCRIZIONE</label>
+                <textarea id="m-note" class="m-inp" rows="6" readonly style="resize:none;"></textarea>
+            </div>
+
+            <button class="btn-close-modal" onclick="document.getElementById('modal-read').style.display='none'">CHIUDI (SOLA LETTURA)</button>
+        </div>
+    </div>
+
+    <div class="header-bar">
+        <button class="btn-back" onclick="window.location.href='index.html'">⬅ HOME</button>
+        <div class="page-title">UFFICIO ACQUISTI</div>
+        <div style="width:60px;"></div>
+    </div>
+
+    <div class="main-container">
+        <div class="col-left">
+            <div class="search-box">
+                <div class="search-title">Ricerca Ore</div>
+                <div class="row-inputs">
+                    <div class="input-group"><span class="lbl">Dal</span><input type="date" id="d1" class="inp-dark"></div>
+                    <div class="input-group"><span class="lbl">Al</span><input type="date" id="d2" class="inp-dark"></div>
+                </div>
+                <div class="row-inputs">
+                    <div class="input-group"><span class="lbl">Cliente</span><input type="text" id="cl" class="inp-dark" placeholder="Tutti"></div>
+                    <div class="input-group"><span class="lbl">Commessa</span><input type="text" id="cm" class="inp-dark" placeholder="Tutte"></div>
+                </div>
+                <div class="input-group">
+                    <span class="lbl">Dipendente</span>
+                    <select id="sel-dip" class="inp-dark"><option value="">Tutti i Dipendenti</option></select>
+                </div>
+                <button class="btn-search" onclick="cerca()">CERCA DATI PLANNING</button>
+            </div>
+
+            <div class="table-box">
+                <div class="table-scroll">
+                    <table id="res-table">
+                        <thead><tr><th>DATA</th><th>ORE</th><th>DIPENDENTE</th><th>CLIENTE</th><th>COMMESSA</th><th>NOTE</th></tr></thead>
+                        <tbody id="res-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-right">
+            <div class="kpi-box" id="kpi-container"><div style="color:#666; font-size:11px;">Imposta filtri e cerca...</div></div>
+            <div class="dip-grid-box"><div id="dip-grid-container" class="dip-grid"></div></div>
+            <div class="future-box">Utilizzo Futuro</div>
+        </div>
+    </div>
+
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    const dipendentiList = ["Camara", "Filippo", "Fofo", "Ibra", "Ico", "Lorenzo", "Matteo", "Roberto", "Simone", "Tonino"];
+    const dipColors = { "Camara": "#e74c3c", "Filippo": "#3498db", "Fofo": "#f1c40f", "Ibra": "#9b59b6", "Ico": "#e67e22", "Lorenzo": "#1abc9c", "Matteo": "#2ecc71", "Roberto": "#e91e63", "Simone": "#00bcd4", "Tonino": "#cddc39", "Teo": "#2ecc71" };
+    const dateColors = ["#3498db", "#e74c3c", "#9b59b6", "#f1c40f", "#2ecc71", "#e67e22", "#00e5ff"];
+
+    // Array globale per salvare i risultati della ricerca (per il modale)
+    let currentResults = [];
+
+    window.onload = function() {
+        if(localStorage.getItem('auth_token') !== 'logged_in') window.location.href='index.html';
+        let t = new Date().toISOString().split('T')[0];
+        document.getElementById('d1').value = t;
+        document.getElementById('d2').value = t;
+        const sel = document.getElementById('sel-dip');
+        dipendentiList.forEach(d => sel.innerHTML += `<option value="${d}">${d}</option>`);
+    };
+
+    function getColorForDate(dateStr) {
+        let hash = 0; for (let i = 0; i < dateStr.length; i++) hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
+        return dateColors[Math.abs(hash) % dateColors.length];
+    }
+
+    function cerca() {
+        let d1 = document.getElementById('d1').value;
+        let d2 = document.getElementById('d2').value;
+        let cli = document.getElementById('cl').value.toLowerCase();
+        let comm = document.getElementById('cm').value.toLowerCase();
+        let selectedDip = document.getElementById('sel-dip').value;
+        
+        let dates = [];
+        let c = new Date(d1); let e = new Date(d2);
+        while(c <= e) { dates.push(new Date(c).toISOString().split('T')[0]); c.setDate(c.getDate()+1); }
+        
+        const tb = document.getElementById('res-body'); 
+        tb.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px; color:#666;'>Caricamento...</td></tr>";
+        
+        Promise.all(dates.map(d => db.ref('turni/'+d).once('value').then(s => ({d:d, v:s.val()||{}})))).then(res => {
+            tb.innerHTML = "";
+            let groupedData = {}; 
+            let stats = {}; 
+            let totalSlotsGlobal = 0;
+            currentResults = []; // Reset array risultati
+            
+            res.forEach(r => {
+                for(let k in r.v) {
+                    let p = k.split('-'); 
+                    if(p.length < 3) continue;
+                    let time = p[0], name = p[1], type = p[2];
+                    if(selectedDip && name !== selectedDip) continue;
+
+                    if(type === 'commessa') {
+                        let cVal = r.v[k];
+                        if(!cVal || cVal === "PAUSA") continue;
+
+                        let clientVal = r.v[`${time}-${name}-cliente`] || "-";
+                        let noteVal = r.v[`${time}-${name}-note`] || "";
+
+                        if(cli && !clientVal.toLowerCase().includes(cli)) continue;
+                        if(comm && !cVal.toLowerCase().includes(comm)) continue;
+
+                        let groupKey = `${r.d}|${name}|${clientVal}|${cVal}|${noteVal}`;
+                        if(!groupedData[groupKey]) {
+                            groupedData[groupKey] = {
+                                date: r.d,
+                                name: name,
+                                client: clientVal,
+                                comm: cVal,
+                                note: noteVal,
+                                slots: 0
+                            };
+                        }
+                        groupedData[groupKey].slots++;
+
+                        if(!stats[name]) stats[name] = { slots: 0, days: new Set() };
+                        stats[name].slots++;
+                        stats[name].days.add(r.d); 
+                        totalSlotsGlobal++;
+                    }
+                }
+            });
+
+            let keys = Object.keys(groupedData).sort();
+            if(keys.length === 0) {
+                tb.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px;'>Nessun dato trovato.</td></tr>";
+            } else {
+                keys.forEach((key, index) => {
+                    let item = groupedData[key];
+                    let hours = item.slots * 0.25;
+                    let hStr = formatHours(hours);
+                    let dateColor = getColorForDate(item.date);
+                    let nameColor = dipColors[item.name] || "#ddd"; 
+
+                    // Salviamo i dati nell'array globale per il modale
+                    currentResults.push({...item, totalHours: hStr});
+
+                    tb.innerHTML += `<tr ondblclick="apriModaleLettura(${index})">
+                        <td class="col-data" style="color:${dateColor};">${item.date}</td>
+                        <td class="col-ore">${hStr}</td>
+                        <td style="color:${nameColor}; text-transform:capitalize;">${item.name}</td>
+                        <td>${item.client}</td>
+                        <td style="color:#fff;">${item.comm}</td>
+                        <td style="font-style:italic; color:#888;">${item.note}</td>
+                    </tr>`;
+                });
+            }
+            renderDashboard(stats, totalSlotsGlobal);
+        });
+    }
+
+    // --- FUNZIONE APERTURA MODALE (SOLA LETTURA) ---
+    function apriModaleLettura(index) {
+        let data = currentResults[index];
+        if(!data) return;
+
+        // Popola i campi
+        document.getElementById('m-title').innerText = data.name;
+        document.getElementById('m-title').style.color = dipColors[data.name] || "#fff";
+        document.getElementById('m-box-visual').style.borderLeftColor = dipColors[data.name] || "#ccc";
+
+        document.getElementById('m-date').value = data.date;
+        document.getElementById('m-hours').value = data.totalHours;
+        document.getElementById('m-client').value = data.client;
+        document.getElementById('m-comm').value = data.comm;
+        document.getElementById('m-note').value = data.note;
+
+        // Mostra modale
+        document.getElementById('modal-read').style.display = 'flex';
+    }
+
+    function renderDashboard(stats, totalSlotsGlobal) {
+        let hoursGlobal = totalSlotsGlobal * 0.25; 
+        let rate = localStorage.getItem('globalRate') || 45; 
+        let revenue = hoursGlobal * rate;
+        let totalCostGlobal = 0;
+        
+        let dipArray = [];
+        for(let name in stats) {
+            let h = stats[name].slots * 0.25;
+            let cost = localStorage.getItem('cost-'+name) || 18; 
+            let subCost = h * cost;
+            totalCostGlobal += subCost;
+            dipArray.push({ name: name, h: h, days: stats[name].days.size, cost: cost, subCost: subCost });
+        }
+        dipArray.sort((a, b) => b.h - a.h);
+
+        let dipHTML = "";
+        dipArray.forEach(dip => {
+            let pctHours = hoursGlobal > 0 ? ((dip.h / hoursGlobal) * 100).toFixed(0) : 0;
+            let pctCost = totalCostGlobal > 0 ? ((dip.subCost / totalCostGlobal) * 100).toFixed(0) : 0;
+            let nameColor = dipColors[dip.name] || "#fff";
+
+            dipHTML += `
+                <div class="dip-card">
+                    <div class="dip-col">
+                        <span class="dip-name" style="color:${nameColor}">${dip.name.toLowerCase()}</span>
+                        <div class="dip-cost-row">
+                            €/h <input class="dip-cost-inp" type="number" value="${dip.cost}" onchange="updateDipCost('${dip.name}', this.value)">
+                        </div>
+                    </div>
+                    <div class="dip-col">
+                        <span class="dip-meta">${formatHours(dip.h)} • ${dip.days}gg</span>
+                        <span class="dip-total">€ ${dip.subCost.toFixed(2)}</span>
+                    </div>
+                    <div class="dip-col dip-stats">
+                        <span class="pct-val">${pctHours}%</span>
+                        <span class="pct-val">${pctCost}%</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('dip-grid-container').innerHTML = dipHTML;
+
+        let profit = revenue - totalCostGlobal;
+        let profitColor = profit >= 0 ? "kpi-green" : "color:#e74c3c";
+        let profitSign = profit >= 0 ? "+" : "";
+
+        let kpiHTML = `
+            <div class="kpi-item"><div class="kpi-lbl">ORE TOTALI</div><div class="kpi-val">${formatHours(hoursGlobal)}</div></div>
+            <div class="kpi-op">×</div>
+            <div class="kpi-item"><div class="kpi-lbl">VENDITA €/H</div><input type="number" class="rate-inp" value="${rate}" onchange="updateRate(this.value)"></div>
+            <div class="kpi-op">=</div>
+            <div class="kpi-item"><div class="kpi-lbl">COSTO TOTALE</div><div class="kpi-val kpi-cyan">€ ${revenue.toFixed(2)}</div></div>
+            <div style="width:1px; height:20px; background:#333;"></div>
+            <div class="kpi-item"><div class="kpi-lbl">COSTO DIP.</div><div class="kpi-val" style="color:#e74c3c;">€ ${totalCostGlobal.toFixed(2)}</div></div>
+            <div class="kpi-item"><div class="kpi-lbl">UTILE</div><div class="kpi-val ${profitColor}">${profitSign}€ ${profit.toFixed(2)}</div></div>
+        `;
+        document.getElementById('kpi-container').innerHTML = kpiHTML;
+    }
+
+    function formatHours(decimal) {
+        let h = Math.floor(decimal);
+        let m = Math.round((decimal - h) * 60);
+        if(m === 60) { h++; m = 0; }
+        return `${h}h ${m > 0 ? m + 'm' : ''}`;
+    }
+
+    window.updateRate = function(v) { localStorage.setItem('globalRate', v); cerca(); }
+    window.updateDipCost = function(n, v) { localStorage.setItem('cost-'+n, v); cerca(); }
+
+</script>
+</body>
+</html>

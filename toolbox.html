@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Toolbox - Officina V11.5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        /* =========================================
+           1. BASE & COLORI
+           ========================================= */
+        body { font-family: 'Segoe UI', 'Roboto', sans-serif; background: #050505; color: #ccc; margin: 0; height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+        :root { 
+            --neon-blue: #00e5ff; 
+            --neon-green: #2ecc71; 
+            --neon-red: #e74c3c; 
+            --neon-purple: #9b59b6; 
+            --neon-orange: #ff9f43;
+            --dark-bg: #111; 
+            --card-bg: #1a1a1a; 
+            --border: 1px solid rgba(255,255,255,0.15); 
+            --elegant-border: 1px solid rgba(255,255,255,0.2);
+            --elegant-shadow: 0 0 10px rgba(255,255,255,0.05);
+        }
+
+        /* HEADER */
+        .header-bar { padding: 15px 20px; background: #0f0f0f; border-bottom: var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .btn-back { background: transparent; border: 1px solid #444; color: #ccc; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: normal; transition: 0.2s; font-size: 13px; }
+        .page-title { color: var(--neon-blue); font-weight: normal; letter-spacing: 2px; text-transform: uppercase; font-size: 16px; }
+
+        /* HOME GRID */
+        .tools-grid { flex: 1; padding: 20px; display: grid; gap: 15px; overflow-y: auto; align-content: start; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        .tool-btn { background: var(--card-bg); border: 1px solid #333; border-radius: 15px; height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .tool-btn:active { transform: scale(0.96); background: #222; }
+        .tool-icon { font-size: 45px; margin-bottom: 10px; }
+        .tool-name { color: #ccc; font-weight: normal; text-transform: uppercase; font-size: 11px; text-align: center; }
+
+        /* MODAL COMMON */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s; backdrop-filter: blur(5px); }
+        .modal-overlay.active { opacity: 1; }
+        .calculator-box { background: #181818; width: 100%; max-width: 1250px; height: 100%; max-height: 98vh; display: flex; flex-direction: column; position: relative; }
+        @media(min-width: 600px) { .calculator-box { height: 95vh; border-radius: 20px; border: 1px solid #444; box-shadow: 0 0 50px rgba(0,0,0,0.8); overflow: hidden; } }
+
+        .calc-head { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 50; }
+        .calc-title { color: var(--neon-blue); font-weight: normal; text-transform: uppercase; font-size: 18px; letter-spacing: 1px; }
+        .btn-close { background: none; border: none; color: #888; font-size: 32px; cursor: pointer; padding: 0 10px; line-height: 1; }
+
+        .mat-scroll-bar { display: flex; gap: 10px; padding: 10px 20px; background: #0a0a0a; overflow-x: auto; border-bottom: 1px solid #333; flex-shrink: 0; }
+        .mat-btn { background: #1f1f1f; border: 1px solid #444; color: #888; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: normal; font-size: 12px; white-space: nowrap; }
+        .mat-btn.active { background: var(--neon-blue); color: #000; border-color: var(--neon-blue); }
+
+        .calc-body { display: flex; flex: 1; overflow: hidden; flex-direction: column; position: relative; }
+        @media(min-width: 900px) { .calc-body { flex-direction: row; } }
+
+        /* INPUTS GLOBAL */
+        .input-section { flex: 1.5; padding: 20px; overflow-y: auto; border-right: 1px solid #333; }
+        .inputs-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+        .input-wrapper { display: flex; flex-direction: column; gap: 5px; min-width: 100px; flex: 1; }
+        
+        /* ETICHETTE BIANCHE */
+        .inp-label { 
+            color: #fff; font-size: 11px; font-weight: normal; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        
+        .styled-inp-box { 
+            display: flex; align-items: center; background: #0a0a0a; 
+            border: var(--elegant-border); box-shadow: var(--elegant-shadow);
+            border-radius: 6px; height: 45px; transition: 0.2s;
+        }
+        .styled-inp-box:focus-within { border-color: rgba(255,255,255,0.5); }
+
+        .styled-inp { 
+            background: transparent; border: none; color: white; padding: 0 15px; 
+            font-size: 16px; width: 100%; height: 100%; outline: none; 
+            font-family: 'Segoe UI', sans-serif; font-weight: normal;
+        }
+        
+        select.styled-inp { background-color: #0a0a0a; color: white; cursor: pointer; } 
+        select.styled-inp option { background-color: #1a1a1a; color: white; padding: 10px; }
+        
+        .inp-unit { 
+            background: rgba(255,255,255,0.1); color: #ccc; padding: 0 10px; 
+            font-size: 11px; font-weight: normal; height: 100%; display: flex; 
+            align-items: center; border-radius: 0 6px 6px 0; border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .live-data-col { flex: 1; background: #141414; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #333; }
+        @media(min-width: 900px) { .live-data-col { border-top: none; border-left: 1px solid #333; } }
+        
+        .live-card { 
+            background: #0a0a0a; border: var(--elegant-border); box-shadow: var(--elegant-shadow);
+            padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; 
+        }
+        .live-lbl { font-size: 11px; color: #fff; text-transform: uppercase; font-weight: normal; letter-spacing: 0.5px; }
+        .live-val { font-size: 16px; color: white; font-family: 'Segoe UI', sans-serif; font-weight: normal; } 
+        
+        /* PESO STYLES */
+        .shape-sidebar { background: #111; border-right: 1px solid #333; padding: 10px; display: flex; gap: 10px; overflow-x: auto; flex-shrink: 0; }
+        @media(min-width: 900px) { .shape-sidebar { flex-direction: column; width: 80px; } }
+        .shape-item { display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 8px; cursor: pointer; color: #666; min-width: 70px; }
+        .shape-item.active { background: #222; color: var(--neon-blue); border: 1px solid var(--neon-blue); }
+        .shape-icon svg { width: 32px; height: 32px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+        .shape-label { font-size: 10px; font-weight: normal; text-transform: uppercase; margin-top: 5px; }
+        .svg-preview { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px dashed #444; flex-shrink: 0; }
+        .svg-preview svg { width: 100%; height: 100%; overflow: visible; }
+        .beam-select { background: #000; color: white; padding: 0 15px; font-size: 16px; border: none; width: 100%; height: 100%; outline: none; }
+        .btn-add { background: var(--neon-blue); color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: normal; text-transform: uppercase; cursor: pointer; width: 100%; margin-top: auto; font-size: 16px; }
+        .memory-section { height: 200px; background: #111; border-top: 2px solid var(--neon-green); display: flex; flex-direction: column; padding: 10px; flex-shrink: 0; }
+        .mem-table-wrap { flex: 1; overflow-y: auto; background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; color: #ccc; }
+        th { text-align: left; padding: 8px; background: #1a1a1a; color: #888; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10; font-size: 10px; text-transform: uppercase; }
+        td { padding: 8px; border-bottom: 1px solid #222; vertical-align: middle; }
+        .btn-del-list { background: #e74c3c; color: white; border: none; border-radius: 6px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: normal; z-index: 100; }
+        .mem-footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .total-box { display: flex; align-items: baseline; gap: 10px; }
+        .total-box .lbl { color: var(--neon-green); font-size: 12px; font-weight: normal; }
+        .total-box .val { color: white; font-size: 20px; font-weight: normal; font-family: 'Courier New', monospace; }
+        .export-box { display: flex; gap: 10px; }
+
+        /* PIEGA STYLES */
+        .piega-container { display: flex; flex-direction: column; flex: 1; height: 100%; overflow: hidden; }
+        .piega-settings { display: flex; gap: 10px; padding: 15px; background: #141414; border-bottom: 1px solid #333; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+        .piega-work-area { flex: 1; overflow-y: auto; padding: 15px; background: #050505; }
+        .bend-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .bend-table th { color: #666; font-size: 10px; text-transform: uppercase; padding: 0 10px; text-align: center; }
+        .bend-table th:first-child { text-align: left; }
+        .bend-table td { background: #111; padding: 10px; border-top: 1px solid #333; border-bottom: 1px solid #333; text-align: center; vertical-align: middle; }
+        @media(min-width: 801px) {
+            .bend-table tr td:first-child { border-left: 1px solid #333; border-radius: 8px 0 0 8px; text-align: left; }
+            .bend-table tr td:last-child { border-right: 1px solid #333; border-radius: 0 8px 8px 0; }
+            .inp-cell { background: #000; border: 1px solid #444; color: white; padding: 0 5px; height: 35px; width: 60px; border-radius: 4px; text-align: center; font-family: monospace; font-size: 14px; }
+            .btn-del { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 14px; }
+        }
+        .piega-footer { height: 220px; background: #111; border-top: 2px solid var(--neon-blue); display: flex; flex-shrink: 0; }
+        .footer-graph { flex: 1; position: relative; border-right: 1px solid #333; }
+        .footer-totals { width: 250px; padding: 20px; display: flex; flex-direction: column; gap: 10px; justify-content: center; background: #141414; }
+        .total-row { display: flex; justify-content: space-between; }
+        .tot-lbl { font-size: 10px; color: #888; text-transform: uppercase; font-weight: normal; }
+        .tot-val { font-family: 'Courier New', monospace; font-size: 20px; color: white; font-weight: normal; }
+        .btn-export { border: none; padding: 10px 15px; border-radius: 6px; font-weight: normal; cursor: pointer; font-size: 12px; color: white; margin-left: auto; }
+        .btn-excel { background: #27ae60; } .btn-pdf { background: #e74c3c; }
+        .res-cell { font-family: monospace; font-size: 14px; font-weight: normal; color: #ddd; }
+        .hl-res { color: var(--neon-green); font-size: 15px; }
+        .ton-res { color: var(--neon-orange); }
+
+        /* CHIOCCIOLA STYLES */
+        .chiocciola-mode-switch { display: flex; gap: 10px; background: #000; padding: 5px; border-radius: 8px; border: 1px solid #333; margin-bottom: 5px; }
+        .ch-mode-btn { flex: 1; padding: 12px; background: transparent; color: #666; border: none; font-weight: normal; font-size: 11px; text-transform: uppercase; cursor: pointer; border-radius: 6px; transition: 0.2s; }
+        .ch-mode-btn.active { background: #222; color: var(--neon-blue); border: 1px solid var(--neon-blue); }
+        .ch-range-wrap { width: 100%; background: #000; padding: 10px; border-radius: 8px; border: 1px solid #444; display: flex; flex-direction: column; gap: 10px; }
+        .ch-range { width: 100%; accent-color: var(--neon-blue); cursor: pointer; height: 30px; }
+        .ch-warning { background: rgba(231, 76, 60, 0.2); border-left: 4px solid #e74c3c; color: #e74c3c; padding: 15px; font-size: 13px; margin-top: 15px; border-radius: 4px; display: none; font-weight: normal; }
+        .ch-warning.visible { display: block; }
+
+        /* FORATURA STYLES */
+        .tabs-header { display: flex; border-bottom: 1px solid #333; background: #111; overflow-x: auto; flex-shrink: 0; }
+        .tab-btn { padding: 15px 20px; background: transparent; color: #666; border: none; font-weight: normal; font-size: 12px; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: white; border-bottom-color: var(--neon-purple); background: #1a1a1a; }
+        
+        .foratura-container { padding: 20px; height: 100%; overflow-y: auto; background: #050505; }
+        .foratura-body { display: none; flex-direction: column; gap: 20px; }
+        .foratura-body.active { display: flex; }
+
+        /* BOX ELEGANCE STYLE (FIXED) */
+        .tab-content-box {
+            background: #0a0a0a; border: var(--elegant-border); border-radius: 12px; padding: 20px;
+            box-shadow: var(--elegant-shadow); transition: 0.3s;
+        }
+        /* VIOLA ILLUMINATO QUANDO ATTIVO */
+        .foratura-body.active .tab-content-box {
+            box-shadow: 0 0 20px rgba(155, 89, 182, 0.2); border-color: rgba(155, 89, 182, 0.4);
+        }
+
+        .lub-icon { font-size: 20px; margin-right: 10px; color: var(--neon-blue); }
+        .res-big { font-size: 20px; font-weight: normal; color: white; font-family: 'Segoe UI', sans-serif; }
+        
+        /* THREAD TABLE STYLES (CLEAN) */
+        .thread-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .thread-table th { 
+            text-align: left; padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            color: #fff; font-weight: normal; text-transform: uppercase; letter-spacing: 1px; font-size: 11px;
+        }
+        .thread-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; }
+        .thread-main { font-weight: normal; color: white; font-size: 15px; }
+        .thread-hl { color: var(--neon-green); font-family: monospace; font-size: 15px; }
+        
+        /* === DESKTOP "MAXI" MODE PER PARAMETRI (900px+) === */
+        @media(min-width: 900px) {
+            #tab-seats .tab-content-box { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; align-items: start; }
+            .seat-controls { display: flex; flex-direction: column; gap: 20px; }
+            .seat-results { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            .seat-svg-box { grid-column: span 2; display: flex; justify-content: center; margin-top: 20px; }
+
+            /* FORZATURA GRANDI DIMENSIONI SOLO PER PARAMETRI PC */
+            #tab-params .inputs-grid { gap: 25px; grid-template-columns: 1fr 1fr; }
+            #tab-params .input-wrapper .inp-label { font-size: 14px; margin-bottom: 8px; }
+            #tab-params .styled-inp-box { height: 75px; } /* INPUT ALTI */
+            #tab-params .styled-inp { font-size: 30px; padding: 0 20px; }
+            #tab-params select.styled-inp { font-size: 24px; }
+            
+            #tab-params .live-card { padding: 25px; height: 100px; }
+            #tab-params .live-lbl { font-size: 16px; }
+            #tab-params .res-big { font-size: 55px; } /* RISULTATI GIGANTI */
+            #tab-params .lub-icon { font-size: 40px; }
+        }
+
+        /* MOBILE OPTIMIZATIONS */
+        @media (max-width: 800px) {
+            body { height: 100%; overflow-y: auto; } 
+            .calculator-box { height: auto; min-height: 100vh; border-radius: 0; border: none; overflow: visible; }
+            .modal-overlay { position: absolute; height: auto; align-items: flex-start; background: #050505; }
+            .calc-body { flex-direction: column; height: auto; overflow: visible; }
+            .input-section { height: auto; overflow: visible; border-right: none; padding: 15px; }
+            .shape-sidebar { flex-direction: row; width: 100%; overflow-x: auto; padding: 10px; border-bottom: 1px solid #333; }
+            #modal-peso .svg-preview { height: 50px !important; margin-bottom: 15px; border: none; background: transparent; opacity: 0.7; }
+            .btn-del-list { width: 45px; height: 45px; font-size: 20px; }
+            .piega-settings { flex-direction: column; align-items: stretch; gap: 15px; }
+            .piega-settings .input-wrapper { width: 100%; }
+            .piega-work-area { padding: 10px; overflow: visible; height: auto; }
+            .bend-table, .bend-table tbody, .bend-table tr, .bend-table td { display: block; width: 100%; border: none; }
+            .bend-table thead { display: none; }
+            .bend-table tr { margin-bottom: 10px; border: none; background: transparent; padding: 0; }
+            .bend-table td { padding: 0; background: transparent; border: none; }
+            .acc-card { background: #141414; border: 1px solid #333; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+            .acc-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; cursor: pointer; border-bottom: 1px solid transparent; }
+            .acc-header.active { border-bottom-color: #333; background: #222; }
+            .acc-title { font-weight: bold; font-size: 14px; color: white; display: flex; gap: 10px; align-items: center; }
+            .acc-preview { font-size: 12px; color: #888; font-family: monospace; }
+            .acc-arrow { color: var(--neon-blue); font-size: 12px; transition: 0.2s; }
+            .acc-header.active .acc-arrow { transform: rotate(180deg); }
+            .acc-body { display: none; padding: 15px; background: #000; animation: slideDown 0.2s ease-out; }
+            .acc-body.show { display: block; }
+            @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+            .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+            .inp-cell-mob { width: 100%; height: 45px; font-size: 18px; border: 1px solid #444; background: #111; text-align: center; color: white; border-radius: 6px; }
+            .btn-del-mob { background: #2c0b0b; border: 1px solid #e74c3c; width: 100%; height: 45px; border-radius: 6px; color: #ff5555; font-weight: bold; margin-top: 10px; }
+            .tech-box { background: #1a1a1a; padding: 10px; border-radius: 6px; font-size: 11px; color: #aaa; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; }
+            .tech-val { color: white; font-weight: bold; display: block; font-size: 13px; }
+            .piega-footer { flex-direction: column; height: auto; border-top: none; padding-bottom: 20px; }
+            .footer-graph { height: 160px; border-bottom: 1px solid #333; border-right: none; }
+            .footer-totals { width: 100%; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #000; }
+            .total-row { flex-direction: column; align-items: flex-start; justify-content: center; background: #111; padding: 8px; border-radius: 6px; }
+            .total-row:last-child { grid-column: span 2; align-items: center; background: #1a1a1a; border: 1px solid #333; }
+            .btn-plus-row { height: 50px; font-size: 16px; margin: 20px 0; }
+            
+            /* THREAD TABLE MOBILE - VISIBLE ALL COLUMNS */
+            .thread-table { font-size: 11px; } /* Slightly smaller to fit */
+            .thread-table th, .thread-table td { padding: 8px 4px; } /* Compact padding */
+        }
+
+        /* PRINT FIXES */
+        @media print {
+            body { background: white; color: black; margin: 0; padding: 0; }
+            .header-bar, .tools-grid, .btn-close, .btn-back, .btn-export { display: none !important; }
+            .calculator-box { border: none; box-shadow: none; width: 100%; height: auto; display: block; }
+            .modal-overlay { position: static; display: block; height: auto; background: white; }
+            .input-wrapper { break-inside: avoid; margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; }
+            .inp-label { color: black !important; font-size: 10px !important; }
+            .styled-inp-box { background: white !important; border: none !important; height: auto !important; }
+            .styled-inp { color: black !important; font-weight: bold; font-size: 14px !important; padding: 0 !important; }
+            .tabs-header { border-bottom: 2px solid black; }
+            .tab-btn { color: black !important; border: 1px solid #ddd; margin-right: 5px; }
+            .tab-btn.active { background: #eee !important; border-bottom: none; font-weight: bold; }
+            .live-card { border: 1px solid #000 !important; background: white !important; color: black !important; margin-bottom: 10px; }
+            .live-lbl, .live-val, .res-big, .thread-lbl, .thread-val { color: black !important; }
+            .calc-title { color: black !important; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; display: block; text-align: center; font-size: 24px; }
+            
+            /* Chiocciola Print */
+            .chiocciola-mode-switch, .ch-range-wrap, #ch-alert { display: none !important; }
+            .input-wrapper:has(.ch-mode-btn) { display: none !important; }
+            #ch-svg { height: 300px !important; border: 1px solid #000; width: 100%; }
+            .svg-preview path { stroke: black !important; stroke-width: 2px !important; }
+            
+            /* Piega Print */
+            .bend-table { width: 100%; display: table; border-collapse: collapse; }
+            .bend-table th { border: 1px solid black; }
+            .bend-table td { border: 1px solid black; color: black; }
+            .piega-footer { display: grid !important; grid-template-columns: 7fr 3fr; border: 2px solid black; }
+            .footer-totals { color: black !important; background: white !important; }
+            
+            /* Tab Content Print */
+            .tab-content-box { border: none !important; box-shadow: none !important; padding: 0 !important; }
+            .thread-table th { border-bottom: 2px solid black; color: black; }
+            .thread-table td { border-bottom: 1px solid #ccc; color: black; }
+            .thread-hl { color: black !important; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <button class="btn-back" onclick="window.location.href='index.html'">⬅ HOME</button>
+        <div class="page-title">OFFICINA TOOLBOX</div>
+        <div style="width: 60px;"></div>
+    </div>
+
+    <div class="tools-grid">
+        <div class="tool-btn" onclick="TB.UI.open('modal-peso')">
+            <div class="tool-icon" style="color:#00e5ff;">⚖️</div>
+            <div class="tool-name">Peso Materiale</div>
+        </div>
+        <div class="tool-btn" onclick="TB.UI.open('modal-piega')">
+            <div class="tool-icon" style="color:#e74c3c;">📐</div>
+            <div class="tool-name">Piegatura CNC</div>
+        </div>
+        <div class="tool-btn" onclick="TB.UI.open('modal-chiocciola')">
+            <div class="tool-icon" style="color:#00e5ff;">🐌</div>
+            <div class="tool-name">Chiocciole</div>
+        </div>
+        <div class="tool-btn" onclick="TB.UI.open('modal-foratura')">
+            <div class="tool-icon" style="color:#9b59b6;">🔩</div>
+            <div class="tool-name">Foratura</div>
+        </div>
+    </div>
+
+    <div id="modal-peso" class="modal-overlay">
+        <div class="calculator-box">
+            <div class="calc-head"><div class="calc-title">CALCOLO PESI</div><button class="btn-close" onclick="TB.UI.close()">×</button></div>
+            <div class="mat-scroll-bar">
+                <button class="mat-btn active" onclick="TB.Tools.Peso.setMat(7.85, this)">FERRO</button>
+                <button class="mat-btn" onclick="TB.Tools.Peso.setMat(7.9, this)">INOX</button>
+                <button class="mat-btn" onclick="TB.Tools.Peso.setMat(2.7, this)">ALLUMINIO</button>
+                <button class="mat-btn" onclick="TB.Tools.Peso.setMat(8.5, this)">OTTONE</button>
+            </div>
+            <div class="calc-body">
+                <div class="shape-sidebar">
+                    <div class="shape-item active" onclick="TB.Tools.Peso.setShape('lamiera', this)"><div class="shape-icon"><svg viewBox="0 0 32 32"><path d="M4 12 L14 6 L28 10 L18 16 Z M4 12 L4 16 L18 20 L18 16 M18 20 L28 14 L28 10"/></svg></div><div class="shape-label">Lamiera</div></div>
+                    <div class="shape-item" onclick="TB.Tools.Peso.setShape('tubo', this)"><div class="shape-icon"><svg viewBox="0 0 32 32"><ellipse cx="16" cy="8" rx="10" ry="4"/><path d="M6 8 L6 24 M26 8 L26 24"/><path d="M6 24 Q16 29 26 24"/></svg></div><div class="shape-label">Tubo</div></div>
+                    <div class="shape-item" onclick="TB.Tools.Peso.setShape('tubolare', this)"><div class="shape-icon"><svg viewBox="0 0 32 32"><path d="M6 10 L14 4 L26 7 L18 13 Z M6 10 L6 22 L18 25 L18 13 M18 25 L26 19 L26 7"/></svg></div><div class="shape-label">Tubolare</div></div>
+                    <div class="shape-item" onclick="TB.Tools.Peso.setShape('angolare', this)"><div class="shape-icon"><svg viewBox="0 0 32 32"><path d="M6 6 L6 26 L24 20 L24 16 L10 18 L10 6 Z M6 26 L10 28 L28 22 L24 20"/></svg></div><div class="shape-label">Angolare</div></div>
+                    <div class="shape-item" onclick="TB.Tools.Peso.setShape('travi', this)"><div class="shape-icon"><svg viewBox="0 0 32 32"><path d="M8 6 L24 6 M16 6 L16 26 M8 26 L24 26" stroke-width="3"/></svg></div><div class="shape-label">Travi</div></div>
+                </div>
+                <div class="input-section">
+                    <div class="svg-preview" id="p-svg"></div>
+                    <div class="inputs-grid" id="p-inputs"></div>
+                </div>
+                <div class="live-data-col">
+                    <div class="live-card"><span class="live-lbl">Kg / Metro</span><div><span class="live-val" id="val-kgm">0.00</span><span class="live-unit">kg/m</span></div></div>
+                    <div class="live-card"><span class="live-lbl">Kg / Pezzo</span><div><span class="live-val" id="val-kgpz">0.00</span><span class="live-unit">kg</span></div></div>
+                    <div class="live-card" style="border-color:var(--neon-blue);"><span class="live-lbl" style="color:var(--neon-blue);">TOTALE RIGA</span><div><span class="live-val" id="val-kgtot">0.00</span><span class="live-unit">kg</span></div></div>
+                    <button class="btn-add" onclick="TB.Tools.Peso.addToList()"><span>⬇ AGGIUNGI</span></button>
+                </div>
+            </div>
+            <div class="memory-section">
+                <div class="mem-head"><span>LISTA MATERIALE</span><span onclick="TB.Tools.Peso.clearList()" style="cursor:pointer; color:#e74c3c;">SVUOTA</span></div>
+                <div class="mem-table-wrap"><table id="p-list-table"><thead><tr><th style="width:25px">#</th><th>DESC</th><th>L.TOT</th><th>KG</th><th style="width:40px"></th></tr></thead><tbody id="p-list-body"></tbody></table></div>
+                <div class="mem-footer"><div class="total-box"><span class="lbl">TOT:</span><span class="val" id="val-grand-total">0.00</span><span style="color:#aaa; font-size:14px;">kg</span></div><div class="export-box"><button class="btn-export btn-excel" onclick="TB.Tools.Peso.exportCSV()">📊 XLS</button><button class="btn-export btn-pdf" onclick="window.print()">🖨️ PDF</button></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-piega" class="modal-overlay">
+        <div class="calculator-box">
+            <div class="calc-head"><div class="calc-title">PIEGATURA CNC</div><button class="btn-close" onclick="TB.UI.close()">×</button></div>
+            <div class="piega-container">
+                <div class="piega-settings">
+                    <div class="input-wrapper"><span class="inp-label">MATERIALE</span><select id="pg-mat" class="styled-inp" style="background:#000;" onchange="TB.Tools.Piega.updateGlobals()"><option value="42">Ferro (42 kg/mm²)</option><option value="70">Inox (70 kg/mm²)</option><option value="25">Alluminio (25 kg/mm²)</option></select></div>
+                    <div class="input-wrapper"><span class="inp-label">SPESSORE (mm)</span><div class="styled-inp-box"><input type="number" id="pg-thk" class="styled-inp" value="2" oninput="TB.Tools.Piega.updateGlobals()"></div></div>
+                    <button class="btn-export btn-pdf" style="margin-left:auto;" onclick="window.print()">🖨️ STAMPA</button>
+                </div>
+                <div class="piega-work-area">
+                    <table class="bend-table"><thead><tr><th style="width:30px">#</th><th>TIPO</th><th>MISURA</th><th>ANGOLO</th><th>RAGGIO</th><th>K</th><th>TON/m</th><th>CAVA</th><th>PUNZONE</th><th>SVIL. PROG.</th><th style="width:30px"></th></tr></thead><tbody id="bend-body"></tbody></table>
+                    <div class="btn-plus-row" onclick="TB.Tools.Piega.addBend()">+ AGGIUNGI PIEGA</div>
+                </div>
+                <div class="piega-footer">
+                    <div class="footer-graph"><div class="svg-preview-piega" id="bend-graph"></div></div>
+                    <div class="footer-totals"><div class="total-row"><span class="tot-lbl">NUMERO PIEGHE</span><span class="tot-val" id="tot-bends">0</span></div><div class="total-row"><span class="tot-lbl">RITIRI TOTALI</span><span class="tot-val" style="color:var(--neon-orange);" id="tot-bd">0.0</span></div><div class="total-row" style="border:none; margin-top:10px;"><span class="tot-lbl" style="color:var(--neon-green);">SVILUPPO TOTALE</span></div><span class="tot-val tot-main" id="tot-flat">0.00</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-chiocciola" class="modal-overlay">
+        <div class="calculator-box">
+            <div class="calc-head"><div class="calc-title">CHIOCCIOLE (BUMP BENDING)</div><button class="btn-close" onclick="TB.UI.close()">×</button></div>
+            <div class="calc-body">
+                <div class="input-section">
+                    <div class="inputs-grid">
+                        <div class="input-wrapper" style="width:100%; flex: 0 0 100%;"><div class="chiocciola-mode-switch"><button class="ch-mode-btn active" id="btn-diam" onclick="TB.Tools.Chiocciola.setInputType('D')">DIAMETRO ESTERNO</button><button class="ch-mode-btn" id="btn-rad" onclick="TB.Tools.Chiocciola.setInputType('R')">RAGGIO INTERNO</button></div></div>
+                        <div class="input-wrapper"><span class="inp-label" id="lbl-dim">DIAMETRO (mm)</span><div class="styled-inp-box"><input type="number" id="ch-dim" class="styled-inp" value="500" oninput="TB.Tools.Chiocciola.calc()"></div></div>
+                        <div class="input-wrapper"><span class="inp-label">SPESSORE (mm)</span><div class="styled-inp-box"><input type="number" id="ch-thk" class="styled-inp" value="3" oninput="TB.Tools.Chiocciola.calc()"></div></div>
+                        <div class="input-wrapper"><span class="inp-label">ANGOLO ARCO (°)</span><div class="styled-inp-box"><input type="number" id="ch-arc" class="styled-inp" value="360" placeholder="es. 180" oninput="TB.Tools.Chiocciola.calc()"></div></div>
+                        <div class="input-wrapper" style="width:100%; flex: 0 0 100%; border-top:1px solid #333; padding-top:10px;"><span class="inp-label" style="color:var(--neon-blue);">METODO DI CALCOLO</span><div class="chiocciola-mode-switch"><button class="ch-mode-btn active" id="btn-mode-n" onclick="TB.Tools.Chiocciola.setMode('N')">N° PIEGHE</button><button class="ch-mode-btn" id="btn-mode-p" onclick="TB.Tools.Chiocciola.setMode('P')">PASSO FISSO</button></div></div>
+                        <div class="input-wrapper" id="grp-n" style="width:100%; flex: 0 0 100%;"><span class="inp-label">NUMERO PIEGHE (DA 3 A 100)</span><div class="ch-range-wrap"><input type="number" id="ch-n" class="styled-inp" value="20" style="background:#000; border:1px solid #444; border-radius:6px; width:70px; text-align:center;" oninput="TB.Tools.Chiocciola.calc(true)"><input type="range" id="ch-slider" class="ch-range" min="3" max="100" value="20" oninput="document.getElementById('ch-n').value=this.value; TB.Tools.Chiocciola.calc(true)"></div></div>
+                        <div class="input-wrapper" id="grp-p" style="display:none; width:100%; flex: 0 0 100%;"><span class="inp-label">PASSO DESIDERATO (mm)</span><div class="styled-inp-box"><input type="number" id="ch-pitch-in" class="styled-inp" placeholder="Es. 20" oninput="TB.Tools.Chiocciola.calc(false)"></div></div>
+                        <div id="ch-alert" class="ch-warning" style="width:100%; flex: 0 0 100%; box-sizing:border-box;">⚠️ Attenzione: Passo troppo corto per la V selezionata!</div>
+                    </div>
+                </div>
+                <div class="live-data-col">
+                    <div class="live-card" style="border-color:var(--neon-green);"><span class="live-lbl" style="color:var(--neon-green);">SVILUPPO LAMIERA</span><div><span class="live-val" id="ch-res-len">0.0</span><span class="live-unit">mm</span></div></div>
+                    <div class="live-card"><span class="live-lbl" id="ch-lbl-res-secondary">PASSO (INTERASSE)</span><div><span class="live-val" id="ch-res-pitch">0.0</span><span class="live-unit" id="ch-unit-res-secondary">mm</span></div></div>
+                    <div style="display:flex; gap:10px;"><div class="live-card" style="flex:1;"><span class="live-lbl">ANGOLO PEZZO</span><span class="live-val" style="font-size:16px;" id="ch-res-ang-part">180°</span></div><div class="live-card" style="flex:1; border-color:var(--neon-orange);"><span class="live-lbl" style="color:var(--neon-orange);">GRADI CNC</span><span class="live-val" style="font-size:16px;" id="ch-res-ang-cnc">0°</span></div></div>
+                    <div class="live-card"><span class="live-lbl">CONSIGLIO ATTREZZI</span><div style="text-align:right;"><div style="font-size:14px; font-weight:normal; color:white;">Cava: <span id="ch-res-v" style="color:var(--neon-blue);">V--</span></div><div style="font-size:12px; color:#888;">Punzone: <span id="ch-res-r">R--</span></div></div></div>
+                    <div class="svg-preview" id="ch-svg" style="height:200px; margin-top:auto; background:transparent; border:none;"></div>
+                    <button class="btn-export btn-pdf" style="width:100%; margin-top:10px;" onclick="window.print()">🖨️ STAMPA SCHEDA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-foratura" class="modal-overlay">
+        <div class="calculator-box">
+            <div class="calc-head"><div class="calc-title" style="color:var(--neon-purple);">FORATURA & FILETTATURA</div><button class="btn-close" onclick="TB.UI.close()">×</button></div>
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="TB.Tools.Foratura.switchTab('params', this)">🏁 PARAMETRI & TEMPI</button>
+                <button class="tab-btn" onclick="TB.Tools.Foratura.switchTab('threads', this)">🔩 PREFORI & FILETTI</button>
+                <button class="tab-btn" onclick="TB.Tools.Foratura.switchTab('seats', this)">📐 SEDI VITI</button>
+            </div>
+            
+            <div class="foratura-container">
+                <div id="tab-params" class="foratura-body active">
+                    <div class="tab-content-box">
+                        <div class="inputs-grid">
+                            <div class="input-wrapper"><span class="inp-label">MATERIALE</span><select id="fr-mat" class="styled-inp" onchange="TB.Tools.Foratura.calcParams()"><option value="steel">Ferro / Acciaio Dolce</option><option value="inox">Acciaio INOX (304/316)</option><option value="alu">Alluminio / Leghe</option><option value="brass">Ottone / Bronzo</option><option value="plastic">Plastica / Nylon</option></select></div>
+                            <div class="input-wrapper"><span class="inp-label">TIPO UTENSILE</span><select id="fr-tool" class="styled-inp" onchange="TB.Tools.Foratura.calcParams()"><option value="hss">Punta Elicoidale HSS</option><option value="hm">Punta Metallo Duro (HM)</option><option value="insert">Punta a Inserti</option><option value="fein">Fein HSS Nova Weldon</option><option value="reamer">Alesatore</option><option value="csk">Svasatore</option></select></div>
+                            <div class="input-wrapper"><span class="inp-label">DIAMETRO (mm)</span><div class="styled-inp-box"><input type="number" id="fr-diam" class="styled-inp" value="10" oninput="TB.Tools.Foratura.calcParams()"></div></div>
+                            <div class="input-wrapper"><span class="inp-label">PROFONDITÀ FORO (mm)</span><div class="styled-inp-box"><input type="number" id="fr-depth" class="styled-inp" value="20" oninput="TB.Tools.Foratura.calcParams()"></div></div>
+                        </div>
+                        <div id="fr-alert" class="ch-warning">⚠️ Attenzione: Foro profondo (>5xD). Usare ciclo di scarico (Peck Drilling).</div>
+                        <div class="live-data-col" style="margin-top:20px; border:none; padding:0;">
+                            <div class="live-card"><span class="live-lbl">GIRI CONSIGLIATI (RPM)</span><div style="display:flex; align-items:center;"><span class="lub-icon" id="fr-icon">💧</span><span class="res-big" id="fr-rpm">0</span></div></div>
+                            <div class="live-card"><span class="live-lbl">AVANZAMENTO (mm/min)</span><span class="res-big" id="fr-feed">0</span></div>
+                            <div class="live-card" style="border-color:var(--neon-green);"><span class="live-lbl" style="color:white !important;">TEMPO STIMATO</span><span class="res-big" style="color:white !important;" id="fr-time">0s</span></div>
+                        </div>
+                        <button class="btn-export btn-pdf" style="width:100%; margin-top:20px;" onclick="window.print()">🖨️ STAMPA SCHEDA</button>
+                    </div>
+                </div>
+
+                <div id="tab-threads" class="foratura-body">
+                    <div class="tab-content-box">
+                        <div class="chiocciola-mode-switch" style="margin-bottom:20px;">
+                            <button class="ch-mode-btn active" id="btn-met" onclick="TB.Tools.Foratura.setThreadMode('M')">METRICA (M)</button>
+                            <button class="ch-mode-btn" id="btn-gas" onclick="TB.Tools.Foratura.setThreadMode('G')">GAS (BSP)</button>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="thread-table">
+                                <thead>
+                                    <tr><th>MISURA</th><th>CHIAVE</th><th>PREFORO</th><th>GIRI (RPM)</th></tr>
+                                </thead>
+                                <tbody id="thread-content"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-seats" class="foratura-body">
+                    <div class="tab-content-box" id="seats-box">
+                        <div class="seat-controls">
+                            <div class="input-wrapper"><span class="inp-label">MISURA VITE</span><select id="st-size" class="styled-inp" onchange="TB.Tools.Foratura.calcSeat()"></select></div>
+                            <div class="chiocciola-mode-switch"><button class="ch-mode-btn active" id="btn-csk" onclick="TB.Tools.Foratura.setSeatType('CSK')">TESTA SVASATA</button><button class="ch-mode-btn" id="btn-cb" onclick="TB.Tools.Foratura.setSeatType('CB')">BRUGOLA (TC)</button></div>
+                        </div>
+                        <div class="seat-results">
+                            <div class="live-card"><span class="live-lbl">DIAMETRO TESTA / SVASO</span><span class="res-big" id="st-d2">0.0 mm</span></div>
+                            <div class="live-card" id="card-depth"><span class="live-lbl">PROFONDITÀ (Z)</span><span class="res-big" id="st-z">0.0 mm</span></div>
+                            <div class="live-card" id="card-clearance"><span class="live-lbl">FORO PASSANTE</span><span class="res-big" id="st-d1">0.0 mm</span></div>
+                        </div>
+                        <div class="seat-svg-box"><div class="svg-preview" id="st-svg" style="height:150px; background:transparent; border:none; width:100%;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+const TB = {
+    State: { Peso: { mat: 7.85, shape: 'lamiera', list: [] }, Piega: { mat: 42, thk: 2, rows: [], expandedRow: -1 }, Chiocciola: { mode: 'N', inputType: 'D' } },
+    Beams: { 'IPE': { '80':6.0, '100':8.1, '120':10.4 }, 'HEA': { '100':16.7, '120':19.9 }, 'UPN': { '80':8.6, '100':10.6 } },
+    UI: {
+        open: function(id) { document.getElementById(id).style.display = 'flex'; setTimeout(()=>document.getElementById(id).classList.add('active'),10); if(id==='modal-peso') TB.Tools.Peso.init(); if(id==='modal-piega') TB.Tools.Piega.init(); if(id==='modal-chiocciola') TB.Tools.Chiocciola.init(); if(id==='modal-foratura') TB.Tools.Foratura.init(); },
+        close: function() { let m=document.querySelector('.modal-overlay.active'); if(m){ m.classList.remove('active'); setTimeout(()=>m.style.display='none',200); } }
+    },
+    Tools: {
+        Peso: {
+            init: function() { this.renderInputs(); this.renderList(); },
+            setMat: function(d, el) { TB.State.Peso.mat = d; document.querySelectorAll('.mat-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); this.calc(); },
+            setShape: function(s, el) { TB.State.Peso.shape = s; document.querySelectorAll('.shape-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); this.renderInputs(); },
+            renderInputs: function() {
+                let s = TB.State.Peso.shape, box = document.getElementById('p-inputs'), h = "", ev = 'oninput="TB.Tools.Peso.calc(); TB.Tools.Peso.draw()"';
+                if(s==='lamiera') h += this.inp('Spessore','d1',ev)+this.inp('Larghezza','d2',ev)+this.inp('Lunghezza','len',ev);
+                else if(s==='tubo') h += this.inp('Diam. Ext','d1',ev)+this.inp('Spessore','d2',ev)+this.inp('Lunghezza','len',ev);
+                else if(s==='tubolare') h += this.inp('Lato A','d1',ev)+this.inp('Lato B','d2',ev)+this.inp('Spessore','d3',ev)+this.inp('Lunghezza','len',ev);
+                else if(s==='angolare') h += this.inp('Lato A','d1',ev)+this.inp('Lato B','d2',ev)+this.inp('Spessore','d3',ev)+this.inp('Lunghezza','len',ev);
+                else if(s==='travi') { h += `<div class="input-wrapper"><span class="inp-label">TIPO</span><div class="styled-inp-box"><select id="p-beam-type" class="beam-select" onchange="TB.Tools.Peso.draw(); TB.Tools.Peso.calc()"><option value="IPE">IPE</option><option value="HEA">HEA</option><option value="UPN">UPN</option></select></div></div>`; h += `<div class="input-wrapper"><span class="inp-label">MISURA</span><div class="styled-inp-box"><select id="p-beam-size" class="beam-select"><option>80</option><option>100</option><option>120</option></select></div></div>`; h += this.inp('Lunghezza','len',ev); }
+                h += this.inp('Quantità','qty',ev,'1','pz'); box.innerHTML = h;
+                this.draw(); this.calc();
+            },
+            inp: function(l,id,ev,def='',u='mm') { return `<div class="input-wrapper"><span class="inp-label">${l}</span><div class="styled-inp-box"><input type="number" id="p-${id}" class="styled-inp" value="${def}" placeholder="0" ${ev}><div class="inp-unit">${u}</div></div></div>`; },
+            draw: function() {
+                let s = TB.State.Peso.shape, box = document.getElementById('p-svg'), c = "#00e5ff", svg = "";
+                if(s==='lamiera') svg = `<rect x="15" y="15" width="70" height="20" fill="none" stroke="${c}" stroke-width="2"/>`;
+                else if(s==='tubo') svg = `<circle cx="50" cy="40" r="30" fill="none" stroke="${c}" stroke-width="2"/>`;
+                else if(s==='travi') {
+                    let t = document.getElementById('p-beam-type')?.value || 'IPE';
+                    let path = "M40 10 H60 V20 H52 V60 H60 V70 H40 V60 H48 V20 H40 Z"; 
+                    if(t==='HEA') path = "M25 10 H75 V20 H55 V60 H75 V70 H25 V60 H45 V20 H25 Z"; 
+                    if(t==='UPN') path = "M30 15 H70 V25 H45 V55 H70 V65 H30 Z"; 
+                    svg = `<path d="${path}" fill="none" stroke="${c}" stroke-width="2"/>`;
+                }
+                else svg = `<rect x="30" y="30" width="40" height="40" fill="none" stroke="${c}" stroke-width="2"/>`;
+                box.innerHTML = `<svg viewBox="0 0 100 80">${svg}</svg>`;
+            },
+            calc: function() {
+                let s=TB.State.Peso.shape, d1=v('p-d1'), d2=v('p-d2'), d3=v('p-d3'), len=v('p-len'), qty=v('p-qty')||1, kgm=0;
+                if(s==='lamiera') kgm=(d1*d2*TB.State.Peso.mat)/1000; else kgm = 10;
+                let kgtot = kgm*(len/1000)*qty;
+                document.getElementById('val-kgm').innerText=kgm.toFixed(2); document.getElementById('val-kgpz').innerText=(kgm*len/1000).toFixed(2); document.getElementById('val-kgtot').innerText=kgtot.toFixed(2);
+                return { kgm, kgtot, desc: s.toUpperCase()+' '+d1+'x'+d2, len, qty };
+            },
+            addToList: function() { let res = this.calc(); TB.State.Peso.list.push(res); this.renderList(); },
+            clearList: function() { TB.State.Peso.list = []; this.renderList(); },
+            renderList: function() {
+                let l = TB.State.Peso.list, b = document.getElementById('p-list-body'), tot=0; b.innerHTML="";
+                l.forEach((i, idx) => { tot += i.kgtot; b.innerHTML += `<tr><td>${idx+1}</td><td>${i.desc}</td><td>${(i.len*i.qty/1000).toFixed(1)}m</td><td>${i.kgtot.toFixed(1)}</td><td><button class="btn-del-list" onclick="TB.Tools.Peso.list.splice(${idx},1); TB.Tools.Peso.renderList()">✖</button></td></tr>`; });
+                document.getElementById('val-grand-total').innerText = tot.toFixed(2);
+            }
+        },
+        Piega: {
+            init: function() { if(TB.State.Piega.rows.length === 0) TB.State.Piega.rows.push({ type: 'start', len: 100, ang: 0, rad: 0, k: 0 }); this.updateGlobals(); },
+            updateGlobals: function() {
+                TB.State.Piega.mat = parseInt(document.getElementById('pg-mat').value);
+                let newThk = parseFloat(document.getElementById('pg-thk').value) || 0;
+                if(newThk !== TB.State.Piega.thk) { TB.State.Piega.thk = newThk; TB.State.Piega.rows.forEach(r => { if(r.type === 'bend') { r.rad = newThk; r.k = (newThk > 0 && newThk < 2*newThk) ? 0.33 : 0.5; } }); }
+                this.renderTable();
+            },
+            addBend: function() {
+                let thk = TB.State.Piega.thk;
+                TB.State.Piega.rows.push({ type: 'bend', len: 50, ang: 90, rad: thk, k: 0.33 });
+                TB.State.Piega.expandedRow = TB.State.Piega.rows.length - 1;
+                this.renderTable();
+            },
+            removeRow: function(idx) { if(idx === 0) return; TB.State.Piega.rows.splice(idx, 1); this.renderTable(); },
+            updateRow: function(idx, field, val) { TB.State.Piega.rows[idx][field] = parseFloat(val) || 0; this.renderTable(); },
+            toggleAccordion: function(idx) { TB.State.Piega.expandedRow = (TB.State.Piega.expandedRow === idx) ? -1 : idx; this.renderTable(); },
+            renderTable: function() {
+                let tbody = document.getElementById('bend-body'); tbody.innerHTML = "";
+                let thk = TB.State.Piega.thk; let mat = TB.State.Piega.mat;
+                let runningTotalLength = 0; let totalBD = 0;
+                let isMobile = window.innerWidth <= 800;
+                TB.State.Piega.rows.forEach((r, i) => {
+                    let html = "";
+                    if(r.type === 'start') {
+                        runningTotalLength += r.len; 
+                        if(isMobile) {
+                            let isOpen = (TB.State.Piega.expandedRow === i);
+                            html += `<tr><td><div class="acc-card"><div class="acc-header ${isOpen?'active':''}" onclick="TB.Tools.Piega.toggleAccordion(${i})"><div class="acc-title"><span class="row-num">1</span> <span class="row-type type-start">START</span></div><div class="acc-preview">${r.len} mm</div><div class="acc-arrow">▼</div></div><div class="acc-body ${isOpen?'show':''}"><div class="inp-label" style="margin-bottom:5px;">LUNGHEZZA PARTENZA</div><input type="number" class="inp-cell-mob" value="${r.len}" onchange="TB.Tools.Piega.updateRow(${i},'len',this.value)"></div></div></td></tr>`;
+                        } else {
+                            html += `<tr class="desktop-row"><td><span class="row-num">${i+1}</span></td><td><span class="row-type type-start">START</span></td><td><input type="number" class="inp-cell" value="${r.len}" onchange="TB.Tools.Piega.updateRow(${i},'len',this.value)"></td><td colspan="6" style="color:#444;text-align:center;">--- Punto di Partenza ---</td><td class="res-cell hl-res">${runningTotalLength.toFixed(1)}</td><td></td></tr>`;
+                        }
+                    } else {
+                        let calcAng = (r.ang > 180) ? (360 - r.ang) : r.ang; 
+                        let radCalc = (calcAng * Math.PI) / 180; let OSS = Math.tan(radCalc/2) * (r.rad + thk); let BA = radCalc * (r.rad + (r.k * thk)); let BD = (2*OSS) - BA; if(calcAng === 180) BD = 0;
+                        let V = thk * 8; if(thk<1) V=6; let Punch = V / 6; let force = (thk * thk * (mat===70?100:mat===25?40:65)) / V; let flatContrib = r.len - BD; runningTotalLength += flatContrib; totalBD += BD;
+                        if(isMobile) {
+                            let isOpen = (TB.State.Piega.expandedRow === i);
+                            html += `<tr><td><div class="acc-card"><div class="acc-header ${isOpen?'active':''}" onclick="TB.Tools.Piega.toggleAccordion(${i})"><div class="acc-title"><span class="row-num">${i+1}</span> <span class="row-type type-bend">PIEGA</span></div><div class="acc-preview">${r.len}mm / ${r.ang}°</div><div class="acc-arrow">▼</div></div><div class="acc-body ${isOpen?'show':''}"><div class="acc-grid"><div><div class="inp-label">MISURA</div><input type="number" class="inp-cell-mob" value="${r.len}" onchange="TB.Tools.Piega.updateRow(${i},'len',this.value)"></div><div><div class="inp-label">ANGOLO</div><input type="number" class="inp-cell-mob" value="${r.ang}" onchange="TB.Tools.Piega.updateRow(${i},'ang',this.value)"></div><div><div class="inp-label">RAGGIO</div><input type="number" class="inp-cell-mob" value="${r.rad}" onchange="TB.Tools.Piega.updateRow(${i},'rad',this.value)"></div><div><div class="inp-label">K FACTOR</div><input type="number" class="inp-cell-mob" value="${r.k}" step="0.01" onchange="TB.Tools.Piega.updateRow(${i},'k',this.value)"></div></div><div class="tech-box"><div>TON/m<span class="tech-val ton-res">${force.toFixed(1)}</span></div><div>CAVA<span class="tech-val">V${Math.round(V)}</span></div><div>PUNZ<span class="tech-val">R${Punch.toFixed(1)}</span></div></div><div class="acc-footer" style="margin-top:15px; text-align:right;"><span class="tot-lbl">SVIL. PROG.: </span><span class="hl-res" style="font-size:18px">${runningTotalLength.toFixed(1)}</span></div><button class="btn-del-mob" onclick="TB.Tools.Piega.removeRow(${i})">ELIMINA PIEGA</button></div></div></td></tr>`;
+                        } else {
+                            html += `<tr class="desktop-row"><td><span class="row-num">${i+1}</span></td><td><span class="row-type type-bend">PIEGA</span></td><td><input type="number" class="inp-cell" value="${r.len}" onchange="TB.Tools.Piega.updateRow(${i},'len',this.value)"></td><td><input type="number" class="inp-cell" value="${r.ang}" onchange="TB.Tools.Piega.updateRow(${i},'ang',this.value)"></td><td><input type="number" class="inp-cell" value="${r.rad}" onchange="TB.Tools.Piega.updateRow(${i},'rad',this.value)"></td><td><input type="number" class="inp-cell" value="${r.k}" step="0.01" onchange="TB.Tools.Piega.updateRow(${i},'k',this.value)"></td><td class="res-cell ton-res">${force.toFixed(1)}</td><td class="res-cell">V${Math.round(V)}</td><td class="res-cell">R${Punch.toFixed(1)}</td><td class="res-cell hl-res">${runningTotalLength.toFixed(1)}</td><td><button class="btn-del" onclick="TB.Tools.Piega.removeRow(${i})">✖</button></td></tr>`;
+                        }
+                    }
+                    tbody.innerHTML += html;
+                });
+                document.getElementById('tot-bends').innerText = TB.State.Piega.rows.length - 1;
+                document.getElementById('tot-bd').innerText = totalBD.toFixed(1) + " mm";
+                document.getElementById('tot-flat').innerText = runningTotalLength.toFixed(2) + " mm";
+                this.draw();
+            },
+            draw: function() {
+                let rows = TB.State.Piega.rows; let pts = [{x:0, y:0}]; let currX=0, currY=0, currAng=0;
+                let l0 = rows[0].len; currX += l0; pts.push({x: currX, y: currY});
+                for(let i=1; i<rows.length; i++) {
+                    let r = rows[i]; let visRot = -(180 - r.ang); currAng += visRot; let rad = currAng * (Math.PI / 180);
+                    currX += r.len * Math.cos(rad); currY += r.len * Math.sin(rad); pts.push({x: currX, y: currY});
+                }
+                let xs = pts.map(p=>p.x), ys = pts.map(p=>p.y);
+                let minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+                let w = maxX - minX || 1, h = maxY - minY || 1;
+                let boxW = document.getElementById('bend-graph').offsetWidth || 300; let boxH = 220; let pad = 40;
+                let scale = Math.min((boxW-pad*2)/w, (boxH-pad*2)/h); if(scale > 4) scale = 4;
+                let midX = (minX+maxX)/2, midY = (minY+maxY)/2;
+                let path = ""; pts.forEach((p, i) => { let sx = (p.x - midX) * scale + (boxW/2); let sy = (p.y - midY) * scale + (boxH/2); path += (i===0?"M":"L") + ` ${sx} ${sy} `; });
+                document.getElementById('bend-graph').innerHTML = `<svg width="100%" height="100%" viewBox="0 0 ${boxW} ${boxH}" preserveAspectRatio="xMidYMid meet" style="overflow:visible"><path d="${path}" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+            }
+        },
+        Chiocciola: {
+            init: function() { this.calc(); },
+            setMode: function(m) { 
+                TB.State.Chiocciola.mode = m; 
+                document.getElementById('btn-mode-n').className = m==='N'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('btn-mode-p').className = m==='P'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('grp-n').style.display = m==='N'?'block':'none';
+                document.getElementById('grp-p').style.display = m==='P'?'block':'none';
+                document.getElementById('ch-lbl-res-secondary').innerText = m==='N'?'PASSO (INTERASSE)':'NUMERO PIEGHE';
+                document.getElementById('ch-unit-res-secondary').innerText = m==='N'?'mm':'pz';
+                this.calc();
+            },
+            setInputType: function(t) {
+                TB.State.Chiocciola.inputType = t;
+                document.getElementById('btn-diam').className = t==='D'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('btn-rad').className = t==='R'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('lbl-dim').innerText = t==='D'?'DIAMETRO (mm)':'RAGGIO (mm)';
+                this.calc();
+            },
+            calc: function(fromSlider=false) {
+                let dim = v('ch-dim'), thk = v('ch-thk'), arc = v('ch-arc');
+                let mode = TB.State.Chiocciola.mode; let type = TB.State.Chiocciola.inputType;
+                let R_ext = (type === 'D') ? dim / 2 : dim + thk;
+                let R_neu = R_ext - thk + (thk * 0.5); let Circ_neu = 2 * Math.PI * R_neu; let L_arc = Circ_neu * (arc / 360);
+                let N = 0, Pitch = 0;
+                if (mode === 'N') {
+                    N = parseInt(document.getElementById('ch-n').value); if(fromSlider) document.getElementById('ch-n').value = N;
+                    Pitch = L_arc / N; document.getElementById('ch-res-pitch').innerText = Pitch.toFixed(1);
+                } else {
+                    let reqPitch = v('ch-pitch-in') || 20; N = Math.ceil(L_arc / reqPitch); if(N<3) N=3; 
+                    Pitch = L_arc / N; document.getElementById('ch-res-pitch').innerText = N;
+                }
+                let SegAngle = arc / N; let BendAngle = 180 - SegAngle; let CNCAngle = SegAngle; 
+                let V = thk * 8; if(thk<1) V=6; let Punch = V/6;
+                let warn = document.getElementById('ch-alert'); if(Pitch < (V * 0.7)) warn.classList.add('visible'); else warn.classList.remove('visible');
+                document.getElementById('ch-res-len').innerText = L_arc.toFixed(1);
+                document.getElementById('ch-res-ang-part').innerText = BendAngle.toFixed(1) + "°";
+                document.getElementById('ch-res-ang-cnc').innerText = CNCAngle.toFixed(1) + "°";
+                document.getElementById('ch-res-v').innerText = "V" + Math.round(V);
+                document.getElementById('ch-res-r').innerText = "R" + Punch.toFixed(1);
+                this.draw(N, arc);
+            },
+            draw: function(N, arc) {
+                let box = document.getElementById('ch-svg'); let cx=100, cy=100, r=70; let path = ""; let startAng = 180; 
+                for(let i=0; i<=N; i++) {
+                    let a = startAng - (i * (arc/N)); let rad = a * (Math.PI/180);
+                    let x = cx + r * Math.cos(rad); let y = cy + r * Math.sin(rad); path += (i===0 ? "M" : "L") + ` ${x} ${y} `;
+                }
+                let circPath = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="4"/>`;
+                box.innerHTML = `<svg viewBox="0 0 200 200" style="overflow:visible">${circPath}<path d="${path}" fill="none" stroke="var(--neon-green)" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="${cx}" cy="${cy}" r="2" fill="white"/></svg>`;
+            }
+        },
+        Foratura: {
+            Data: {
+                Speeds: { steel:25, inox:12, alu:60, brass:45, plastic:30 },
+                Feeds: { steel:0.1, inox:0.08, alu:0.2, brass:0.15, plastic:0.2 },
+                Factors: { hss:1, hm:3, insert:4, fein:1.4, reamer:0.5, csk:0.3 }, 
+                Lub: { steel:'💧', inox:'🛢️', alu:'💧/💨', brass:'💨', plastic:'💨' },
+                MetricCut: { 3:2.5, 4:3.3, 5:4.2, 6:5, 8:6.8, 10:8.5, 12:10.2, 14:12, 16:14, 18:15.5, 20:17.5, 22:19.5, 24:21, 27:24, 30:26.5, 33:29.5, 36:32, 39:35, 42:37.5, 45:40.5, 48:43 },
+                MetricKey: { 3:5.5, 4:7, 5:8, 6:10, 8:13, 10:17, 12:19, 14:22, 16:24, 18:27, 20:30, 22:32, 24:36, 27:41, 30:46, 33:50, 36:55, 39:60, 42:65, 45:70, 48:75 },
+                Gas: { '1/8':8.8, '1/4':11.8, '3/8':15.25, '1/2':19, '3/4':24.5, '1':30.75 },
+                Seats: { 
+                    3: { csk:6, cb:6, h:3.5, hole:3.4 }, 4: { csk:8, cb:8, h:4.5, hole:4.5 }, 5: { csk:10, cb:10, h:5.5, hole:5.5 }, 
+                    6: { csk:12, cb:11, h:6.5, hole:6.6 }, 8: { csk:16, cb:15, h:8.5, hole:9 }, 10: { csk:20, cb:18, h:10.5, hole:11 }, 
+                    12: { csk:24, cb:20, h:12.5, hole:13.5 }, 14: { csk:28, cb:24, h:14.5, hole:15.5 }, 16: { csk:32, cb:26, h:16.5, hole:17.5 },
+                    20: { csk:40, cb:33, h:20.5, hole:22 }, 22: { csk:44, cb:36, h:22.5, hole:24 }, 24: { csk:48, cb:40, h:24.5, hole:26 },
+                    27: { csk:54, cb:46, h:27.5, hole:30 }, 30: { csk:60, cb:50, h:30.5, hole:33 }, 33: { csk:66, cb:54, h:33.5, hole:36 },
+                    36: { csk:72, cb:58, h:36.5, hole:39 }, 39: { csk:78, cb:62, h:39.5, hole:42 }, 42: { csk:84, cb:68, h:42.5, hole:45 },
+                    45: { csk:90, cb:72, h:45.5, hole:48 }, 48: { csk:96, cb:78, h:48.5, hole:52 }
+                }
+            },
+            State: { threadMode:'M', seatType:'CSK' },
+            init: function() { this.initSeats(); this.calcParams(); this.setThreadMode('M'); this.setSeatType('CSK'); },
+            initSeats: function() {
+                let sel = document.getElementById('st-size'); sel.innerHTML = "";
+                for(let k in this.Data.Seats) { let o = document.createElement('option'); o.value = k; o.innerText = "M" + k; sel.appendChild(o); }
+                sel.value = "10";
+            },
+            switchTab: function(tab, btn) {
+                document.querySelectorAll('.foratura-body').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('tab-'+tab).classList.add('active'); btn.classList.add('active');
+            },
+            calcParams: function() {
+                let mat = document.getElementById('fr-mat').value; let tool = document.getElementById('fr-tool').value;
+                let D = v('fr-diam'); let L = v('fr-depth');
+                let Vc = this.Data.Speeds[mat] * this.Data.Factors[tool];
+                let fn = this.Data.Feeds[mat] * (tool==='hm'?1.5:1); if(tool==='fein') fn = 0.1;
+                let RPM = (Vc * 1000) / (Math.PI * D); let Vf = RPM * fn; let TimeMin = L / Vf; let TimeSec = TimeMin * 60;
+                document.getElementById('fr-rpm').innerText = Math.round(RPM);
+                document.getElementById('fr-feed').innerText = Math.round(Vf);
+                document.getElementById('fr-time').innerText = Math.ceil(TimeSec) + "s";
+                document.getElementById('fr-icon').innerText = this.Data.Lub[mat];
+                let alert = document.getElementById('fr-alert'); if(L > (5*D)) alert.style.display = 'block'; else alert.style.display = 'none';
+                if(document.getElementById('tab-threads').classList.contains('active')) this.renderThreads();
+            },
+            setThreadMode: function(m) {
+                this.State.threadMode = m;
+                document.getElementById('btn-met').className = m==='M'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('btn-gas').className = m==='G'?'ch-mode-btn active':'ch-mode-btn';
+                this.renderThreads();
+            },
+            renderThreads: function() {
+                let c = document.getElementById('thread-content'); c.innerHTML = "";
+                let isM = this.State.threadMode === 'M';
+                let data = isM ? this.Data.MetricCut : this.Data.Gas;
+                let mat = document.getElementById('fr-mat').value; let tool = document.getElementById('fr-tool').value;
+                let VcBase = this.Data.Speeds[mat] * this.Data.Factors[tool]; 
+                for(let k in data) {
+                    let lbl = isM ? "M"+k : k+'"'; let dDrill = data[k];
+                    let key = isM ? this.Data.MetricKey[k] + " mm" : "-";
+                    let rpm = Math.round((VcBase * 1000) / (Math.PI * dDrill));
+                    c.innerHTML += `<tr class="thread-row"><td class="thread-main">${lbl}</td><td>${key}</td><td class="thread-hl">Ø${dDrill}</td><td style="color:#fff;">${rpm}</td></tr>`;
+                }
+            },
+            setSeatType: function(t) {
+                this.State.seatType = t;
+                document.getElementById('btn-csk').className = t==='CSK'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('btn-cb').className = t==='CB'?'ch-mode-btn active':'ch-mode-btn';
+                this.calcSeat();
+            },
+            calcSeat: function() {
+                let sz = parseInt(document.getElementById('st-size').value); let type = this.State.seatType; let d = this.Data.Seats[sz]; let isCSK = type === 'CSK';
+                document.getElementById('st-d1').innerText = "Ø " + d.hole; document.getElementById('st-d2').innerText = "Ø " + (isCSK ? d.csk : d.cb);
+                let Z = isCSK ? (d.csk - d.hole)/2 : d.h; document.getElementById('st-z').innerText = Z.toFixed(1) + " mm";
+                let box = document.getElementById('st-svg'); let col = "#9b59b6"; let svg = "";
+                if(isCSK) { svg = `<path d="M10 10 L40 50 L60 50 L90 10 H10" fill="none" stroke="${col}" stroke-width="2"/><path d="M40 50 V100 M60 50 V100" fill="none" stroke="#444" stroke-width="1" stroke-dasharray="4"/>`; } 
+                else { svg = `<path d="M10 10 V40 H30 V100 M90 10 V40 H70 V100" fill="none" stroke="${col}" stroke-width="2"/><rect x="30" y="40" width="40" height="60" fill="none" stroke="#333" stroke-dasharray="4"/>`; }
+                box.innerHTML = `<svg viewBox="0 0 100 100" style="overflow:visible">${svg}</svg>`;
+            }
+        }
+    }
+};
+function v(id){ return parseFloat(document.getElementById(id)?.value) || 0; }
+</script>
+</body>
+</html>

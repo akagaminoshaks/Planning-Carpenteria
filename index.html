@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionale Carpenteria - Home</title>
+    <style>
+        body { font-family: sans-serif; background: linear-gradient(135deg, #0f0f0f, #1a1a1a); color: white; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .box-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 300px; }
+        .input-field { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #555; background: rgba(0,0,0,0.5); color: white; font-size: 16px; }
+        .btn-main { width: 100%; padding: 12px; border-radius: 8px; border: none; background: #E94560; color: white; font-weight: bold; cursor: pointer; font-size:14px; text-transform: uppercase; margin-top: 10px; }
+        
+        .menu-container { display: flex; gap: 20px; width: 95%; max-width: 1300px; height: 70vh; }
+        
+        .vertical-card { flex: 1; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; padding: 20px; text-align: center; background: rgba(255,255,255,0.05); }
+        .vertical-card:hover { transform: translateY(-10px); border-color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* COLORI CARDS */
+        .card-ordini { background: linear-gradient(180deg, rgba(200, 30, 30, 0.8) 0%, rgba(60, 20, 20, 0.9) 100%); }
+        .card-planning { background: linear-gradient(180deg, rgba(30, 30, 30, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%); }
+        .card-acquisti { background: linear-gradient(180deg, rgba(39, 174, 96, 0.8) 0%, rgba(20, 90, 50, 0.9) 100%); }
+        /* NUOVO COLORE ARANCIONE PER TOOLBOX */
+        .card-toolbox { background: linear-gradient(180deg, rgba(255, 159, 67, 0.8) 0%, rgba(211, 84, 0, 0.9) 100%); }
+
+        .card-title { font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
+        .card-desc { font-size: 13px; opacity: 0.7; }
+        
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 2000; display: flex; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="box-card">
+            <h2>AREA RISERVATA</h2>
+            <input type="password" id="access-password" class="input-field" placeholder="Password" onkeyup="if(event.key === 'Enter') checkLogin()">
+            <button onclick="checkLogin()" class="btn-main">ACCEDI</button>
+            <p id="login-error" style="color:#e74c3c; margin-top:10px; display:none;">Password Errata</p>
+        </div>
+    </div>
+
+    <div class="menu-container" id="main-menu" style="display:none;">
+        <div class="vertical-card card-ordini" onclick="vaiA('commesse.html')">
+            <div class="card-title">COMMESSE</div>
+            <div class="card-desc">Produzione & Materiali</div>
+        </div>
+        <div class="vertical-card card-planning" onclick="vaiA('planning.html')">
+            <div class="card-title">PLANNING</div>
+            <div class="card-desc">Ore Lavoro & WhatsApp</div>
+        </div>
+        <div class="vertical-card card-acquisti" onclick="vaiA('acquisti.html')">
+            <div class="card-title">ACQUISTI</div>
+            <div class="card-desc">Ordini & Fornitori</div>
+        </div>
+        <div class="vertical-card card-toolbox" onclick="vaiA('toolbox.html')">
+            <div class="card-title">TOOLBOX</div>
+            <div class="card-desc">Calcoli & Utilità</div>
+        </div>
+    </div>
+
+    <script>
+        const PASSWORD = "12345"; 
+
+        // Controllo se già loggato
+        if(localStorage.getItem('auth_token') === 'logged_in') {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-menu').style.display = 'flex';
+        }
+
+        function checkLogin() {
+            const input = document.getElementById('access-password').value;
+            if(input === PASSWORD) {
+                localStorage.setItem('auth_token', 'logged_in');
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-menu').style.display = 'flex';
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        function vaiA(pagina) {
+            window.location.href = pagina;
+        }
+    </script>
+</body>
+</html>
