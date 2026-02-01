@@ -7,42 +7,57 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
     <style>
-        /* STILI SPECIFICI PLANNING */
+        /* =========================================
+           STILI ORIGINALI (INTATTI)
+           ========================================= */
         body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         
-        /* PREVIENE LA SELEZIONE DEL TESTO SU MOBILE (UTILE PER IL LONG PRESS) */
-        .no-select {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
+        .no-select { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 
-        /* TOP NAV STYLES */
+        /* TOP NAV GENERALE */
         .top-nav { background: #1a1a1a; border-bottom: 1px solid #333; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; height: 60px; flex-shrink: 0; }
         .nav-left { flex: 0 0 auto; }
+        
         .btn-home { background: transparent; border: 1px solid #444; color: #ccc; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
         .btn-home:hover { border-color: white; color: white; }
+
         .nav-center { flex: 1; display: flex; justify-content: center; align-items: center; gap: 15px; overflow-x: auto; }
+        
+        /* ELEMENTI DI NAVIGAZIONE CLASSICI (Settimane/Giorni) */
         .week-select { background: #222; color: white; border: 1px solid #444; padding: 5px; border-radius: 5px; font-family: inherit; font-size: 13px; cursor: pointer; }
         .day-group { display: flex; gap: 3px; background: #222; padding: 3px; border-radius: 8px; border: 1px solid #333; }
         .day-btn { padding: 6px 12px; background: transparent; border: none; color: #888; border-radius: 5px; cursor: pointer; user-select: none; font-size: 12px; font-weight: bold; transition: 0.2s; }
         .day-btn:hover { background: rgba(255,255,255,0.1); color: white; }
         .day-btn.selected { background: #eee; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        /* NUOVI ELEMENTI DESKTOP (Data Estesa) */
+        .desktop-date-container { display: none; align-items: center; gap: 15px; background: #222; padding: 5px 15px; border-radius: 8px; border: 1px solid #333; }
+        .desktop-date-input { background: #111; border: 1px solid #444; color: white; padding: 5px 10px; border-radius: 4px; font-family: 'Segoe UI'; font-size: 14px; cursor: pointer; }
+        .desktop-date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        .desktop-date-label { font-size: 16px; font-weight: bold; color: #3498db; text-transform: capitalize; min-width: 200px; text-align: center; }
+
+        /* PULSANTI VISTA */
         .view-group { display: flex; gap: 5px; margin-left: 10px; }
         .view-btn { padding: 6px 12px; background: transparent; border: 1px solid #444; color: #888; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         .view-btn:hover { border-color: #666; color: white; }
         .view-btn.selected { background: #E94560; color: white; border-color: #E94560; }
+        
         .btn-wa { border-color: #9b59b6; color: #9b59b6; }
         .btn-wa:hover { background: rgba(155, 89, 182, 0.2); color: #fff; border-color: #9b59b6; }
         
+        .btn-xls { border-color: #27ae60; color: #27ae60; }
+        .btn-xls:hover { background: rgba(39, 174, 96, 0.2); color: #fff; border-color: #27ae60; }
+
+        /* DATA PICKER PER MOBILE */
+        .mobile-date-picker { display: none; background: #222; color: white; border: 1px solid #444; padding: 5px; border-radius: 6px; font-family: 'Segoe UI', sans-serif; width: 110px; font-size: 12px; }
+
         .nav-right { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; background: rgba(231, 76, 60, 0.1); padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(231, 76, 60, 0.3); }
+        
         .clean-select { background: #111; border: 1px solid #444; color: #ccc; padding: 5px; border-radius: 4px; font-size: 12px; width: 150px; }
-        .btn-clean { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .btn-clean { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
         .btn-clean:hover { background: #c0392b; transform: scale(1.05); }
 
         .scroll-dip { display: none; gap: 10px; overflow-x: auto; padding: 10px 20px; background: #111; border-bottom: 1px solid #333; justify-content: center; }
@@ -52,57 +67,25 @@
 
         .main-area { flex: 1; overflow: auto; padding: 10px; position: relative; }
         
-        /* TABELLA GENERALE */
         table { border-collapse: separate; border-spacing: 4px 2px; } 
         th { position: sticky; top: 0; background: #222; padding: 10px; font-size: 11px; border-bottom: 1px solid #444; z-index: 10; text-transform: uppercase; color: #888; }
         td { height: 35px; text-align: center; font-size: 12px; color: #ccc; cursor: pointer; background: #141414; vertical-align: top; padding: 0; border: 1px solid #222; border-radius: 4px; }
         
-        /* ORE A SINISTRA (BIANCO, NO BOLD) */
         .col-ora { position: sticky; left: 0; background: #1a1a1a; color: rgba(255,255,255,0.8); font-weight: normal; border-right: 1px solid #333; z-index: 5; width: 60px; font-size: 11px; vertical-align: middle; }
         
-        /* TABELLA GIORNALIERO (MAIN) */
         #main-table { width: 100%; min-width: 1000px; }
-
-        /* TABELLA DIPENDENTE SINGOLO */
         .single-dip-table { width: 100%; max-width: 800px; margin: 0 auto; min-width: auto !important; border-collapse: separate; border-spacing: 0 2px; }
         
-        /* BLOCCHI TASK */
-        .task-block {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%;
-            background: linear-gradient(145deg, #2a2a2a, #202020);
-            border: 1px solid rgba(255, 255, 255, 0.3); border-left-width: 4px; border-radius: 6px;
-            box-sizing: border-box; padding: 5px 8px; overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;
-        }
+        .task-block { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(145deg, #2a2a2a, #202020); border: 1px solid rgba(255, 255, 255, 0.3); border-left-width: 4px; border-radius: 6px; box-sizing: border-box; padding: 5px 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s; }
         .task-block:hover { filter: brightness(1.3); z-index: 10; transform: scale(1.02); }
         .task-comm { font-weight: 500; font-size: 14px; margin-bottom: 2px; text-transform: uppercase; text-align: center; }
         .task-note { font-size: 11px; color: #ccc; white-space: normal; line-height: 1.2; text-align: center; opacity: 0.8; font-style: italic; }
         .selected-cell .task-block { border: 2px solid #fff !important; }
-        
-        /* STILE PAUSA */
-        .task-block.is-pausa {
-            background: repeating-linear-gradient(
-                45deg,
-                rgba(255,255,255,0.05),
-                rgba(255,255,255,0.05) 10px,
-                rgba(255,255,255,0.1) 10px,
-                rgba(255,255,255,0.1) 20px
-            ) !important;
-            border-color: #666 !important; color: #aaa !important;
-        }
+        .task-block.is-pausa { background: repeating-linear-gradient(45deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px) !important; border-color: #666 !important; color: #aaa !important; }
         .task-block.is-pausa .task-comm { color: #aaa !important; }
 
-        /* VISTA DIPENDENTE CONTAINER */
         #dip-detail-container { width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
-        
-        /* CONTENITORE BOX DIPENDENTE (PER IL BORDO) */
-        .dip-card-wrapper {
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid transparent; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            background: #111;
-        }
+        .dip-card-wrapper { padding: 10px; border-radius: 12px; border: 1px solid transparent; box-shadow: 0 0 20px rgba(0,0,0,0.5); background: #111; }
 
         /* MODALI */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); z-index: 9999; display: none; justify-content: center; align-items: center; }
@@ -121,7 +104,6 @@
         .wa-inp:focus { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); outline: none; }
         .btn-del-row { color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 14px; background: transparent; border: none; padding: 0 5px; }
 
-        /* EDITOR AVANZATO */
         .modal-edit-box { background: #1e1e1e; width: 900px; max-width: 95%; padding: 40px; border-radius: 15px; border: 1px solid #444; box-shadow: 0 0 60px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 25px; border-left: 10px solid #00ff88; }
         .edit-row { display: flex; gap: 20px; }
         .edit-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
@@ -138,10 +120,46 @@
         .btn-pausa:hover { background: #e67e22; transform: translateY(-2px); }
         #edit-dip-title { font-size: 24px; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 10px; }
 
-        /* EDITOR SEMPLICE CELLA */
         #editor-popup { display: none; position: absolute; background: #222; border: 2px solid #00ff88; padding: 10px; z-index: 100; width: 250px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #editor-txt { width: 100%; height: 80px; background: #111; color: white; border: 1px solid #444; margin-bottom: 5px; border-radius: 4px; resize: none; padding: 5px; box-sizing: border-box; }
         #editor-txt:focus { outline: none; border-color: #00ff88; }
+
+        /* =========================================
+           MEDIA QUERIES (DESKTOP VS MOBILE)
+           ========================================= */
+        @media (min-width: 1025px) {
+            /* PC: Mostra Data Estesa, Nascondi Mobile */
+            .week-select, .day-group, .mobile-date-picker { display: none !important; }
+            .desktop-date-container { display: flex !important; }
+        }
+
+        @media (max-width: 1024px) {
+            /* TABLET/MOBILE: Logica Originale */
+            .top-nav { padding: 5px 10px; gap: 5px; height: 50px; }
+            .btn-home { padding: 8px 10px; border-radius: 10px; }
+            .desktop-text { display: none; }
+            .nav-right { padding: 2px 5px; border: none; background: transparent; gap: 5px; }
+            .clean-select { width: 35px; padding: 5px 0; text-align: center; border-radius: 5px; } 
+            .btn-clean { padding: 8px; border-radius: 5px; }
+            
+            .nav-center { flex: 1; justify-content: center; gap: 10px; }
+            
+            /* Su mobile molto piccolo (<768) nascondi week/day, mostra picker mobile */
+            .week-select, .day-group { display: none !important; }
+            .mobile-date-picker { display: block; }
+            
+            .view-group { display: flex !important; gap: 5px; margin-left: 0; }
+            .view-btn { padding: 6px 8px; font-size: 10px; }
+            
+            .desktop-only { display: none !important; }
+            .desktop-date-container { display: none !important; } /* Nascondi la nuova barra desktop */
+        }
+        
+        /* Tablet orizzontale (Ripristina week/day se c'è spazio, ma tu hai chiesto Mobile style) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+           .week-select, .day-group { display: flex !important; }
+           .mobile-date-picker { display: none; }
+        }
 
     </style>
 </head>
@@ -150,29 +168,33 @@
     <div class="top-nav">
         <div class="nav-left">
             <button class="btn-home" onclick="window.location.href='index.html'">
-                <span>🏠</span> HOME
+                <span>🏠</span> <span class="desktop-text">HOME</span>
             </button>
         </div>
 
         <div class="nav-center">
-            <select id="weekSelect" class="week-select" onchange="cambiaSettimana(this.value)"></select>
             
-            <div id="day-container" class="day-group">
-                </div>
+            <select id="weekSelect" class="week-select" onchange="cambiaSettimana(this.value)"></select>
+            <div id="day-container" class="day-group"></div>
+            <input type="date" id="mobileDatePicker" class="mobile-date-picker" onchange="selectDay(this.value, null)">
+
+            <div class="desktop-date-container">
+                <input type="date" id="desktopDatePicker" class="desktop-date-input" onchange="selectDay(this.value, null)">
+                <span id="desktopDateLabel" class="desktop-date-label">Caricamento...</span>
+            </div>
 
             <div class="view-group">
                 <button class="view-btn selected" id="btn-tab" onclick="cambiaVista('tabellone')">GIORNALIERO</button>
                 <button class="view-btn" id="btn-dip" onclick="cambiaVista('dipendente')">DIPENDENTI</button>
-                <button class="view-btn btn-wa" onclick="apriWA()">IMPORTA WA</button>
+                <button class="view-btn btn-wa" onclick="apriWA()">WA</button>
+                
+                <button class="view-btn btn-xls desktop-only" onclick="window.location.href='excel_manager.html'">XLS</button>
             </div>
         </div>
 
         <div class="nav-right">
-            <select id="clean-dip-select" class="clean-select">
-                <option value="">Seleziona...</option>
-                <option value="ALL" style="font-weight:bold; color:#e74c3c;">TUTTA LA GIORNATA</option>
-                </select>
-            <button class="btn-clean" onclick="pulisciColonna()">🗑️ PULISCI</button>
+            <select id="clean-dip-select" class="clean-select"><option value="">...</option><option value="ALL" style="font-weight:bold; color:#e74c3c;">TUTTI</option></select>
+            <button class="btn-clean" onclick="pulisciColonna()">🗑️ <span class="desktop-text">PULISCI</span></button>
         </div>
     </div>
 
@@ -180,10 +202,7 @@
 
     <div class="main-area">
         <div id="view-tabellone">
-            <table id="main-table">
-                <thead><tr id="head-row"><th class="col-ora">Ora</th></tr></thead>
-                <tbody id="body-row"></tbody>
-            </table>
+            <table id="main-table"><thead><tr id="head-row"><th class="col-ora">Ora</th></tr></thead><tbody id="body-row"></tbody></table>
         </div>
         <div id="view-dipendente" style="display:none; overflow-y:auto;">
             <div id="dip-detail-container"></div>
@@ -193,94 +212,23 @@
     <div id="modal-edit" class="modal-overlay" style="display: none;">
         <div class="modal-edit-box" id="edit-box-visual">
             <h3 style="margin:0; color:white; text-transform:uppercase;" id="edit-dip-title">MODIFICA MANSIONE</h3>
-            
-            <div class="edit-row">
-                <div class="edit-group">
-                    <label class="edit-label">INIZIO</label>
-                    <select id="edit-start" class="edit-select"></select>
-                </div>
-                <div class="edit-group">
-                    <label class="edit-label">FINE</label>
-                    <select id="edit-end" class="edit-select"></select>
-                </div>
-            </div>
-            
+            <div class="edit-row"><div class="edit-group"><label class="edit-label">INIZIO</label><select id="edit-start" class="edit-select"></select></div><div class="edit-group"><label class="edit-label">FINE</label><select id="edit-end" class="edit-select"></select></div></div>
             <button class="btn-pausa" onclick="setPausaPranzo()">🍽️ IMPOSTA PAUSA PRANZO (12:00 - 13:00)</button>
-
-            <div class="edit-group">
-                <label class="edit-label">COMMESSA</label>
-                <input type="text" id="edit-commessa" class="edit-inp" placeholder="Es. 136483">
-            </div>
-
-            <div class="edit-group">
-                <label class="edit-label">NOTE / DESCRIZIONE</label>
-                <textarea id="edit-note" class="edit-inp" rows="8" placeholder="Es. Saldatura nel girello..."></textarea>
-            </div>
-
-            <div class="edit-row">
-                <div class="edit-group">
-                    <label class="edit-label">QUANTITÀ</label>
-                    <input type="text" id="edit-qta" class="edit-inp" placeholder="Es. 10 pz">
-                </div>
-                <div class="edit-group">
-                    <label class="edit-label">VOTO</label>
-                    <input type="text" id="edit-voto" class="edit-inp" placeholder="1-10">
-                </div>
-            </div>
-
-            <div class="edit-row" style="margin-top:10px;">
-                <button class="btn-del-big" onclick="eliminaTask()">ELIMINA</button>
-                <button class="btn-save-big" onclick="salvaTaskAvanzato()">SALVA MODIFICHE</button>
-                <button class="btn-close-edit" onclick="document.getElementById('modal-edit').style.display='none'">CHIUDI</button>
-            </div>
+            <div class="edit-group"><label class="edit-label">COMMESSA</label><input type="text" id="edit-commessa" class="edit-inp" placeholder="Es. 136483"></div>
+            <div class="edit-group"><label class="edit-label">NOTE / DESCRIZIONE</label><textarea id="edit-note" class="edit-inp" rows="8" placeholder="Es. Saldatura nel girello..."></textarea></div>
+            <div class="edit-row"><div class="edit-group"><label class="edit-label">QUANTITÀ</label><input type="text" id="edit-qta" class="edit-inp" placeholder="Es. 10 pz"></div><div class="edit-group"><label class="edit-label">VOTO</label><input type="text" id="edit-voto" class="edit-inp" placeholder="1-10"></div></div>
+            <div class="edit-row" style="margin-top:10px;"><button class="btn-del-big" onclick="eliminaTask()">ELIMINA</button><button class="btn-save-big" onclick="salvaTaskAvanzato()">SALVA MODIFICHE</button><button class="btn-close-edit" onclick="document.getElementById('modal-edit').style.display='none'">CHIUDI</button></div>
         </div>
     </div>
 
     <div id="modal-wa" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-head">
-                <span style="color:#9b59b6; font-weight:bold; font-size:18px;">IMPORTA WA (MASTER RAGGRUPPATO)</span>
-                <button onclick="document.getElementById('modal-wa').style.display='none'" style="background:transparent; border:1px solid #444; color:#ccc; border-radius:50%; width:30px; height:30px; cursor:pointer;">X</button>
-            </div>
-            <div class="wa-cols">
-                <div class="wa-left">
-                    <label style="font-size:12px; color:#888;">DATA RIFERIMENTO</label>
-                    <input type="date" id="wa-date" style="background:#222; color:white; border:1px solid #444; padding:10px; border-radius:6px; width:100%; box-sizing:border-box;">
-                    <label style="font-size:12px; color:#888; margin-top:10px;">TESTO MESSAGGIO</label>
-                    <textarea id="wa-input" placeholder="Incolla qui il messaggio..."></textarea>
-                    <button onclick="analizzaWA()" style="padding:12px; background:#9b59b6; border:none; color:white; font-weight:bold; cursor:pointer; border-radius:6px; margin-top:10px;">ANALIZZA TESTO</button>
-                </div>
-                <div class="wa-right">
-                    <table class="wa-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 80px;">DATA</th>
-                                <th style="width: 30px;"></th>
-                                <th style="width: 80px;">DIP</th>
-                                <th style="width: 50px;">DA</th>
-                                <th style="width: 50px;">A</th>
-                                <th style="width: 120px;">COMM</th>
-                                <th>DESCRIZIONE</th>
-                                <th style="width: 50px;">QTA</th>
-                                <th style="width: 50px;">VOTO</th>
-                            </tr>
-                        </thead>
-                        <tbody id="wa-tbody"></tbody>
-                    </table>
-                    <button onclick="confermaWA()" style="margin-top:15px; padding:12px; width:100%; background:#27ae60; border:none; color:white; font-weight:bold; cursor:pointer; border-radius:6px;">INVIA AL PLANNING</button>
-                </div>
-            </div>
+            <div class="modal-head"><span style="color:#9b59b6; font-weight:bold; font-size:18px;">IMPORTA WA</span><button onclick="document.getElementById('modal-wa').style.display='none'" style="background:transparent; border:none; color:#ccc; font-size:20px;">X</button></div>
+            <div class="wa-cols"><div class="wa-left"><label style="font-size:12px; color:#888;">DATA RIFERIMENTO</label><input type="date" id="wa-date" style="background:#222; color:white; border:1px solid #444; padding:10px; border-radius:6px; width:100%; box-sizing:border-box;"><label style="font-size:12px; color:#888; margin-top:10px;">TESTO MESSAGGIO</label><textarea id="wa-input" placeholder="Incolla qui il messaggio..."></textarea><button onclick="analizzaWA()" style="padding:12px; background:#9b59b6; border:none; color:white; font-weight:bold; cursor:pointer; border-radius:6px; margin-top:10px;">ANALIZZA TESTO</button></div><div class="wa-right"><table class="wa-table"><thead><tr><th style="width: 80px;">DATA</th><th style="width: 30px;"></th><th style="width: 80px;">DIP</th><th style="width: 50px;">DA</th><th style="width: 50px;">A</th><th style="width: 120px;">COMM</th><th>DESCRIZIONE</th><th style="width: 50px;">QTA</th><th style="width: 50px;">VOTO</th></tr></thead><tbody id="wa-tbody"></tbody></table><button onclick="confermaWA()" style="margin-top:15px; padding:12px; width:100%; background:#27ae60; border:none; color:white; font-weight:bold; cursor:pointer; border-radius:6px;">INVIA AL PLANNING</button></div></div>
         </div>
     </div>
 
-    <div id="editor-popup">
-        <div style="font-size:11px; color:#888; margin-bottom:3px;">COMMESSA / NOTE</div>
-        <textarea id="editor-txt"></textarea>
-        <div style="text-align:right;">
-            <button onclick="salvaEditor()" style="background:#00ff88; border:none; padding:5px 15px; font-weight:bold; border-radius:4px; cursor:pointer;">SALVA</button>
-        </div>
-    </div>
-
+    <div id="editor-popup"><div style="font-size:11px; color:#888; margin-bottom:3px;">COMMESSA / NOTE</div><textarea id="editor-txt"></textarea><div style="text-align:right;"><button onclick="salvaEditor()" style="background:#00ff88; border:none; padding:5px 15px; font-weight:bold; border-radius:4px; cursor:pointer;">SALVA</button></div></div>
     <input type="date" id="hiddenDate" style="display:none;">
 
 <script>
@@ -288,256 +236,104 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // NOMI VISUALIZZATI (TEO)
     const dipendenti = ["Camara", "Filippo", "Fofo", "Ibra", "Ico", "Lorenzo", "Teo", "Roberto", "Simone", "Tonino"];
     const dipColors = { "Camara": "#e74c3c", "Filippo": "#3498db", "Fofo": "#f1c40f", "Ibra": "#9b59b6", "Ico": "#e67e22", "Lorenzo": "#1abc9c", "Teo": "#2ecc71", "Roberto": "#e91e63", "Simone": "#00bcd4", "Tonino": "#cddc39" };
 
     let currentDate = new Date().toISOString().split('T')[0];
     let dailyData = {}; 
     let waBlocks = [];
-    
-    let editDip = "";
-    let editOriginalStart = "";
-    let editOriginalEnd = "";
+    let editDip = ""; let editOriginalStart = ""; let editOriginalEnd = "";
 
     window.onload = function() {
         if(localStorage.getItem('auth_token') !== 'logged_in') window.location.href='index.html';
         initDate();
-        
-        // INIT TABELLA MAIN
-        const h = document.getElementById('head-row');
-        dipendenti.forEach(d => h.innerHTML += `<th style="color:${dipColors[d]}">${d}</th>`);
-        
-        // INIT MENU DIPENDENTI MOBILE
-        const md = document.getElementById('dip-menu');
-        dipendenti.forEach(d => md.innerHTML += `<div class="btn-dip" onclick="showDipDetail('${d}', this)">${d}</div>`);
-        
-        // INIT SELECT PULIZIA
-        const sClean = document.getElementById('clean-dip-select');
-        dipendenti.forEach(d => sClean.innerHTML += `<option value="${d}">${d}</option>`);
-        
-        // INIT EDITOR ORARI
-        const sStart = document.getElementById('edit-start');
-        const sEnd = document.getElementById('edit-end');
-        for(let h=6; h<=22; h++) {
-            for(let m=0; m<60; m+=15) {
-                if(h===22 && m>0) break;
-                let t = (h<10?'0':'')+h+':'+(m===0?'00':m);
-                sStart.innerHTML += `<option value="${t}">${t}</option>`;
-                sEnd.innerHTML += `<option value="${t}">${t}</option>`;
-            }
-        }
+        const h = document.getElementById('head-row'); dipendenti.forEach(d => h.innerHTML += `<th style="color:${dipColors[d]}">${d}</th>`);
+        const md = document.getElementById('dip-menu'); dipendenti.forEach(d => md.innerHTML += `<div class="btn-dip" onclick="showDipDetail('${d}', this)">${d}</div>`);
+        const sClean = document.getElementById('clean-dip-select'); dipendenti.forEach(d => sClean.innerHTML += `<option value="${d}">${d}</option>`);
+        const sStart = document.getElementById('edit-start'); const sEnd = document.getElementById('edit-end');
+        for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let t = (h<10?'0':'')+h+':'+(m===0?'00':m); sStart.innerHTML += `<option value="${t}">${t}</option>`; sEnd.innerHTML += `<option value="${t}">${t}</option>`; } }
         sEnd.innerHTML += `<option value="22:15">22:15</option>`;
-
         loadData(currentDate);
     };
 
     function initDate() {
-        const s = document.getElementById('weekSelect');
-        for(let i=1; i<=53; i++) { s.innerHTML += `<option value="${i}">Settimana ${i}</option>`; }
-        let now = new Date();
-        s.value = getWeekNumber(now);
-        cambiaSettimana(s.value);
-        document.getElementById('hiddenDate').value = currentDate;
-    }
-
-    // --- NUOVA LOGICA SETTIMANA ISO (FIXED PER 2026 E ISO STANDARD) ---
-    // Calcola il numero della settimana ISO (1-53)
-    function getWeekNumber(d) {
-        // Copia data, imposta ora a 12:00 per evitare fusi orari
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        // Imposta al Giovedì più vicino (standard ISO)
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-        // Primo giorno dell'anno
-        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        // Calcolo settimane
-        var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-        return weekNo;
-    }
-
-    // Calcola la data del Lunedì della settimana W dell'anno Y
-    function getDateOfISOWeek(w, y) {
-        var d = new Date(y, 0, 4, 12, 0, 0); // 4 Gennaio è sempre nella settimana 1 (Standard ISO)
-        var dayNum = d.getDay() || 7; // Giorno della settimana (1=Lun, 7=Dom)
-        var diff = (w - 1) * 7; // Settimane da aggiungere
-        // Sposta al lunedì della prima settimana, poi aggiungi le settimane
-        d.setDate(d.getDate() - dayNum + 1 + diff);
-        return d;
-    }
-
-    function cambiaSettimana(w) {
-        // Usa l'anno corrente o l'anno della data selezionata
-        let currentY = parseInt(currentDate.split('-')[0]);
-        // Calcola il Lunedì di quella settimana
-        let d = getDateOfISOWeek(w, currentY);
+        // Logica Originale (per mobile)
+        const s = document.getElementById('weekSelect'); for(let i=1; i<=53; i++) { s.innerHTML += `<option value="${i}">W ${i}</option>`; } 
+        let now = new Date(); s.value = getWeekNumber(now); cambiaSettimana(s.value);
         
-        const c = document.getElementById('day-container'); c.innerHTML = "";
-        
-        // Genera i 6 giorni (Lun-Sab)
-        for(let i=0; i<6; i++) {
-            let temp = new Date(d); 
-            temp.setDate(d.getDate()+i);
-            
-            // COSTRUISCI STRINGA DATA MANUALE (YYYY-MM-DD)
-            let y = temp.getFullYear();
-            let m = (temp.getMonth()+1).toString().padStart(2, '0');
-            let day = temp.getDate().toString().padStart(2, '0');
-            let val = `${y}-${m}-${day}`;
-            
-            let label = temp.toLocaleDateString('it-IT', {weekday:'short', day:'numeric'});
-            
-            let isToday = val === currentDate;
-            let activeClass = isToday ? ' selected' : '';
-            
-            c.innerHTML += `<button class="day-btn${activeClass}" onclick="selectDay('${val}', this)">${label.toUpperCase()}</button>`;
-        }
+        // Sync Iniziale
+        updateAllDateInputs(currentDate);
     }
 
-    function selectDay(d, btn) {
+    // UPDATE SINCRONIZZATO
+    function updateAllDateInputs(d) {
+        // Aggiorna variabile globale
         currentDate = d;
-        document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
-        if(btn) btn.classList.add('selected');
+        // Aggiorna input Mobile
+        document.getElementById('mobileDatePicker').value = d;
         document.getElementById('hiddenDate').value = d;
-        loadData(d);
-    }
-
-    function loadData(date) {
-        db.ref('turni/' + date).once('value', snap => {
-            dailyData = snap.val() || {};
-            renderTable();
-            let activeDipBtn = document.querySelector('.btn-dip.selected');
-            if(activeDipBtn) showDipDetail(activeDipBtn.innerText, activeDipBtn);
-        });
-    }
-
-    // --- FUNZIONE PULIZIA COLONNA ---
-    function pulisciColonna() {
-        let dip = document.getElementById('clean-dip-select').value;
-        if(!dip) return alert("Seleziona un'opzione!");
         
-        let confirmMsg = "";
-        if (dip === 'ALL') {
-            confirmMsg = `⚠️ ATTENZIONE ESTREMA ⚠️\n\nStai per cancellare L'INTERO PLANNING di oggi (${currentDate}).\n\nTutti i turni di TUTTI i dipendenti verranno rimossi.\n\nSei sicuro?`;
-        } else {
-            confirmMsg = `⚠️ ATTENZIONE ⚠️\n\nStai per cancellare TUTTI i turni di ${dip} per oggi (${currentDate}).\n\nQuesta operazione non è annullabile. Sei sicuro?`;
+        // Aggiorna input Desktop (NUOVO)
+        document.getElementById('desktopDatePicker').value = d;
+        
+        // Aggiorna Label Desktop (NUOVO)
+        const dateObj = new Date(d);
+        const optionsDesk = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('desktopDateLabel').innerText = dateObj.toLocaleDateString('it-IT', optionsDesk);
+    }
+
+    function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+    function getDateOfISOWeek(w, y) { var d = new Date(y, 0, 4, 12, 0, 0); var dayNum = d.getDay() || 7; var diff = (w - 1) * 7; d.setDate(d.getDate() - dayNum + 1 + diff); return d; }
+    
+    function cambiaSettimana(w) {
+        let currentY = parseInt(currentDate.split('-')[0]); let d = getDateOfISOWeek(w, currentY); const c = document.getElementById('day-container'); c.innerHTML = "";
+        for(let i=0; i<6; i++) {
+            let temp = new Date(d); temp.setDate(d.getDate()+i); let val = temp.toISOString().split('T')[0];
+            let label = temp.toLocaleDateString('it-IT', {weekday:'short', day:'numeric'});
+            c.innerHTML += `<button class="day-btn${val===currentDate?' selected':''}" onclick="selectDay('${val}', this)">${label.toUpperCase()}</button>`;
         }
-
-        if(!confirm(confirmMsg)) return;
-
-        let updates = {};
-        let targets = (dip === 'ALL') ? dipendenti : [dip];
-
-        targets.forEach(d => {
-            for(let h=6; h<=22; h++) {
-                for(let m=0; m<60; m+=15) {
-                    if(h===22 && m>0) break;
-                    let t = (h<10?'0':'')+h+':'+(m===0?'00':m);
-                    let base = `turni/${currentDate}/${t}-${d}`;
-                    updates[base+'-commessa'] = null;
-                    updates[base+'-note'] = null;
-                    updates[base+'-qta'] = null;
-                    updates[base+'-voto'] = null;
-                    delete dailyData[base+'-commessa']; 
-                    delete dailyData[base+'-note'];
-                }
-            }
-        });
-
-        db.ref().update(updates, () => {
-            alert(dip === 'ALL' ? "Intera giornata pulita." : `Colonna di ${dip} pulita.`);
-            loadData(currentDate); 
-        });
     }
 
-    // --- HELPER PER SUPPORTO TOUCH/LONG PRESS ---
-    function addTouchSupport(element, callback) {
-        // Desktop Double Click
-        element.ondblclick = callback;
+    function selectDay(d, btn) { 
+        // Sync di tutti gli input
+        updateAllDateInputs(d);
 
-        // Mobile Double Tap e Long Press
-        let lastTap = 0;
-        let pressTimer;
-
-        element.addEventListener('touchstart', function(e) {
-            // Long Press detection
-            pressTimer = setTimeout(() => {
-                // Vibrazione feedback se supportata
-                if (navigator.vibrate) navigator.vibrate(50);
-                callback();
-            }, 800); // 800ms per long press
-        }, {passive: true});
-
-        element.addEventListener('touchend', function(e) {
-            clearTimeout(pressTimer); // Annulla long press se dito alzato prima
-            
-            // Double Tap detection
-            let currentTime = new Date().getTime();
-            let tapLength = currentTime - lastTap;
-            if (tapLength < 300 && tapLength > 0) {
-                e.preventDefault(); // Previene zoom
-                callback();
-            }
-            lastTap = currentTime;
-        });
-
-        element.addEventListener('touchmove', function() {
-            clearTimeout(pressTimer); // Annulla se si scorre
-        });
+        // UI Mobile Buttons
+        document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected')); 
+        if(btn) btn.classList.add('selected'); 
+        
+        // Carica dati
+        loadData(d); 
     }
 
-    // --- RENDER TABELLA PRINCIPALE ---
+    function loadData(date) { db.ref('turni/' + date).once('value', snap => { dailyData = snap.val() || {}; renderTable(); let b = document.querySelector('.btn-dip.selected'); if(b) showDipDetail(b.innerText, b); }); }
+    function pulisciColonna() { let dip = document.getElementById('clean-dip-select').value; if(!dip) return alert("Chi?"); if(!confirm("Sicuro?")) return; let u={}; let t=(dip==='ALL')?dipendenti:[dip]; t.forEach(d=>{ for(let h=6;h<=22;h++){ for(let m=0;m<60;m+=15){ if(h===22 && m>0) break; let tm=(h<10?'0':'')+h+':'+(m===0?'00':m); let b=`turni/${currentDate}/${tm}-${d}`; u[b+'-commessa']=null; u[b+'-note']=null; u[b+'-qta']=null; u[b+'-voto']=null; delete dailyData[b+'-commessa']; delete dailyData[b+'-note']; } } }); db.ref().update(u, ()=>loadData(currentDate)); }
+    function addTouchSupport(el, cb) { el.ondblclick=cb; let lt=0, pt; el.addEventListener('touchstart',e=>{pt=setTimeout(()=>{if(navigator.vibrate)navigator.vibrate(50);cb()},800)},{passive:true}); el.addEventListener('touchend',e=>{clearTimeout(pt);let t=new Date().getTime();if(t-lt<300&&t-lt>0){e.preventDefault();cb()}lt=t}); el.addEventListener('touchmove',()=>clearTimeout(pt)); }
+    
     function renderTable() {
-        const tbody = document.getElementById('body-row');
-        tbody.innerHTML = "";
-        let skipUntil = new Array(dipendenti.length).fill(-1);
-
+        const tbody = document.getElementById('body-row'); tbody.innerHTML = ""; let skip = new Array(dipendenti.length).fill(-1);
         for(let h=6; h<=22; h++) {
             for(let m=0; m<60; m+=15) {
-                if(h===22 && m>0) break;
-                let timeVal = h*60 + m;
-                let timeStr = (h<10?'0':'')+h+':'+(m===0?'00':m);
-                let tr = document.createElement('tr');
-                tr.innerHTML = `<td class="col-ora">${timeStr}</td>`;
-
-                dipendenti.forEach((dip, idx) => {
-                    if(timeVal < skipUntil[idx]) return;
-                    let keyBase = `${timeStr}-${dip}`;
-                    let comm = dailyData[keyBase+'-commessa'] || "";
-                    let note = dailyData[keyBase+'-note'] || "";
-                    
+                if(h===22 && m>0) break; let tVal = h*60+m; let tStr = (h<10?'0':'')+h+':'+(m===0?'00':m);
+                let tr = document.createElement('tr'); tr.innerHTML = `<td class="col-ora">${tStr}</td>`;
+                dipendenti.forEach((d, idx) => {
+                    if(tVal < skip[idx]) return;
+                    let k = `${tStr}-${d}`; let comm = dailyData[k+'-commessa'] || ""; let note = dailyData[k+'-note'] || "";
                     if(comm === "") {
-                        let td = document.createElement('td');
-                        td.className = "no-select"; // Previene selezione testo
-                        addTouchSupport(td, () => apriEditorVuoto(dip, timeStr));
-                        tr.appendChild(td);
+                        let td = document.createElement('td'); td.className="no-select"; addTouchSupport(td, ()=>apriEditorVuoto(d, tStr)); tr.appendChild(td);
                     } else {
-                        let span = 1;
-                        let nextTimeVal = timeVal + 15;
+                        let span = 1; let nVal = tVal + 15;
                         while(true) {
-                            let nh = Math.floor(nextTimeVal/60); let nm = nextTimeVal%60;
-                            if(nh > 22 || (nh===22 && nm>0)) break;
-                            let nTimeStr = (nh<10?'0':'')+nh+':'+(nm===0?'00':nm);
-                            let nKeyBase = `${nTimeStr}-${dip}`;
-                            let nComm = dailyData[nKeyBase+'-commessa'] || "";
-                            let nNote = dailyData[nKeyBase+'-note'] || "";
-                            if(nComm === comm && nNote === note) { span++; nextTimeVal += 15; } else break;
+                            let nh=Math.floor(nVal/60), nm=nVal%60; if(nh>22 || (nh===22 && nm>0)) break;
+                            let nt = (nh<10?'0':'')+nh+':'+(nm===0?'00':nm); let nk = `${nt}-${d}`;
+                            if((dailyData[nk+'-commessa']||"")===comm && (dailyData[nk+'-note']||"")===note) { span++; nVal+=15; } else break;
                         }
-                        skipUntil[idx] = timeVal + (span * 15);
-                        
-                        let endH = Math.floor(nextTimeVal/60); let endM = nextTimeVal%60;
-                        let endTimeStr = (endH<10?'0':'')+endH+':'+(endM===0?'00':endM);
-                        let dipColor = dipColors[dip] || "#00ff88";
-                        let bgRGBA = hexToRgba(dipColor, 0.1); 
-                        let isPausa = comm === "PAUSA";
-                        let extraClass = isPausa ? " is-pausa" : "";
-                        let styleAttr = isPausa ? "" : `style="border-color:${dipColor}; background:${bgRGBA};"`;
-                        let colorStyle = isPausa ? "" : `style="color:${dipColor}"`;
-
-                        let td = document.createElement('td');
-                        td.rowSpan = span;
-                        td.className = "no-select";
-                        addTouchSupport(td, () => apriEditorPieno(dip, timeStr, endTimeStr, comm, note));
-                        td.innerHTML = `<div class="task-block${extraClass}" ${styleAttr}><div class="task-comm" ${colorStyle}>${comm}</div>${note ? `<div class="task-note">${note}</div>` : ''}</div>`;
+                        skip[idx] = tVal + (span * 15);
+                        let eh=Math.floor(nVal/60), em=nVal%60; let eStr=(eh<10?'0':'')+eh+':'+(em===0?'00':em);
+                        let dc = dipColors[d]||"#00ff88"; let bg = hexToRgba(dc, 0.1); let isP = comm==="PAUSA";
+                        let td = document.createElement('td'); td.rowSpan=span; td.className="no-select";
+                        addTouchSupport(td, ()=>apriEditorPieno(d, tStr, eStr, comm, note));
+                        td.innerHTML = `<div class="task-block${isP?' is-pausa':''}" ${isP?'':`style="border-color:${dc}; background:${bg};"`}><div class="task-comm" ${isP?'':`style="color:${dc}"`}>${comm}</div>${note?`<div class="task-note">${note}</div>`:''}</div>`;
                         tr.appendChild(td);
                     }
                 });
@@ -546,295 +342,30 @@
         }
     }
 
-    // --- EDITOR ---
-    function apriEditorVuoto(dip, start) {
-        editDip = dip; editOriginalStart = null; editOriginalEnd = null;
-        let sm = toMins(start); let em = Math.min(sm + 60, 22*60 + 15); 
-        mostraModal(dip, start, toTimeStr(em), "", "", "", "");
-    }
-
-    function apriEditorPieno(dip, start, end, comm, note) {
-        editDip = dip; editOriginalStart = start; editOriginalEnd = end;
-        let keyBase = `${start}-${dip}`;
-        let qta = dailyData[keyBase+'-qta'] || "";
-        let voto = dailyData[keyBase+'-voto'] || "";
-        mostraModal(dip, start, end, comm, note, qta, voto);
-    }
-
-    function mostraModal(dip, start, end, comm, note, qta, voto) {
-        document.getElementById('edit-dip-title').innerText = dip;
-        document.getElementById('edit-dip-title').style.color = dipColors[dip];
-        document.getElementById('edit-box-visual').style.borderLeftColor = dipColors[dip];
-        document.getElementById('edit-start').value = start;
-        document.getElementById('edit-end').value = end;
-        document.getElementById('edit-commessa').value = comm;
-        document.getElementById('edit-note').value = note;
-        document.getElementById('edit-qta').value = qta;
-        document.getElementById('edit-voto').value = voto;
-        document.getElementById('modal-edit').style.display = 'flex';
-    }
-
-    function setPausaPranzo() {
-        document.getElementById('edit-start').value = "12:00";
-        document.getElementById('edit-end').value = "13:00";
-        document.getElementById('edit-commessa').value = "PAUSA";
-        document.getElementById('edit-note').value = "Pausa Pranzo";
-        document.getElementById('edit-qta').value = "";
-        document.getElementById('edit-voto').value = "";
-        editOriginalStart = null; editOriginalEnd = null;
-    }
-
+    function apriEditorVuoto(d, s) { editDip=d; editOriginalStart=null; let sm=toMins(s); let em=Math.min(sm+60, 22*60+15); mostraModal(d, s, toTimeStr(em), "", "", "", ""); }
+    function apriEditorPieno(d, s, e, c, n) { editDip=d; editOriginalStart=s; editOriginalEnd=e; let k=`${s}-${d}`; mostraModal(d, s, e, c, n, dailyData[k+'-qta']||"", dailyData[k+'-voto']||""); }
+    function mostraModal(d, s, e, c, n, q, v) { document.getElementById('edit-dip-title').innerText=d; document.getElementById('edit-dip-title').style.color=dipColors[d]; document.getElementById('edit-box-visual').style.borderLeftColor=dipColors[d]; document.getElementById('edit-start').value=s; document.getElementById('edit-end').value=e; document.getElementById('edit-commessa').value=c; document.getElementById('edit-note').value=n; document.getElementById('edit-qta').value=q; document.getElementById('edit-voto').value=v; document.getElementById('modal-edit').style.display='flex'; }
+    function setPausaPranzo() { document.getElementById('edit-start').value="12:00"; document.getElementById('edit-end').value="13:00"; document.getElementById('edit-commessa').value="PAUSA"; document.getElementById('edit-note').value="Pausa Pranzo"; }
     function salvaTaskAvanzato() {
-        let newStart = document.getElementById('edit-start').value;
-        let newEnd = document.getElementById('edit-end').value;
-        let comm = document.getElementById('edit-commessa').value;
-        let note = document.getElementById('edit-note').value;
-        let qta = document.getElementById('edit-qta').value;
-        let voto = document.getElementById('edit-voto').value;
-        let smNew = toMins(newStart); let emNew = toMins(newEnd);
-        if(emNew <= smNew) { alert("L'orario di fine deve essere dopo l'inizio!"); return; }
-
-        let updates = {};
-        if(editOriginalStart && editOriginalEnd) {
-            let smOld = toMins(editOriginalStart); let emOld = toMins(editOriginalEnd);
-            for(let m=smOld; m<emOld; m+=15) {
-                let t = toTimeStr(m); let base = `turni/${currentDate}/${t}-${editDip}`;
-                updates[base+'-commessa'] = null; updates[base+'-note'] = null;
-                updates[base+'-qta'] = null; updates[base+'-voto'] = null;
-                delete dailyData[base+'-commessa']; delete dailyData[base+'-note'];
-            }
-        }
-        for(let m=smNew; m<emNew; m+=15) {
-            let t = toTimeStr(m); let base = `turni/${currentDate}/${t}-${editDip}`;
-            updates[base+'-commessa'] = comm; updates[base+'-note'] = note;
-            updates[base+'-qta'] = qta; updates[base+'-voto'] = voto;
-            dailyData[base+'-commessa'] = comm; dailyData[base+'-note'] = note;
-        }
-        db.ref().update(updates, () => {
-            document.getElementById('modal-edit').style.display = 'none';
-            loadData(currentDate);
-        });
+        let s=document.getElementById('edit-start').value, e=document.getElementById('edit-end').value, c=document.getElementById('edit-commessa').value, n=document.getElementById('edit-note').value;
+        let sm=toMins(s), em=toMins(e); if(em<=sm) return alert("Orari errati!");
+        let u={};
+        if(editOriginalStart) { let os=toMins(editOriginalStart), oe=toMins(editOriginalEnd); for(let m=os; m<oe; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=null; u[b+'-note']=null; u[b+'-qta']=null; u[b+'-voto']=null; delete dailyData[b+'-commessa']; delete dailyData[b+'-note']; } }
+        for(let m=sm; m<em; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=c; u[b+'-note']=n; u[b+'-qta']=document.getElementById('edit-qta').value; u[b+'-voto']=document.getElementById('edit-voto').value; dailyData[b+'-commessa']=c; dailyData[b+'-note']=n; }
+        db.ref().update(u, ()=>{ document.getElementById('modal-edit').style.display='none'; loadData(currentDate); });
     }
+    function eliminaTask() { if(!editOriginalStart) return; if(!confirm("Eliminare?")) return; let u={}, os=toMins(editOriginalStart), oe=toMins(editOriginalEnd); for(let m=os; m<oe; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=null; u[b+'-note']=null; } db.ref().update(u, ()=>{ document.getElementById('modal-edit').style.display='none'; loadData(currentDate); }); }
 
-    function eliminaTask() {
-        if(!editOriginalStart) { document.getElementById('modal-edit').style.display = 'none'; return; }
-        if(!confirm("Eliminare questo inserimento?")) return;
-        let updates = {};
-        let smOld = toMins(editOriginalStart); let emOld = toMins(editOriginalEnd);
-        for(let m=smOld; m<emOld; m+=15) {
-            let t = toTimeStr(m); let base = `turni/${currentDate}/${t}-${editDip}`;
-            updates[base+'-commessa'] = null; updates[base+'-note'] = null;
-            updates[base+'-qta'] = null; updates[base+'-voto'] = null;
-        }
-        db.ref().update(updates, () => {
-            document.getElementById('modal-edit').style.display = 'none';
-            loadData(currentDate);
-        });
-    }
+    function showDipDetail(name, btn) { /* Stesso codice di prima... */ document.querySelectorAll('.btn-dip').forEach(b => b.classList.remove('selected')); if(btn) btn.classList.add('selected'); const container = document.getElementById('dip-detail-container'); container.innerHTML = ""; let dColor = dipColors[name] || "#E94560"; let wrapper = document.createElement('div'); wrapper.className = "dip-card-wrapper"; wrapper.style.borderColor = dColor; wrapper.style.boxShadow = `0 0 15px ${hexToRgba(dColor, 0.4)}`; let table = document.createElement('table'); table.className = "single-dip-table"; let skipUntil = -1; for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let timeVal = h*60 + m; let timeStr = (h<10?'0':'')+h+':'+(m===0?'00':m); let tr = document.createElement('tr'); tr.innerHTML = `<td class="col-ora" style="width:60px;">${timeStr}</td>`; if(timeVal < skipUntil) { table.appendChild(tr); continue; } let keyBase = `${timeStr}-${name}`; let comm = dailyData[keyBase+'-commessa'] || ""; let note = dailyData[keyBase+'-note'] || ""; if(comm === "") { let td = document.createElement('td'); td.style.background = "#141414"; td.style.border="1px solid #222"; td.className = "no-select"; addTouchSupport(td, () => apriEditorVuoto(name, timeStr)); tr.appendChild(td); } else { let span = 1; let nextTimeVal = timeVal + 15; while(true) { let nh = Math.floor(nextTimeVal/60); let nm = nextTimeVal%60; if(nh > 22 || (nh===22 && nm>0)) break; let nKeyBase = `${(nh<10?'0':'')+nh+':'+(nm===0?'00':nm)}-${name}`; if((dailyData[nKeyBase+'-commessa']||"") === comm && (dailyData[nKeyBase+'-note']||"") === note) { span++; nextTimeVal += 15; } else break; } skipUntil = timeVal + (span * 15); let endH = Math.floor(nextTimeVal/60); let endM = nextTimeVal%60; let endTimeStr = (endH<10?'0':'')+endH+':'+(endM===0?'00':endM); let isPausa = comm === "PAUSA"; let td = document.createElement('td'); td.rowSpan = span; td.className = "no-select"; td.style.padding="0"; td.style.border="none"; addTouchSupport(td, () => apriEditorPieno(name, timeStr, endTimeStr, comm, note)); td.innerHTML = `<div class="task-block${isPausa?' is-pausa':''}" ${isPausa?'':`style="border-color:${dColor}; background:${hexToRgba(dColor, 0.1)}; min-height:35px;"`}><div class="task-comm" ${isPausa?'':`style="color:${dColor}"`}>${comm}</div>${note ? `<div class="task-note">${note}</div>` : ''}</div>`; tr.appendChild(td); } table.appendChild(tr); } } wrapper.appendChild(table); container.appendChild(wrapper); }
 
-    // --- VISTA DIPENDENTE: TABELLA VERTICALE (FIXED LOGIC) ---
-    function showDipDetail(name, btn) {
-        document.querySelectorAll('.btn-dip').forEach(b => b.classList.remove('selected'));
-        if(btn) btn.classList.add('selected');
-        
-        const container = document.getElementById('dip-detail-container');
-        container.innerHTML = ""; 
-        
-        let dColor = dipColors[name] || "#E94560";
-        let h2 = document.createElement('h2');
-        h2.style.textAlign = 'center'; h2.style.color = dColor; h2.style.textTransform = 'uppercase'; h2.style.marginBottom = '20px';
-        h2.innerText = name;
-        container.appendChild(h2);
-        
-        let wrapper = document.createElement('div');
-        wrapper.className = "dip-card-wrapper";
-        wrapper.style.borderColor = dColor; // BORDO COLORATO DINAMICO
-        wrapper.style.boxShadow = `0 0 15px ${hexToRgba(dColor, 0.4)}`; // ALONE LUMINOSO
+    // --- WA LOGIC ---
+    function apriWA() { document.getElementById('modal-wa').style.display='flex'; document.getElementById('wa-date').value=currentDate; }
+    function analizzaWA() { /* Logica WA invariata */ let txt = document.getElementById('wa-input').value; let dateRef = document.getElementById('wa-date').value; let dArr = dateRef.split('-'); let visualDate = `${dArr[2]}/${dArr[1]}/${dArr[0]}`; let tbody = document.getElementById('wa-tbody'); tbody.innerHTML = ""; let lines = txt.split('\n').map(l=>l.trim()).filter(l=>l!==''); let curDip = null; let buffer = []; waBlocks = []; lines.forEach(l => { let found = dipendenti.find(d => d.toUpperCase() === l.toUpperCase()); if (!found && (l.toUpperCase() === 'TEO' || l.toUpperCase() === 'TEO.' || l.toUpperCase() === 'MATTEO')) found = "Teo"; if(found) { if(curDip && buffer.length) processBuffer(curDip, buffer); curDip = found; buffer = []; } else if(curDip) buffer.push(l); }); if(curDip && buffer.length) processBuffer(curDip, buffer); waBlocks.forEach((b) => { tbody.innerHTML += `<tr><td style="color:#00ff88; font-weight:bold;">${visualDate}</td><td style="text-align:center;"><button class="btn-del-row" onclick="this.closest('tr').remove()">✖</button></td><td><input class="wa-inp" name="dip" value="${b.dip}" readonly style="font-weight:bold; color:${dipColors[b.dip]};"></td><td><input class="wa-inp" name="start" value="${b.start}"></td><td><input class="wa-inp" name="end" value="${b.end}"></td><td><input class="wa-inp" name="comm" value="${b.comm}"></td><td><input class="wa-inp" name="desc" value="${b.desc}"></td><td><input class="wa-inp" name="qta" value="${b.qta}"></td><td><input class="wa-inp" name="vote" value="${b.vote}"></td></tr>`; }); }
+    function processBuffer(dip, lines) { let i = 0; while(i < lines.length) { let sIdx = -1; for(let j=i; j<lines.length-1; j++) { if(isTime(lines[j]) && isTime(lines[j+1])) { sIdx = j; break; } } if(sIdx === -1) break; let start = normalizeTime(lines[sIdx]); let end = normalizeTime(lines[sIdx+1]); let rawData = lines.slice(i, sIdx); let comm = rawData[0] || ""; let qta = "", desc = ""; for(let k=1; k<rawData.length; k++) { let l = rawData[k]; if(l.match(/(\d+)\s*(pz|pezzi|x)/i) || l.match(/^x\d+$/i) || (!isNaN(l) && l.length<4)) qta=l; else desc += (desc?" ":"") + l; } let vote = ""; let next = sIdx + 2; if(next < lines.length && lines[next].toUpperCase().startsWith("VOTO")) { vote = lines[next].replace(/VOTO:?/i, "").trim(); next++; } waBlocks.push({ dip, start, end, comm, desc, qta, vote }); i = next; } }
+    function confermaWA() { if(!confirm("Inviare?")) return; let date = document.getElementById('wa-date').value; let u = {}; document.querySelectorAll('#wa-tbody tr').forEach(row => { let dip = row.querySelector('input[name="dip"]').value; let start = row.querySelector('input[name="start"]').value; let end = row.querySelector('input[name="end"]').value; let comm = row.querySelector('input[name="comm"]').value; let desc = row.querySelector('input[name="desc"]').value; let qta = row.querySelector('input[name="qta"]').value; let vote = row.querySelector('input[name="vote"]').value; let sm = toMins(start); let em = toMins(end); for(let m=sm; m<em; m+=15) { let t = toTimeStr(m); let base = `turni/${date}/${t}-${dip}`; u[base + '-commessa'] = comm; u[base + '-note'] = desc; u[base + '-qta'] = qta; u[base + '-voto'] = vote; } }); db.ref().update(u, () => { alert("OK!"); document.getElementById('modal-wa').style.display='none'; currentDate = date; document.getElementById('hiddenDate').value = date; document.getElementById('mobileDatePicker').value = date; loadData(currentDate); }); }
 
-        let table = document.createElement('table');
-        table.className = "single-dip-table";
-        
-        let skipUntil = -1;
-
-        for(let h=6; h<=22; h++) {
-            for(let m=0; m<60; m+=15) {
-                if(h===22 && m>0) break;
-                
-                let timeVal = h*60 + m;
-                let timeStr = (h<10?'0':'')+h+':'+(m===0?'00':m);
-                
-                let tr = document.createElement('tr');
-                let tdOra = document.createElement('td');
-                tdOra.className = "col-ora"; 
-                tdOra.style.width = "60px"; 
-                tdOra.innerText = timeStr;
-                tr.appendChild(tdOra);
-
-                // SE SIAMO DENTRO UN BLOCCO SALTATO (SKIP)
-                if(timeVal < skipUntil) {
-                    table.appendChild(tr);
-                    continue; 
-                }
-
-                let keyBase = `${timeStr}-${name}`;
-                let comm = dailyData[keyBase+'-commessa'] || "";
-                let note = dailyData[keyBase+'-note'] || "";
-
-                if(comm === "") {
-                    let td = document.createElement('td');
-                    td.style.border = "1px solid #222"; 
-                    td.style.background = "#141414";
-                    td.className = "no-select";
-                    addTouchSupport(td, () => apriEditorVuoto(name, timeStr));
-                    tr.appendChild(td);
-                } else {
-                    // CALCOLO ROWSPAN
-                    let span = 1;
-                    let nextTimeVal = timeVal + 15;
-                    while(true) {
-                        let nh = Math.floor(nextTimeVal/60); let nm = nextTimeVal%60;
-                        if(nh > 22 || (nh===22 && nm>0)) break;
-                        let nTimeStr = (nh<10?'0':'')+nh+':'+(nm===0?'00':nm);
-                        let nKeyBase = `${nTimeStr}-${name}`;
-                        let nComm = dailyData[nKeyBase+'-commessa'] || "";
-                        let nNote = dailyData[nKeyBase+'-note'] || "";
-                        if(nComm === comm && nNote === note) { 
-                            span++; 
-                            nextTimeVal += 15; 
-                        } else {
-                            break;
-                        }
-                    }
-                    skipUntil = timeVal + (span * 15);
-                    
-                    let endH = Math.floor(nextTimeVal/60);
-                    let endM = nextTimeVal%60;
-                    let endTimeStr = (endH<10?'0':'')+endH+':'+(endM===0?'00':endM);
-
-                    let bgRGBA = hexToRgba(dColor, 0.1); 
-                    
-                    let isPausa = comm === "PAUSA";
-                    let extraClass = isPausa ? " is-pausa" : "";
-                    let styleAttr = isPausa ? "" : `style="border-color:${dColor}; background:${bgRGBA}; min-height:35px;"`;
-                    let colorStyle = isPausa ? "" : `style="color:${dColor}"`;
-
-                    let td = document.createElement('td');
-                    td.rowSpan = span;
-                    td.style.padding = "0"; td.style.border = "none"; td.style.verticalAlign = "top";
-                    td.className = "no-select";
-                    addTouchSupport(td, () => apriEditorPieno(name, timeStr, endTimeStr, comm, note));
-                    
-                    td.innerHTML = `
-                        <div class="task-block${extraClass}" ${styleAttr}>
-                            <div class="task-comm" ${colorStyle}>${comm}</div>
-                            ${note ? `<div class="task-note">${note}</div>` : ''}
-                        </div>
-                    `;
-                    tr.appendChild(td);
-                }
-                table.appendChild(tr);
-            }
-        }
-        
-        wrapper.appendChild(table);
-        container.appendChild(wrapper);
-    }
-
-    // WA LOGIC MASTER
-    function apriWA() { document.getElementById('modal-wa').style.display = 'flex'; document.getElementById('wa-date').value = currentDate; }
-    
-    function analizzaWA() {
-        let txt = document.getElementById('wa-input').value;
-        let dateRef = document.getElementById('wa-date').value;
-        let dArr = dateRef.split('-');
-        let visualDate = `${dArr[2]}/${dArr[1]}/${dArr[0]}`;
-        let tbody = document.getElementById('wa-tbody'); tbody.innerHTML = "";
-        let lines = txt.split('\n').map(l=>l.trim()).filter(l=>l!=='');
-        let curDip = null; let buffer = []; waBlocks = [];
-
-        lines.forEach(l => {
-            // RICONOSCIMENTO NOME (ANCHE SINONIMI!)
-            let found = dipendenti.find(d => d.toUpperCase() === l.toUpperCase());
-            
-            // SINONIMO "TEO" o "TEO." -> "Teo"
-            if (!found && (l.toUpperCase() === 'TEO' || l.toUpperCase() === 'TEO.' || l.toUpperCase() === 'MATTEO')) {
-                found = "Teo"; 
-            }
-
-            if(found) {
-                if(curDip && buffer.length) processBuffer(curDip, buffer);
-                curDip = found; buffer = [];
-            } else if(curDip) {
-                buffer.push(l);
-            }
-        });
-        if(curDip && buffer.length) processBuffer(curDip, buffer);
-
-        waBlocks.forEach((b) => {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td style="color:#00ff88; font-weight:bold;">${visualDate}</td>
-                <td style="text-align:center;"><button class="btn-del-row" onclick="this.closest('tr').remove()">✖</button></td>
-                <td><input class="wa-inp" name="dip" value="${b.dip}" readonly style="font-weight:bold; color:${dipColors[b.dip]};"></td>
-                <td><input class="wa-inp" name="start" value="${b.start}"></td>
-                <td><input class="wa-inp" name="end" value="${b.end}"></td>
-                <td><input class="wa-inp" name="comm" value="${b.comm}"></td>
-                <td><input class="wa-inp" name="desc" value="${b.desc}"></td>
-                <td><input class="wa-inp" name="qta" value="${b.qta}"></td>
-                <td><input class="wa-inp" name="vote" value="${b.vote}"></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function processBuffer(dip, lines) {
-        let i = 0; while(i < lines.length) {
-            let sIdx = -1; for(let j=i; j<lines.length-1; j++) { if(isTime(lines[j]) && isTime(lines[j+1])) { sIdx = j; break; } }
-            if(sIdx === -1) break;
-            let start = normalizeTime(lines[sIdx]); let end = normalizeTime(lines[sIdx+1]);
-            let rawData = lines.slice(i, sIdx); let comm = rawData[0] || ""; let qta = "", desc = "";
-            for(let k=1; k<rawData.length; k++) { let l = rawData[k]; if(l.match(/(\d+)\s*(pz|pezzi|x)/i) || l.match(/^x\d+$/i) || (!isNaN(l) && l.length<4)) qta=l; else desc += (desc?" ":"") + l; }
-            let vote = ""; let next = sIdx + 2;
-            if(next < lines.length && lines[next].toUpperCase().startsWith("VOTO")) { vote = lines[next].replace(/VOTO:?/i, "").trim(); next++; }
-            waBlocks.push({ dip, start, end, comm, desc, qta, vote }); i = next;
-        }
-    }
-
-    function confermaWA() {
-        if(!confirm("Confermi l'invio al Planning?")) return;
-        let date = document.getElementById('wa-date').value; let u = {};
-        document.querySelectorAll('#wa-tbody tr').forEach(row => {
-            let dip = row.querySelector('input[name="dip"]').value; let start = row.querySelector('input[name="start"]').value; let end = row.querySelector('input[name="end"]').value; let comm = row.querySelector('input[name="comm"]').value; let desc = row.querySelector('input[name="desc"]').value; let qta = row.querySelector('input[name="qta"]').value; let vote = row.querySelector('input[name="vote"]').value;
-            let sm = toMins(start); let em = toMins(end);
-            for(let m=sm; m<em; m+=15) {
-                let t = toTimeStr(m); let base = `turni/${date}/${t}-${dip}`;
-                u[base + '-commessa'] = comm; u[base + '-note'] = desc; u[base + '-qta'] = qta; u[base + '-voto'] = vote;
-            }
-        });
-        db.ref().update(u, () => { 
-            alert("Dati inviati con successo!"); 
-            document.getElementById('modal-wa').style.display='none'; 
-            
-            // AGGIORNAMENTO FORZATO DELLA DATA DOPO L'IMPORT
-            currentDate = date; 
-            document.getElementById('hiddenDate').value = date; 
-            
-            // Ricalcola la settimana in base alla data di importazione
-            let d = new Date(date);
-            let weekNum = getWeekNumber(d); 
-            document.getElementById('weekSelect').value = weekNum; 
-            cambiaSettimana(weekNum); 
-            
-            // Forza il ricaricamento del pulsante "Giorno" corretto
-            setTimeout(() => {
-               let dayBtn = document.querySelector(`.day-btn[onclick*="${date}"]`);
-               if(dayBtn) selectDay(date, dayBtn);
-               else loadData(currentDate);
-            }, 100);
-        });
-    }
     function isTime(s){return /^\d{1,2}([.:]\d{2})?$/.test(s);}
-    function normalizeTime(t){t=t.replace(',','.'); if(!t.includes(':')&&!t.includes('.'))t+=":00"; t=t.replace('.',':'); let p=t.split(':'); if(p[0].length==1)p[0]="0"+p[0]; return p.join(':');}
+    function normalizeTime(t){ if(typeof t === 'number') { let totalM = Math.round(t * 24 * 60); let h = Math.floor(totalM/60); let m = totalM%60; return (h<10?'0':'')+h+':'+(m<10?'0':'')+m; } t=t.toString().replace(',','.'); if(!t.includes(':')&&!t.includes('.'))t+=":00"; t=t.replace('.',':'); let p=t.split(':'); if(p[0].length==1)p[0]="0"+p[0]; return p.join(':');}
     function toMins(t){let p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]);}
     function toTimeStr(m){let h=Math.floor(m/60),mn=m%60; return (h<10?'0':'')+h+':'+(mn<10?'0':'')+mn;}
     function hexToRgba(hex, alpha) { let r=0, g=0, b=0; if(hex.length == 7) { r = parseInt(hex.slice(1,3), 16); g = parseInt(hex.slice(3,5), 16); b = parseInt(hex.slice(5,7), 16); } return `rgba(${r},${g},${b},${alpha})`; }

@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF & OCR MASTER - V8.1 (SNIPER ELITE)</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
+        /* STILE BASE */
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+        /* HEADER */
+        .header { height: 50px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; z-index: 100; }
+        .logo { font-size: 18px; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: #2ecc71; }
+
+        /* SWITCHER */
+        .mode-switch { background: #111; border: 1px solid #333; border-radius: 20px; padding: 3px; display: flex; gap: 5px; }
+        .switch-btn { padding: 5px 20px; border-radius: 15px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; color: #666; }
+        .switch-btn.active-pdf { background: #3498db; color: white; box-shadow: 0 0 10px rgba(52, 152, 219, 0.4); }
+        .switch-btn.active-ocr { background: #e67e22; color: white; box-shadow: 0 0 10px rgba(230, 126, 34, 0.4); }
+
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .btn-top { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; transition: 0.2s; display: flex; align-items: center; gap: 6px; text-decoration: none; color: white; border:1px solid #333; background: #222; }
+        .btn-top:hover { background: #333; border-color: #555; }
+        .btn-accent { background: #e74c3c; border-color: #e74c3c; }
+        .btn-save { background: #27ae60; border-color: #27ae60; }
+        .btn-warn { background: #e67e22; border-color: #e67e22; }
+        .btn-warn:hover { background: #d35400; }
+
+        /* WORKSPACE */
+        .workspace { flex: 1; display: flex; overflow: hidden; height: 100%; position: relative; }
+        
+        /* TOOLBAR */
+        .toolbar-left { width: 50px; background: #111; border-right: 1px solid #333; display: flex; flex-direction: column; align-items: center; padding-top: 10px; gap: 8px; z-index: 50; flex-shrink: 0; }
+        .tool-btn { width: 36px; height: 36px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; position: relative; }
+        .tool-btn:hover { color: white; background: #222; }
+        .tool-btn.active { background: #3498db; color: white; }
+        .tool-btn.ocr-active { background: #e67e22; color: white; }
+        .tool-btn.sniper-active { background: #2ecc71; color: black; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); } 
+        .sep { height:1px; width:30px; background:#333; margin:2px 0; }
+
+        /* PANNELLO CENTRALE */
+        .panel-center { flex: 1; background: #181818; position: relative; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+        
+        .viewport { 
+            flex: 1; overflow: auto; position: relative; padding: 40px; display: block;
+            background: #181818; cursor: default !important;
+        }
+        
+        .canvas-wrapper { 
+            position: relative; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); 
+            transform-origin: 0 0; transition: transform 0.1s ease-out; 
+            display: inline-block; margin-bottom: 100px; margin-right: 100px; 
+            cursor: default !important;
+        }
+        
+        .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        * { cursor: inherit; } 
+        
+        /* LASERS */
+        .laser-line { position: absolute; width: 15px; background: transparent; pointer-events: auto; z-index: 100; display: flex; justify-content: center; cursor: default !important; }
+        .laser-line::after { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: #ff0000; }
+        .laser-line:hover::after { width: 2px; background: #ff4444; box-shadow: 0 0 8px #ff0000; }
+        
+        .laser-line-h { position: absolute; height: 15px; background: transparent; pointer-events: auto; z-index: 100; display: flex; align-items: center; cursor: default !important; }
+        .laser-line-h::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #0066ff; }
+        .laser-line-h:hover::after { height: 2px; background: #4488ff; box-shadow: 0 0 8px #0066ff; }
+
+        .merge-box { position: absolute; background: rgba(241, 196, 15, 0.2); border: 1px solid #ffff00; pointer-events: auto; z-index: 15; cursor: default !important; }
+        
+        /* TASTI CANCELLA */
+        .del-btn { position: absolute; width: 14px; height: 14px; border-radius: 50%; color: white; font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer !important; z-index: 101; }
+        .del-v { top: -16px; left: 0; right: 0; margin: auto; background: #ff0000; } 
+        .del-h { left: -16px; top: 0; bottom: 0; margin: auto; background: #0066ff; }
+        .merge-close { position: absolute; top: -8px; right: -8px; background: #ffff00; color: black; width: 14px; height: 14px; border-radius: 50%; font-size: 9px; font-weight: bold; text-align: center; line-height: 14px; cursor: pointer !important; }
+
+        /* ROI BOX (VERDE) */
+        .roi-box { position: absolute; border: 2px dashed #2ecc71; background: rgba(46, 204, 113, 0.1); pointer-events: auto; z-index: 30; cursor: default !important; }
+        .roi-handle { position: absolute; bottom: -20px; right: 0; background: #2ecc71; color: black; font-size: 10px; padding: 2px 5px; font-weight: bold; pointer-events: none; }
+        .roi-close { position: absolute; top: -10px; right: -10px; background: #2ecc71; color: black; width: 18px; height: 18px; border-radius: 50%; text-align: center; line-height: 18px; font-weight: bold; cursor: pointer !important; z-index: 31; }
+
+        /* DARKROOM */
+        .darkroom-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 20px; display: flex; gap: 20px; z-index: 100; border: 1px solid #444; backdrop-filter: blur(5px); }
+        .slider-group { display: flex; flex-direction: column; gap: 2px; align-items: center; }
+        .slider-group label { font-size: 10px; color: #aaa; text-transform: uppercase; font-weight: bold; }
+        input[type=range] { width: 100px; height: 4px; accent-color: #e67e22; cursor: pointer !important; }
+
+        /* EXCEL */
+        .panel-excel { flex: 1; border-left: 1px solid #333; background: #111; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+        .panel-head { padding: 10px; background: #1f1f1f; border-bottom: 1px solid #333; font-weight: bold; font-size: 12px; color: #888; display: flex; justify-content: space-between; }
+        .table-container { flex: 1; overflow: auto; padding: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: monospace; background: #1a1a1a; white-space: nowrap; }
+        th { background: #222; color: #e74c3c; padding: 6px; border: 1px solid #333; position: sticky; top: 0; }
+        td { border: 1px solid #333; padding: 4px; color: #ccc; cursor: default; }
+        td:hover { background: #333; color: white; }
+        tr:nth-child(even) { background: #161616; }
+
+        /* LOADER & MODALS */
+        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { border: 4px solid #333; border-top: 4px solid #27ae60; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .empty-state { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #444; pointer-events: none; }
+        #drag-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(52, 152, 219, 0.2); border: 5px dashed #3498db; z-index: 10000; display: none; justify-content:center; align-items:center; color:white; font-size:30px; font-weight:bold; pointer-events: none; }
+        
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: #222; padding: 25px; border-radius: 10px; border: 1px solid #444; width: 300px; text-align: center; }
+        .inp-text { width: 100%; padding: 10px; margin: 15px 0; background: #111; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+        
+        .zoom-controls { position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 5px; border-radius: 8px; display: flex; gap: 5px; z-index: 100; }
+
+        #mobile-block { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        @media (max-width: 1024px) { #mobile-block { display: flex; } }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-block"><h2>SOLO PC</h2><p>Serve uno schermo grande.</p></div>
+    <div id="drag-overlay">RILASCIA IL FILE QUI</div>
+
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <div id="loader-text" style="margin-bottom: 20px;">Elaborazione...</div>
+        <button class="btn-top btn-accent" onclick="cancelProcess()">🛑 ANNULLA / RESET</button>
+    </div>
+
+    <div class="modal" id="modal-save">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:#3498db;">Salva Modello</h3>
+            <input type="text" id="tpl-name" class="inp-text" placeholder="Nome modello...">
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="btn-top" onclick="closeModal()">Annulla</button>
+                <button class="btn-top btn-save" onclick="confirmSaveTemplate()">SALVA</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="logo">🚀 MASTER <span>V8.1</span></div>
+        
+        <div class="mode-switch">
+            <div class="switch-btn active-pdf" id="sw-pdf" onclick="switchMode('pdf')">🟦 PDF DIGITALE</div>
+            <div class="switch-btn" id="sw-ocr" onclick="switchMode('ocr')">🟧 FOTO / SCAN</div>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn-top btn-warn" onclick="app.fullReset()">🔄 PULISCI TUTTO</button>
+            <div style="width: 1px; height: 20px; background: #444; margin: 0 5px;"></div>
+            <select id="tpl-select" class="btn-top" onchange="loadTemplate(this.value)" style="width: 150px;">
+                <option value="">📂 Carica Modello...</option>
+            </select>
+            <button class="btn-top btn-save" onclick="openSaveModal()">💾 Salva</button>
+            <div style="width: 1px; height: 20px; background: #444; margin: 0 5px;"></div>
+            <span id="ocr-btns" style="display:none; gap:5px;">
+                <button class="btn-top btn-save" onclick="runOCR()">⚡ LEGGI TESTO</button>
+            </span>
+            <button class="btn-top" onclick="document.getElementById('file-input').click()">📂 CARICA FILE</button>
+            <button class="btn-top btn-accent" onclick="downloadExcel()">📥 EXCEL</button>
+            <button class="btn-top" onclick="window.location.href='index.html'">ESCI</button>
+        </div>
+    </div>
+
+    <input type="file" id="file-input" style="display:none" onchange="handleFile(this.files[0])">
+
+    <div class="workspace" id="main-workspace">
+        
+        <div class="toolbar-left">
+            <button class="tool-btn active" id="tool-pan" onclick="setTool('pan')" title="Mano">✋</button>
+            <button class="tool-btn sniper-active" id="tool-pdf-roi" onclick="setTool('pdf-roi')" title="RITAGLIA TABELLA (Sniper)">🟩</button>
+            
+            <div class="sep"></div>
+            <button class="tool-btn" id="tool-laser" onclick="setTool('laser')" title="Colonna Rossa">🔴</button>
+            <button class="tool-btn blue" id="tool-hlaser" onclick="setTool('hlaser')" title="Riga Blu">🔵</button>
+            <button class="tool-btn yellow" id="tool-merge" onclick="setTool('merge')" title="Box Giallo">🟨</button>
+            
+            <div class="sep"></div>
+            <button class="tool-btn ocr-only" id="tool-roi" onclick="setTool('roi')" title="Area OCR (Verde)" style="display:none;">📷</button>
+            
+            <div class="sep"></div>
+            <button class="tool-btn" onclick="app.autoDetect(true)" title="Magic Wand (Auto-Detect)">🪄</button>
+            <button class="tool-btn" onclick="app.clearTools()" title="Reset Linee">🗑️</button>
+        </div>
+
+        <div class="panel-center">
+            <div class="viewport" id="viewport">
+                <div class="empty-state" id="placeholder">
+                    <div style="font-size:50px; margin-bottom:10px;">📄</div>
+                    <div>TRASCINA QUI FILE PDF O FOTO<br><span style="font-size:12px; color:#666;">(o incolla CTRL+V)</span></div>
+                </div>
+
+                <div class="canvas-wrapper" id="wrap" style="display:none;">
+                    <canvas id="the-canvas"></canvas>
+                    <div id="lay-roi" class="layer"></div> 
+                    <div id="lay-merge" class="layer"></div> 
+                    <div id="lay-laser" class="layer"></div> 
+                    <div id="lay-hlaser" class="layer"></div> 
+                </div>
+            </div>
+
+            <div class="zoom-controls">
+                <button class="btn-top" onclick="changeZoom(-0.1)">-</button>
+                <button class="btn-top" onclick="resetZoom()">100%</button>
+                <button class="btn-top" onclick="changeZoom(0.1)">+</button>
+            </div>
+
+            <div class="darkroom-panel" id="darkroom" style="display:none;">
+                <div class="slider-group"><label>Contrasto</label><input type="range" min="0" max="200" value="100" oninput="app.applyFilters(this.value, 'contrast')"></div>
+                <div class="slider-group"><label>Luminosità</label><input type="range" min="0" max="200" value="100" oninput="app.applyFilters(this.value, 'brightness')"></div>
+                <div class="slider-group"><label>Soglia B/N</label><input type="range" min="0" max="255" value="128" oninput="app.applyFilters(this.value, 'threshold')"></div>
+            </div>
+        </div>
+
+        <div class="panel-excel">
+            <div class="panel-head">
+                <span>DATI ESTRATTI</span>
+                <span id="row-count">0 righe</span>
+            </div>
+            <div class="table-container">
+                <table id="result-table">
+                    <thead><tr><th>Anteprima</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ==========================================
+    // APP CORE
+    // ==========================================
+    const app = {
+        mode: 'pdf', 
+        scale: 1.5, zoom: 1, 
+        textItems: [], lasers: [], hLasers: [], boxes: [], 
+        roi: null, pdfROI: null,
+        tool: 'pan', 
+        isDrawing: false, isPanning: false, dragItem: null,
+        startX: 0, startY: 0,
+        ocrWorker: null,
+        filters: { contrast:100, brightness:100, threshold:128 },
+
+        init: function() {
+            this.cv = document.getElementById('the-canvas');
+            this.ctx = this.cv.getContext('2d');
+            this.wrap = document.getElementById('wrap');
+            this.setupDragDrop();
+            this.setupMouse();
+            this.setupPaste();
+            try { loadTemplatesList(); } catch(e){}
+        },
+
+        setupDragDrop: function() {
+            window.addEventListener('dragenter', e => { e.preventDefault(); document.getElementById('drag-overlay').style.display='flex'; });
+            window.addEventListener('dragover', e => { e.preventDefault(); });
+            window.addEventListener('dragleave', e => { 
+                if(e.target.id === 'drag-overlay') document.getElementById('drag-overlay').style.display='none'; 
+            });
+            window.addEventListener('drop', e => {
+                e.preventDefault(); 
+                document.getElementById('drag-overlay').style.display='none';
+                if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+        },
+
+        setupPaste: function() {
+            window.addEventListener('paste', e => {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file' && item.type.includes('image/')) {
+                        const blob = item.getAsFile();
+                        handleFile(blob);
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            });
+        },
+
+        resetState: function() {
+            this.textItems=[]; this.lasers=[]; this.hLasers=[]; this.boxes=[]; 
+            this.roi=null; this.pdfROI=null;
+            this.zoom=1;
+            this.wrap.style.transform = `scale(1)`;
+            this.wrap.style.display = 'block';
+            document.getElementById('placeholder').style.display='none';
+            renderTable([]);
+        },
+
+        fullReset: function() {
+            if(!confirm("Vuoi cancellare tutto?")) return;
+            this.textItems=[]; this.lasers=[]; this.hLasers=[]; this.boxes=[]; 
+            this.roi=null; this.pdfROI=null; this.img=null; this.exportData=[];
+            document.getElementById('placeholder').style.display='block';
+            document.getElementById('wrap').style.display='none';
+            document.getElementById('result-table').querySelector('tbody').innerHTML='';
+            document.getElementById('row-count').innerText = '0 righe';
+            document.getElementById('file-input').value = '';
+            this.renderOverlays();
+            switchMode('pdf');
+        },
+
+        clearROI: function() {
+            this.roi = null;
+            this.pdfROI = null;
+            // Quando tolgo il ROI, resetto anche i laser perché non hanno più senso
+            this.lasers = [];
+            this.hLasers = [];
+            this.renderOverlays();
+            this.processData(); // Ricalcola tutto il foglio
+        },
+
+        resizeCanvas: function(w, h) {
+            this.cv.width = w; this.cv.height = h;
+            this.wrap.style.width = w+'px'; this.wrap.style.height = h+'px';
+            this.w = w; this.h = h;
+        },
+
+        // --- PDF LOADER ---
+        loadPDF: async function(buffer) {
+            this.resetState();
+            switchMode('pdf');
+            document.getElementById('loader').style.display='flex';
+            try {
+                const pdf = await pdfjsLib.getDocument(buffer).promise;
+                const page = await pdf.getPage(1);
+                const vp = page.getViewport({scale: this.scale});
+                this.resizeCanvas(vp.width, vp.height);
+                await page.render({canvasContext: this.ctx, viewport: vp}).promise;
+                const content = await page.getTextContent();
+                this.textItems = content.items.map(i => ({
+                    str: i.str, x: i.transform[4] * this.scale, y: vp.height - i.transform[5] * this.scale,
+                    w: i.width * this.scale, h: i.height * this.scale
+                }));
+                this.processData(); 
+            } catch(e) { alert("Errore PDF: "+e.message); } 
+            finally { document.getElementById('loader').style.display='none'; }
+        },
+
+        // --- IMG LOADER ---
+        loadImage: function(url) {
+            this.resetState();
+            switchMode('ocr');
+            this.img = new Image();
+            this.img.onload = () => {
+                this.resizeCanvas(this.img.width, this.img.height);
+                this.applyFilters();
+                this.roi = { x: 10, y: 10, w: this.img.width-20, h: this.img.height-20 };
+                this.renderOverlays();
+                let vpW = document.getElementById('viewport').clientWidth;
+                if(this.img.width > vpW) {
+                    let scale = (vpW - 100) / this.img.width;
+                    app.zoom = scale;
+                    document.getElementById('wrap').style.transform = `scale(${app.zoom})`;
+                }
+            };
+            this.img.src = url;
+        },
+
+        applyFilters: function(val, type) {
+            if(type) this.filters[type] = parseInt(val);
+            if(!this.img) return;
+            this.ctx.filter = `contrast(${this.filters.contrast}%) brightness(${this.filters.brightness}%)`;
+            this.ctx.drawImage(this.img, 0, 0);
+            if(this.filters.threshold !== 128) {
+                let id = this.ctx.getImageData(0,0,this.w, this.h);
+                let d = id.data, t = this.filters.threshold;
+                for(let i=0; i<d.length; i+=4) {
+                    let v = (0.2126*d[i] + 0.7152*d[i+1] + 0.0722*d[i+2] >= t) ? 255 : 0;
+                    d[i]=d[i+1]=d[i+2]=v;
+                }
+                this.ctx.putImageData(id, 0, 0);
+            }
+        },
+
+        runOCR: async function() {
+            if(!this.img) return;
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('loader-text').innerText = "Lettura testo in corso...";
+            
+            try {
+                let r = this.roi || {x:0,y:0,w:this.w,h:this.h};
+                let rx=Math.max(0, r.w<0?r.x+r.w:r.x);
+                let ry=Math.max(0, r.h<0?r.y+r.h:r.y);
+                let rw=Math.min(this.w-rx, Math.abs(r.w));
+                let rh=Math.min(this.h-ry, Math.abs(r.h));
+
+                let roiData = this.ctx.getImageData(rx, ry, rw, rh);
+                let scale = 2.5;
+                let tempC = document.createElement('canvas'); 
+                tempC.width = rw * scale; tempC.height = rh * scale;
+                let tCtx = tempC.getContext('2d');
+                let iBitmap = await createImageBitmap(roiData);
+                tCtx.drawImage(iBitmap, 0, 0, tempC.width, tempC.height);
+
+                this.ocrWorker = await Tesseract.createWorker('ita');
+                await this.ocrWorker.setParameters({
+                    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;-/ ',
+                    tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+                });
+
+                const { data } = await this.ocrWorker.recognize(tempC);
+                
+                this.textItems = data.words.map(w => ({
+                    str: w.text,
+                    x: rx + (w.bbox.x0 / scale), 
+                    y: ry + (w.bbox.y1 / scale),
+                    w: (w.bbox.x1 - w.bbox.x0) / scale,
+                    h: (w.bbox.y1 - w.bbox.y0) / scale
+                }));
+                
+                await this.ocrWorker.terminate();
+                if(this.lasers.length===0 && this.hLasers.length===0) this.autoDetect(true);
+                else this.processData();
+                alert("OCR Completato.");
+            } catch(e) { alert("Errore OCR: " + e.message); } 
+            finally { document.getElementById('loader').style.display = 'none'; }
+        },
+
+        // --- TOOLS ---
+        setupMouse: function() {
+            const wrap = this.wrap;
+            wrap.onmousedown = e => {
+                if(e.target.classList.contains('del-btn') || e.target.classList.contains('merge-close') || e.target.classList.contains('roi-close')) return;
+                
+                if(e.target.classList.contains('laser-line')) { this.dragItem={type:'v', i:parseInt(e.target.dataset.i)}; return; }
+                if(e.target.classList.contains('laser-line-h')) { this.dragItem={type:'h', i:parseInt(e.target.dataset.i)}; return; }
+                if(e.target.classList.contains('roi-handle')) { this.dragItem={type:'roi-move'}; return; }
+
+                if(this.tool==='pan') {
+                    this.isPanning=true; 
+                    this.panS={x:e.clientX, y:e.clientY, sx:document.getElementById('viewport').scrollLeft, sy:document.getElementById('viewport').scrollTop};
+                    return;
+                }
+
+                let rect = wrap.getBoundingClientRect();
+                let x=(e.clientX-rect.left)/this.zoom, y=(e.clientY-rect.top)/this.zoom;
+
+                if(this.tool==='pdf-roi' || (this.mode==='ocr' && this.tool==='roi')) {
+                    this.roi={x,y,w:0,h:0}; this.isDrawing=true; this.startPos={x,y};
+                    if(this.tool==='pdf-roi') this.pdfROI = this.roi; 
+                    return;
+                }
+
+                if(this.tool==='laser') { this.lasers.push(x); this.renderOverlays(); this.processData(); }
+                else if(this.tool==='hlaser') { this.hLasers.push(y); this.renderOverlays(); this.processData(); }
+                else if(this.tool==='merge') { 
+                    let b = document.createElement('div'); b.className='merge-box'; b.id='temp-b';
+                    b.style.left=x+'px'; b.style.top=y+'px';
+                    document.getElementById('lay-merge').appendChild(b);
+                    this.isDrawing=true; this.startPos={x,y};
+                }
+            };
+
+            window.addEventListener('mousemove', e => {
+                if(this.isPanning) {
+                    e.preventDefault();
+                    let dx=e.clientX-this.panS.x, dy=e.clientY-this.panS.y;
+                    let vp = document.getElementById('viewport');
+                    vp.scrollLeft = this.panS.sx - dx; vp.scrollTop = this.panS.sy - dy;
+                    return;
+                }
+                if(this.dragItem) {
+                    e.preventDefault();
+                    let rect = wrap.getBoundingClientRect();
+                    let x=(e.clientX-rect.left)/this.zoom, y=(e.clientY-rect.top)/this.zoom;
+                    if(this.dragItem.type==='v') this.lasers[this.dragItem.i]=x;
+                    else if(this.dragItem.type==='h') this.hLasers[this.dragItem.i]=y;
+                    else if(this.dragItem.type==='roi-move') {
+                        this.roi.w=x-this.roi.x; this.roi.h=y-this.roi.y;
+                    }
+                    this.renderOverlays(); return;
+                }
+                if(this.isDrawing) {
+                    let rect = wrap.getBoundingClientRect();
+                    let x=(e.clientX-rect.left)/this.zoom, y=(e.clientY-rect.top)/this.zoom;
+                    let w=x-this.startPos.x, h=y-this.startPos.y;
+                    
+                    if(this.tool==='pdf-roi' || (this.mode==='ocr' && this.tool==='roi')) {
+                        this.roi.w=w; this.roi.h=h; this.renderOverlays();
+                    }
+                    else if(this.tool==='merge') {
+                        let b=document.getElementById('temp-b');
+                        b.style.width=Math.abs(w)+'px'; b.style.height=Math.abs(h)+'px';
+                        b.style.left=(w<0?x:this.startPos.x)+'px'; b.style.top=(h<0?y:this.startPos.y)+'px';
+                    }
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                this.isPanning=false; 
+                if(this.dragItem) { this.dragItem=null; this.processData(); }
+                if(this.isDrawing) {
+                    this.isDrawing=false;
+                    if(this.tool==='pdf-roi' && this.mode==='pdf') {
+                        let r = this.roi;
+                        if(r.w<0) { r.x+=r.w; r.w=Math.abs(r.w); }
+                        if(r.h<0) { r.y+=r.h; r.h=Math.abs(r.h); }
+                        this.pdfROI = r;
+                        this.lasers=[]; this.hLasers=[]; 
+                        this.autoDetect(true); 
+                        setTool('laser');
+                    }
+                    if(this.tool==='merge') {
+                        let b=document.getElementById('temp-b');
+                        if(b) {
+                            this.boxes.push({x:parseFloat(b.style.left), y:parseFloat(b.style.top), w:parseFloat(b.style.width), h:parseFloat(b.style.height)});
+                            b.remove(); this.renderOverlays(); this.processData();
+                        }
+                    }
+                }
+            });
+        },
+
+        renderOverlays: function() {
+            const lr = document.getElementById('lay-roi'); lr.innerHTML='';
+            
+            // Definisci i limiti per i laser (Globali o Ristretti al ROI)
+            let topLim = 0, hLim = '100%', leftLim = 0, wLim = '100%';
+            
+            if(this.roi) {
+                let r=this.roi, rx=r.w<0?r.x+r.w:r.x, ry=r.h<0?r.y+r.h:r.y;
+                let rw=Math.abs(r.w), rh=Math.abs(r.h);
+                let d=document.createElement('div'); d.className='roi-box';
+                d.style.left=rx+'px'; d.style.top=ry+'px'; d.style.width=rw+'px'; d.style.height=rh+'px';
+                let label = this.mode==='pdf' ? 'AREA PDF' : 'AREA OCR';
+                d.innerHTML=`<div class="roi-handle">${label}</div><div class="roi-close" onclick="app.clearROI()">×</div>`;
+                lr.appendChild(d);
+                
+                // Se c'è ROI, i laser esistono solo lì
+                if(this.mode==='pdf') {
+                    topLim = ry; hLim = rh + 'px';
+                    leftLim = rx; wLim = rw + 'px';
+                }
+            }
+
+            // Lasers
+            this.lasers.sort((a,b)=>a-b); this.hLasers.sort((a,b)=>a-b);
+            const ll = document.getElementById('lay-laser'); ll.innerHTML='';
+            this.lasers.forEach((x,i)=>{
+                let d=document.createElement('div'); d.className='laser-line'; 
+                d.style.left=(x-7.5)+'px'; d.dataset.i=i;
+                
+                // SNIPER MODE VISUALS
+                d.style.top = (typeof topLim === 'number') ? topLim + 'px' : topLim;
+                d.style.height = hLim;
+
+                // X Button Position relative to ROI top
+                let btnTop = -16;
+                
+                d.innerHTML=`<div class="del-btn del-v" style="top:${btnTop}px" onmousedown="app.delL(${i})">×</div>`;
+                ll.appendChild(d);
+            });
+            const lh = document.getElementById('lay-hlaser'); lh.innerHTML='';
+            this.hLasers.forEach((y,i)=>{
+                let d=document.createElement('div'); d.className='laser-line-h'; 
+                d.style.top=(y-7.5)+'px'; d.dataset.i=i;
+                
+                // SNIPER MODE VISUALS
+                d.style.left = (typeof leftLim === 'number') ? leftLim + 'px' : leftLim;
+                d.style.width = wLim;
+
+                let btnLeft = -16;
+
+                d.innerHTML=`<div class="del-btn del-h" style="left:${btnLeft}px" onmousedown="app.delH(${i})">×</div>`;
+                lh.appendChild(d);
+            });
+            const lm = document.getElementById('lay-merge'); lm.innerHTML='';
+            this.boxes.forEach((b,i)=>{
+                let d=document.createElement('div'); d.className='merge-box';
+                d.style.left=b.x+'px'; d.style.top=b.y+'px'; d.style.width=b.w+'px'; d.style.height=b.h+'px';
+                d.innerHTML=`<div class="merge-close" onmousedown="app.delB(${i})">×</div>`;
+                lm.appendChild(d);
+            });
+        },
+
+        delL: function(i){ window.event.stopPropagation(); this.lasers.splice(i,1); this.renderOverlays(); this.processData(); },
+        delH: function(i){ window.event.stopPropagation(); this.hLasers.splice(i,1); this.renderOverlays(); this.processData(); },
+        delB: function(i){ window.event.stopPropagation(); this.boxes.splice(i,1); this.renderOverlays(); this.processData(); },
+        clearTools: function(){ this.lasers=[]; this.hLasers=[]; this.boxes=[]; this.renderOverlays(); this.processData(); },
+
+        autoDetect: function(force) {
+            let activeItems = this.textItems;
+            
+            // FILTER BY ROI SNIPER
+            if(this.mode==='pdf' && this.pdfROI) {
+                let r = this.pdfROI;
+                // Add tolerance (padding) to catch items on border
+                let pad = 2;
+                activeItems = this.textItems.filter(t => 
+                    t.x >= r.x-pad && t.x <= r.x+r.w+pad &&
+                    t.y >= r.y-pad && t.y <= r.y+r.h+pad
+                );
+            }
+
+            if(!activeItems.length) return;
+            
+            let w=this.w, h=this.h;
+            
+            // X Scan
+            let hX=new Int8Array(Math.floor(w)).fill(0);
+            activeItems.forEach(t=>{
+                let s=Math.floor(t.x), e=Math.floor(t.x+t.w);
+                for(let i=s;i<e;i++) if(i>=0&&i<w) hX[i]=1;
+            });
+            this.lasers=[]; let g=-1;
+            for(let x=0;x<w;x++) {
+                if(hX[x]===0){ if(g===-1) g=x; }
+                else { if(g!==-1 && x-g>10) this.lasers.push(g+(x-g)/2); g=-1; }
+            }
+            // Y Scan
+            let hY=new Int8Array(Math.floor(h)).fill(0);
+            activeItems.forEach(t=>{
+                let s=Math.floor(t.y-t.h), e=Math.floor(t.y);
+                for(let i=s;i<e;i++) if(i>=0&&i<h) hY[i]=1;
+            });
+            this.hLasers=[]; g=-1;
+            for(let y=0;y<h;y++) {
+                if(hY[y]===0){ if(g===-1) g=y; }
+                else { if(g!==-1 && y-g>5 && g>50) this.hLasers.push(g+(y-g)/2); g=-1; }
+            }
+            this.renderOverlays(); this.processData();
+        },
+
+        processData: function() {
+            let activeItems = this.textItems;
+            if(this.mode==='pdf' && this.pdfROI) {
+                let r = this.pdfROI;
+                let pad = 2;
+                activeItems = this.textItems.filter(t => 
+                    t.x >= r.x-pad && t.x <= r.x+r.w+pad &&
+                    t.y >= r.y-pad && t.y <= r.y+r.h+pad
+                );
+            }
+
+            if(!activeItems.length) { renderTable([]); return; }
+            let cols=[0, ...this.lasers, 99999];
+            let rows=[...this.hLasers, 99999].sort((a,b)=>a-b);
+            let map={};
+
+            activeItems.forEach(t => {
+                let cx=t.x+t.w/2, cy=t.y-t.h/2;
+                let inBox = this.boxes.findIndex(b => cx>b.x && cx<b.x+b.w && cy>b.y && cy<b.y+b.h);
+                let rKey;
+                
+                if(inBox!==-1) rKey='BOX_'+inBox;
+                else if(this.hLasers.length>0) {
+                    for(let i=0; i<rows.length; i++) {
+                        let prev=i===0?0:rows[i-1];
+                        if(cy>=prev && cy<rows[i]) { rKey='ROW_'+i; break; }
+                    }
+                } else {
+                    let fy = Object.keys(map).find(k=>!k.startsWith('BOX') && !k.startsWith('ROW') && Math.abs(parseFloat(k)-t.y)<6);
+                    rKey = fy || t.y;
+                }
+                
+                if(!rKey) return;
+                if(!map[rKey]) map[rKey]=[];
+                
+                let cIdx=0;
+                let tx = inBox!==-1 ? (this.boxes[inBox].x+this.boxes[inBox].w/2) : cx;
+                for(let i=0; i<cols.length-1; i++) if(tx>=cols[i] && tx<cols[i+1]) { cIdx=i; break; }
+                
+                let cleanStr = t.str.replace(/[|_[\]]/g, '').trim(); 
+                if(cleanStr) map[rKey].push({txt:cleanStr, col:cIdx, x:t.x});
+            });
+
+            let sortedKeys = Object.keys(map).sort((a,b)=>{
+                let gy = k => k.startsWith('BOX')?this.boxes[k.split('_')[1]].y : (k.startsWith('ROW')? (k==='ROW_0'?0:this.hLasers[k.split('_')[1]-1]) : parseFloat(k));
+                return gy(a)-gy(b);
+            });
+
+            this.exportData = sortedKeys.map(k => {
+                let r = new Array(cols.length-1).fill("");
+                map[k].sort((a,b)=>a.x-b.x).forEach(it => r[it.col] += (r[it.col]?" ":"")+it.txt);
+                return r.map(v => {
+                    if(/^[0-9\.]+,[0-9]{2}$/.test(v.trim()) || /^[0-9]+$/.test(v.trim())) {
+                        return parseFloat(v.replace(/\./g,'').replace(',','.'));
+                    } return v;
+                });
+            });
+            renderTable(this.exportData);
+        }
+    };
+
+    // UI HELPER
+    function handleFile(file) {
+        if(!file) return;
+        let isImg = file.type.startsWith('image') || file.name.match(/\.(jpg|jpeg|png)$/i);
+        if(file.type === 'application/pdf') {
+            const r = new FileReader();
+            r.onload = e => app.loadPDF(e.target.result);
+            r.readAsArrayBuffer(file);
+        } else if(isImg) {
+            const r = new FileReader();
+            r.onload = e => app.loadImage(e.target.result);
+            r.readAsDataURL(file);
+        } else alert("Formato non supportato");
+    }
+
+    function switchMode(m) {
+        app.mode = m;
+        document.getElementById('sw-pdf').className = 'switch-btn '+(m==='pdf'?'active-pdf':'');
+        document.getElementById('sw-ocr').className = 'switch-btn '+(m==='ocr'?'active-ocr':'');
+        document.getElementById('ocr-btns').style.display=m==='ocr'?'flex':'none';
+        document.getElementById('darkroom').style.display=m==='ocr'?'flex':'none';
+        document.getElementById('tool-pdf-roi').style.display=m==='pdf'?'flex':'none'; 
+        document.querySelector('.ocr-only').style.display=m==='ocr'?'flex':'none';
+    }
+
+    function setTool(t) {
+        app.tool = t;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        if(t==='pdf-roi') document.getElementById('tool-pdf-roi').classList.add('active');
+        else {
+            let id = t==='laser'?'tool-laser':(t==='hlaser'?'tool-hlaser':(t==='merge'?'tool-merge':(t==='roi'?'tool-roi':'tool-pan')));
+            document.getElementById(id).classList.add('active');
+        }
+        document.getElementById('viewport').style.cursor = 'default';
+    }
+
+    function changeZoom(d) {
+        app.zoom = Math.max(0.5, Math.min(3, app.zoom+d));
+        document.getElementById('wrap').style.transform = `scale(${app.zoom})`;
+    }
+    function resetZoom() { app.zoom=1; document.getElementById('wrap').style.transform='scale(1)'; }
+    
+    function cancelProcess() { location.reload(); }
+    function runOCR() { app.runOCR(); }
+    function renderTable(d) {
+        const tb = document.querySelector('#result-table tbody'); tb.innerHTML='';
+        document.getElementById('row-count').innerText = d.length + ' righe';
+        d.slice(0,50).forEach(r => {
+            let tr=document.createElement('tr');
+            r.forEach(c => {
+                let td=document.createElement('td'); td.innerText=c;
+                if(typeof c === 'number') td.style.color='#3498db';
+                tr.appendChild(td);
+            });
+            tb.appendChild(tr);
+        });
+    }
+    function downloadExcel() {
+        if(!app.exportData || !app.exportData.length) return alert("Nessun dato!");
+        const ws = XLSX.utils.aoa_to_sheet(app.exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Export");
+        XLSX.writeFile(wb, "Master_Export.xlsx");
+    }
+
+    // TEMPLATES
+    function openSaveModal(){ document.getElementById('modal-save').style.display='flex'; }
+    function closeModal(){ document.getElementById('modal-save').style.display='none'; }
+    function confirmSaveTemplate() {
+        let name=document.getElementById('tpl-name').value;
+        if(!name) return alert("Nome?");
+        let tpl = { lasers: app.lasers, hLasers: app.hLasers, boxes: app.boxes };
+        let db = JSON.parse(localStorage.getItem('pdf_templates')||'{}');
+        db[name]=tpl; localStorage.setItem('pdf_templates', JSON.stringify(db));
+        closeModal(); loadTemplatesList(); alert("Salvato");
+    }
+    function loadTemplatesList() {
+        let db = JSON.parse(localStorage.getItem('pdf_templates')||'{}');
+        let s = document.getElementById('tpl-select'); s.innerHTML='<option>📂 Modelli...</option>';
+        for(let k in db) s.innerHTML+=`<option value="${k}">${k}</option>`;
+    }
+    function loadTemplate(n) {
+        let t = JSON.parse(localStorage.getItem('pdf_templates'))[n];
+        if(t) { app.lasers=t.lasers||[]; app.hLasers=t.hLasers||[]; app.boxes=t.boxes||[]; app.renderOverlays(); app.processData(); }
+    }
+
+    // INIT
+    app.init();
+    
+    // Zoom Wheel
+    document.getElementById('viewport').addEventListener('wheel', e => {
+        if(e.ctrlKey) { e.preventDefault(); changeZoom(e.deltaY>0?-0.1:0.1); }
+    });
+
+</script>
+</body>
+</html>

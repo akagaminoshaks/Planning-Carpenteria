@@ -3,83 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionale Carpenteria - Area Riservata</title>
+    <title>Gestionale Carpenteria - Dashboard V9</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
     <style>
-        /* STILE ORIGINALE MANTENUTO */
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0f0f0f, #1a1a1a); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        
-        /* LOGIN BOX MODIFICATO PER EMAIL E PASSWORD */
-        .box-card { background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(20px); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 320px; box-shadow: 0 0 50px rgba(0,0,0,0.5); z-index: 2000; }
-        .input-field { width: 90%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: white; font-size: 16px; outline: none; transition: 0.3s; }
-        .input-field:focus { border-color: #E94560; }
-        .btn-main { width: 100%; padding: 15px; border-radius: 8px; border: none; background: #E94560; color: white; font-weight: bold; cursor: pointer; font-size:14px; text-transform: uppercase; margin-top: 20px; transition: 0.3s; }
-        .btn-main:hover { background: #ff6b81; }
-        
-        /* MENU PRINCIPALE (Nascosto all'inizio) */
-        .menu-container { display: none; gap: 20px; width: 95%; max-width: 1300px; height: 70vh; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .vertical-card { flex: 1; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; padding: 20px; text-align: center; background: rgba(255,255,255,0.05); position: relative; overflow: hidden; }
-        .vertical-card:hover { transform: translateY(-10px); border-color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* COLORI CARDS */
-        .card-ordini { background: linear-gradient(180deg, rgba(200, 30, 30, 0.8) 0%, rgba(60, 20, 20, 0.9) 100%); }
-        .card-planning { background: linear-gradient(180deg, rgba(30, 30, 30, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%); }
-        .card-acquisti { background: linear-gradient(180deg, rgba(39, 174, 96, 0.8) 0%, rgba(20, 90, 50, 0.9) 100%); }
-        .card-toolbox { background: linear-gradient(180deg, rgba(255, 159, 67, 0.8) 0%, rgba(211, 84, 0, 0.9) 100%); }
+        /* BASE & SFONDO */
+        body { 
+            font-family: 'Segoe UI', 'Roboto', sans-serif; 
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%); /* Sfondo profondo */
+            color: white; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            overflow: hidden;
+        }
 
-        .card-title { font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; z-index: 2; }
-        .card-desc { font-size: 13px; opacity: 0.7; z-index: 2; }
+        /* LOGIN BOX (Stile Vetro) */
+        #login-screen {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 2000;
+        }
 
-        /* HEADER UTENTE E LOGOUT */
-        #user-bar { position: absolute; top: 20px; right: 20px; display: none; align-items: center; gap: 15px; }
-        .user-email { font-size: 12px; color: #888; }
-        .btn-logout { background: transparent; border: 1px solid #444; color: #ccc; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 11px; }
-        .btn-logout:hover { border-color: #E94560; color: #E94560; }
+        /* DASHBOARD CONTAINER */
+        #dashboard {
+            display: none; 
+            width: 100%;
+            max-width: 1400px;
+            padding: 40px;
+            flex-direction: column;
+            align-items: center;
+            height: 90vh; /* Centrato verticalmente */
+            justify-content: center;
+        }
+
+        /* TITOLO */
+        h1.dash-title { 
+            margin-bottom: 50px; 
+            font-size: 40px; 
+            font-weight: 800; 
+            letter-spacing: 4px; 
+            text-transform: uppercase; 
+            text-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        h1.dash-title span { color: #e74c3c; text-shadow: 0 0 20px rgba(231, 76, 60, 0.6); }
+
+        /* GRIGLIA 3 COLONNE x 2 RIGHE */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; /* 3 Colonne uguali */
+            grid-template-rows: 1fr 1fr; /* 2 Righe uguali */
+            grid-auto-flow: column; /* RIEMPIE PRIMA LE COLONNE (Dall'alto in basso) */
+            gap: 30px;
+            width: 100%;
+            height: 100%;
+            max-height: 600px; /* Altezza massima blocco bottoni */
+        }
+
+        /* STILE BOTTONI (VETRO & SFUMATURA) */
+        .card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.03); /* Base semitrasparente */
+            backdrop-filter: blur(15px); /* Effetto vetro */
+            border-radius: 30px; /* Molto arrotondati */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Bordo sottile */
+            padding: 20px;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* SFUMATURE SOTTILE DI SFONDO */
+        .c-plan { background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.0)); } /* Blu */
+        .c-comm { background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(231, 76, 60, 0.0)); } /* Rosso */
+        .c-acq  { background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(46, 204, 113, 0.0)); } /* Verde */
+        .c-tool { background: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(241, 196, 15, 0.0)); } /* Giallo */
+        .c-pdf  { background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(155, 89, 182, 0.0)); } /* Viola */
+        .c-excel{ background: linear-gradient(135deg, rgba(26, 188, 156, 0.1), rgba(26, 188, 156, 0.0)); } /* Turchese */
+
+        /* HOVER EFFECTS (LUCCICANTE) */
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);
+        }
         
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; display: flex; justify-content: center; align-items: center; }
-        .error-msg { color: #e74c3c; font-size: 12px; margin-top: 10px; display: none; }
+        /* ILLUMINAZIONE AL CLICK/HOVER SPECIFICO */
+        .c-plan:hover { box-shadow: 0 0 30px rgba(52, 152, 219, 0.4); border-color: #3498db; }
+        .c-comm:hover { box-shadow: 0 0 30px rgba(231, 76, 60, 0.4); border-color: #e74c3c; }
+        .c-acq:hover  { box-shadow: 0 0 30px rgba(46, 204, 113, 0.4); border-color: #2ecc71; }
+        .c-tool:hover { box-shadow: 0 0 30px rgba(241, 196, 15, 0.4); border-color: #f1c40f; }
+        .c-pdf:hover  { box-shadow: 0 0 30px rgba(155, 89, 182, 0.4); border-color: #9b59b6; }
+        .c-excel:hover{ box-shadow: 0 0 30px rgba(26, 188, 156, 0.4); border-color: #1abc9c; }
+
+        .card-icon { font-size: 50px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); transition: 0.3s; }
+        .card:hover .card-icon { transform: scale(1.2); filter: drop-shadow(0 0 20px rgba(255,255,255,0.6)); }
+
+        .card-title { font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .card-desc { font-size: 14px; color: #aaa; font-weight: 300; }
+
+        /* LOGIN STYLES */
+        .input-field { 
+            padding: 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; border-radius: 10px; font-size: 16px; width: 100%; box-sizing: border-box; text-align: center;
+            transition: 0.3s;
+        }
+        .input-field:focus { border-color: #e74c3c; background: rgba(0,0,0,0.6); outline: none; }
+        
+        .btn-main { 
+            padding: 15px; background: linear-gradient(90deg, #e74c3c, #c0392b); 
+            color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; 
+            cursor: pointer; transition: 0.3s; width: 100%; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        .btn-main:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(231, 76, 60, 0.5); }
+        .error-text { color: #ff6b6b; font-size: 14px; margin-top: 10px; display: none; }
+
+        .logout-btn { 
+            margin-top: 50px; padding: 10px 30px; background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); color: #888; border-radius: 30px; 
+            cursor: pointer; transition: 0.3s; 
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1000px) {
+            body { overflow-y: auto; } /* Abilita scroll su mobile */
+            .grid-container { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto; 
+                grid-auto-flow: row; /* Su mobile va riga per riga */
+                height: auto; 
+                max-height: none; 
+            }
+            #dashboard { height: auto; padding-top: 40px; padding-bottom: 40px; }
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="user-bar">
-        <span class="user-email" id="display-email"></span>
-        <button class="btn-logout" id="btn-logout">ESCI 🔒</button>
-    </div>
-
     <div id="login-screen">
-        <div class="box-card">
-            <h2 style="margin-top:0; color:#E94560;">OFFICINA</h2>
-            <p style="color:#666; font-size:12px; margin-bottom:20px;">ACCESSO RISERVATO</p>
-            <input type="email" id="email" class="input-field" placeholder="Email">
-            <input type="password" id="password" class="input-field" placeholder="Password">
-            <button id="btn-login" class="btn-main">ENTRA</button>
-            <p id="login-error" class="error-msg">Email o Password errati</p>
-        </div>
+        <h2 style="color:#e74c3c; margin:0 0 10px 0; font-size:28px;">🔐 LOGIN</h2>
+        <p style="color:#888; font-size:12px; margin-bottom:20px;">ACCESSO DASHBOARD V9</p>
+        <input type="email" id="email" class="input-field" placeholder="Email...">
+        <input type="password" id="password" class="input-field" placeholder="Password...">
+        <button id="btn-login" class="btn-main">ENTRA</button>
+        <div id="error-msg" class="error-text">Credenziali errate</div>
     </div>
 
-    <div class="menu-container" id="main-menu">
-        <div class="vertical-card card-ordini" onclick="vaiA('commesse.html')">
-            <div class="card-title">COMMESSE</div><div class="card-desc">Produzione & Materiali</div>
+    <div id="dashboard">
+        <h1 class="dash-title">OFFICINA <span>DIGITALE</span></h1>
+
+        <div class="grid-container">
+            
+            <a href="planning.html" class="card c-plan">
+                <div class="card-icon">📅</div>
+                <div class="card-title">Planning</div>
+                <div class="card-desc">Gestione Turni</div>
+            </a>
+            <a href="commesse.html" class="card c-comm">
+                <div class="card-icon">📁</div>
+                <div class="card-title">Commesse</div>
+                <div class="card-desc">Lavori e Archivio</div>
+            </a>
+
+            <a href="toolbox.html" class="card c-tool">
+                <div class="card-icon">🛠️</div>
+                <div class="card-title">Toolbox</div>
+                <div class="card-desc">Strumenti Tecnici</div>
+            </a>
+            <a href="acquisti.html" class="card c-acq">
+                <div class="card-icon">🛒</div>
+                <div class="card-title">Acquisti</div>
+                <div class="card-desc">Ordini e Costi</div>
+            </a>
+
+            <a href="pdf_converter.html" class="card c-pdf">
+                <div class="card-icon">🚀</div>
+                <div class="card-title">PDF Master</div>
+                <div class="card-desc">OCR, DXF e Distinte</div>
+            </a>
+            <a href="excel_manager.html" class="card c-excel">
+                <div class="card-icon">📊</div>
+                <div class="card-title">Excel Manager</div>
+                <div class="card-desc">Archivio Fogli</div>
+            </a>
+
         </div>
-        <div class="vertical-card card-planning" onclick="vaiA('planning.html')">
-            <div class="card-title">PLANNING</div><div class="card-desc">Ore Lavoro & WhatsApp</div>
-        </div>
-        <div class="vertical-card card-acquisti" onclick="vaiA('acquisti.html')">
-            <div class="card-title">ACQUISTI</div><div class="card-desc">Ordini & Fornitori</div>
-        </div>
-        <div class="vertical-card card-toolbox" onclick="vaiA('toolbox.html')">
-            <div class="card-title">TOOLBOX</div><div class="card-desc">Calcoli & Utilità</div>
-        </div>
+
+        <button id="btn-logout" class="logout-btn">Disconnetti</button>
     </div>
 
-    <script type="module">
-        // Importa le funzioni di Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        // CONFIGURAZIONE COMPLETA (Copiata dal tuo file planning.html)
+    <script>
+        // CONFIGURAZIONE FIREBASE
         const firebaseConfig = { 
             apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", 
             authDomain: "planner-carpenteria.firebaseapp.com", 
@@ -91,70 +226,53 @@
         };
 
         // Inizializza Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        if (!firebase.apps.length) { 
+            firebase.initializeApp(firebaseConfig); 
+        } else { 
+            firebase.app(); 
+        }
+        
+        const auth = firebase.auth();
 
-        // Elementi HTML
-        const loginScreen = document.getElementById('login-screen');
-        const mainMenu = document.getElementById('main-menu');
-        const userBar = document.getElementById('user-bar');
-        const errorMsg = document.getElementById('login-error');
-
-        // 1. CONTROLLO AUTOMATICO (Sei già loggato?)
-        onAuthStateChanged(auth, (user) => {
+        // Controllo Stato Utente
+        auth.onAuthStateChanged((user) => {
             if (user) {
-                // Utente loggato: Crea il pass per le altre pagine
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'flex';
+                // Salva token per altre pagine
                 localStorage.setItem('auth_token', 'logged_in');
-
-                // Nascondi login, mostra menu
-                loginScreen.style.display = 'none';
-                mainMenu.style.display = 'flex';
-                userBar.style.display = 'flex';
-                document.getElementById('display-email').innerText = user.email;
             } else {
-                // Utente sloggato: Rimuovi il pass
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('dashboard').style.display = 'none';
                 localStorage.removeItem('auth_token');
-
-                // Mostra login
-                loginScreen.style.display = 'flex';
-                mainMenu.style.display = 'none';
-                userBar.style.display = 'none';
             }
         });
 
-        // 2. FUNZIONE LOGIN (Quando premi ENTRA)
+        // Login
         document.getElementById('btn-login').addEventListener('click', () => {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
+            const errDiv = document.getElementById('error-msg');
 
-            signInWithEmailAndPassword(auth, email, pass)
-                .then((userCredential) => {
-                    // Successo! Il controllo automatico sopra farà il resto
-                    errorMsg.style.display = 'none';
-                })
+            auth.signInWithEmailAndPassword(email, pass)
                 .catch((error) => {
                     console.error(error);
-                    errorMsg.style.display = 'block';
-                    errorMsg.innerText = "Errore: Controlla email e password";
+                    errDiv.style.display = 'block';
+                    errDiv.innerText = "Errore: " + error.message;
                 });
         });
 
-        // Abilita il tasto invio per fare login
+        // Logout
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            auth.signOut().then(() => window.location.reload());
+        });
+
+        // Tasto Invio
         document.getElementById('password').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') document.getElementById('btn-login').click();
         });
 
-        // 3. FUNZIONE LOGOUT (Quando premi ESCI)
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                // Sign-out successful.
-                window.location.reload();
-            }).catch((error) => {
-                // An error happened.
-            });
-        });
-
-        // Funzione navigazione
+        // Funzione navigazione (se servisse)
         window.vaiA = function(pagina) {
             window.location.href = pagina;
         }
