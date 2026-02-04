@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Excel Manager - V4.1 Rounding</title>
+    <title>Excel Manager - V6.6 (Nav Fix)</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -22,155 +22,204 @@
         .config-area { display: flex; gap: 10px; align-items: center; background: #222; padding: 5px 15px; border-radius: 8px; border: 1px solid #444; }
         select, input { background: #111; border: 1px solid #555; color: white; padding: 5px; border-radius: 4px; font-size: 14px; text-align: center; outline: none; }
         
-        .btn-settings { background: #333; border: 1px solid #555; color: #ccc; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
-        .btn-settings:hover { background: #444; color: white; border-color: white; }
+        .btn-settings { background: #333; border: 1px solid #555; color: #ccc; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        
+        /* DROP AREA */
+        .drop-compact { flex: 1; margin-left: 30px; border: 2px dashed #444; border-radius: 8px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #151515; color: #888; font-size: 13px; transition: 0.3s; }
+        .drop-compact:hover { border-color: #aaa; color: white; }
+        .drop-compact.dragover { background: rgba(46, 204, 113, 0.2); border-color: #2ecc71; color: #2ecc71; }
 
-        .drop-compact { flex: 1; margin-left: 30px; border: 2px dashed #444; border-radius: 8px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #151515; color: #888; font-size: 13px; transition: 0.2s; }
-        .drop-compact:hover { border-color: #27ae60; color: white; }
+        /* TASTO PLANNING (Ex Home) */
+        .btn-back { background: #2c3e50; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 13px; border: 1px solid #34495e; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .btn-back:hover { background: #34495e; border-color: white; }
 
-        .btn-back { background: #333; color: white; padding: 5px 15px; border-radius: 5px; text-decoration: none; font-size: 12px; border: 1px solid #555; }
-
-        /* WORKSPACE */
-        .workspace { flex: 1; display: flex; padding: 15px; gap: 15px; overflow: hidden; }
-
-        .col-valid { flex: 2; background: rgba(46, 204, 113, 0.05); border: 2px solid #27ae60; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
-        .col-discard { flex: 2; background: rgba(231, 76, 60, 0.08); border: 1px solid #c0392b; border-radius: 8px; display: none; flex-direction: column; overflow: hidden; }
-        .col-side { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .side-box { flex: 1; background: #161616; border: 1px dashed #444; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #333; font-weight: bold; text-transform: uppercase; flex-direction: column; gap: 10px; font-size: 12px; padding: 10px; text-align: center; }
+        /* WORKSPACE 50/50 */
+        .workspace { flex: 1; display: flex; padding: 15px; gap: 15px; overflow: hidden; width: 100%; box-sizing: border-box; }
+        .col-half { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-radius: 8px; }
+        .col-valid { background: rgba(46, 204, 113, 0.05); border: 2px solid #27ae60; }
+        .col-discard { background: rgba(231, 76, 60, 0.08); border: 2px solid #c0392b; display: none; }
 
         /* TABELLE */
-        .panel-header { padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; align-items: center; }
-        .ph-valid { color: #27ae60; } .ph-discard { color: #e74c3c; }
+        .panel-header { padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
         .table-wrap { flex: 1; overflow: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
-        th { position: sticky; top: 0; background: #1f1f1f; padding: 8px; text-align: left; color: #aaa; font-size: 11px; z-index: 10; border-bottom: 1px solid #444; }
-        td { padding: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        tr:hover { background: rgba(255,255,255,0.05); }
-        td input { width: 100%; background: transparent; border: none; color: #eee; font-family: inherit; font-size: 13px; padding: 2px; }
-        td input:focus { background: #000; outline: 1px solid #27ae60; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: auto; }
+        th { position: sticky; top: 0; background: #1f1f1f; padding: 10px 8px; text-align: left; color: #aaa; font-size: 10px; z-index: 10; border-bottom: 1px solid #444; text-transform: uppercase; }
+        td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; vertical-align: middle; }
 
-        /* BUTTONS */
-        .act-btn { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; margin: 0 2px; transition: 0.2s; }
-        .del-row { background: #c0392b; color: white; font-weight: bold; font-size: 12px; } .del-row:hover { background: #e74c3c; transform: scale(1.1); }
-        .rec-row { background: #27ae60; color: white; font-size: 14px; } .rec-row:hover { background: #2ecc71; transform: scale(1.1); }
-        .kill-row { background: transparent; border: 1px solid #555; color: #888; font-size: 10px; } .kill-row:hover { border-color: #e74c3c; color: #e74c3c; }
-        .full-day-btn { background: #f1c40f; color: black; font-size: 14px; } .full-day-btn:hover { background: #f39c12; transform: scale(1.1); }
-        .note-time-btn { background: #3498db; color: white; font-size: 14px; } .note-time-btn:hover { background: #2980b9; transform: scale(1.1); }
+        /* INPUT */
+        .editable-input, .select-name { background: #000 !important; border: 1px solid #555 !important; border-radius: 4px; color: #fff !important; padding: 4px !important; width: 65px !important; text-align: center; }
+        .select-name { width: 120px !important; text-align: left; cursor: pointer; color: #f1c40f !important; font-weight: bold; }
+        .editable-input:focus, .select-name:focus { border-color: #27ae60 !important; outline: none; }
+        .inp-text-edit { width: 120px !important; text-align: left; }
+        .inp-date-edit { width: 100px !important; color: #3498db !important; font-weight: bold; }
 
-        /* FOOTER */
+        /* BOTTONI */
+        .act-btn { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; margin: 0 2px; transition: 0.2s; font-size: 12px; }
+        .del-row { background: #c0392b; color: white; }
+        .rec-row { background: #27ae60; color: white; }
+        .kill-row { background: transparent; border: 1px solid #555; color: #888; font-size: 10px; }
+        .full-day-btn { background: #f1c40f; color: black; }
+        .note-time-btn { background: #3498db; color: white; }
+        .btn-recalc { background: #f39c12; color: #000; border: none; padding: 5px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+        .btn-recalc:hover { background: #e67e22; transform: scale(1.05); }
+
+        /* FOOTER & STATUS */
         .footer-bar { height: 50px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; gap: 20px; flex-shrink: 0; }
         .btn-confirm { background: #27ae60; color: white; padding: 10px 40px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; font-size: 16px; display: none; }
-        .btn-confirm:hover { background: #219150; }
+        #status-msg { color: #888; margin-right: auto; font-style: italic; }
 
         /* MODAL MAPPING */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1e1e1e; width: 600px; max-width: 90%; padding: 30px; border-radius: 12px; border: 1px solid #444; box-shadow: 0 0 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 20px; }
-        .map-row { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 10px; border-radius: 6px; border: 1px solid #333; }
-        .unknown-name { color: #f1c40f; font-weight: bold; font-size: 16px; }
-        .action-select { background: #111; border: 1px solid #555; color: white; padding: 8px; border-radius: 4px; }
-        .btn-save-map { background: #27ae60; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; width: 100%; }
-        .btn-save-map:hover { background: #219150; }
-
+        .modal-box { background: #1e1e1e; width: 500px; padding: 25px; border-radius: 12px; border: 1px solid #444; }
+        .map-row { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 8px; border-radius: 6px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
     <div class="modal-overlay" id="mapping-modal">
         <div class="modal-box">
-            <h2 style="margin:0; color:#3498db;">⚠️ NOMI SCONOSCIUTI</h2>
-            <p style="color:#aaa; font-size:14px;">Dimmi come trattare questi nomi:</p>
-            <div id="mapping-list" style="display:flex; flex-direction:column; gap:10px; max-height:300px; overflow-y:auto;"></div>
-            <button class="btn-save-map" onclick="confirmMapping()">SALVA E PROCEDI 🚀</button>
+            <h2 style="margin:0; color:#3498db; font-size: 18px;">⚠️ ASSOCIAZIONE NOMI</h2>
+            <div id="mapping-list" style="max-height:300px; overflow-y:auto; margin: 15px 0;"></div>
+            <button style="width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="confirmMapping()">SALVA E PROCEDI</button>
         </div>
     </div>
 
     <div class="top-bar">
         <div class="brand-area">
-            <a href="index.html" class="btn-back">⬅ Home</a>
-            <div class="title">Excel Manager <span style="font-size:12px; color:#666; vertical-align:middle;">V4.1 (Arrotondamento)</span></div>
-            <div class="config-area">
-                <label>PERIODO</label>
-                <select id="sel-mese">
-                    <option value="01">Gennaio</option><option value="02">Febbraio</option><option value="03">Marzo</option><option value="04">Aprile</option>
-                    <option value="05">Maggio</option><option value="06">Giugno</option><option value="07">Luglio</option><option value="08">Agosto</option>
-                    <option value="09">Settembre</option><option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
-                </select>
-                <input type="number" id="sel-anno" value="2026" style="width: 50px;">
-            </div>
+            <a href="planning.html" class="btn-back">📅 PLANNING</a>
+            <div class="title">Excel Manager <span style="font-size:10px; color:#666;">V6.6</span></div>
             <button class="btn-settings" onclick="resetMapping()">⚙️ RESET MAP</button>
         </div>
-        <div class="drop-compact" id="drop-area" onclick="document.getElementById('file-inp').click()">
-            <span>📂 CARICA FILE (DRAG & DROP)</span>
-            <input type="file" id="file-inp" accept=".xlsx, .xls, .csv" style="display:none" onchange="handleFile(this.files[0])">
+        
+        <div id="drop-area" class="drop-compact">
+            <span id="drop-text">📂 CLICCA O TRASCINA FILE QUI</span>
+            <input type="file" id="file-inp" accept=".xlsx, .xls, .csv" style="display:none">
         </div>
     </div>
 
     <div class="workspace">
-        <div class="col-valid" id="valid-panel">
-            <div class="panel-header ph-valid"><span>✅ PRONTE (<span id="valid-count">0</span>)</span></div>
+        <div class="col-half col-valid" id="valid-panel">
+            <div class="panel-header" style="color: #27ae60;">
+                <span>✅ PRONTE ALL'INVIO (<span id="valid-count">0</span>)</span>
+                <button class="btn-recalc" onclick="recalculateAll()">🔄 RICALCOLA E ORDINA</button>
+            </div>
             <div class="table-wrap">
                 <table id="preview-table">
-                    <thead><tr><th width="40">Del</th><th width="90">Data</th><th width="60">Inizio</th><th width="60">Fine</th><th>Dipendente</th><th>Commessa</th><th>Note</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Del</th>
+                            <th class="col-date">Data</th>
+                            <th>Inizio</th>
+                            <th>Fine</th>
+                            <th>Dipendente</th>
+                            <th>Cliente</th>
+                            <th>Commessa</th>
+                            <th class="wide-cell">Mansione / Note</th>
+                        </tr>
+                    </thead>
                     <tbody id="preview-body"></tbody>
                 </table>
             </div>
         </div>
-        <div class="col-discard" id="discard-panel">
-            <div class="panel-header ph-discard"><span>⚠️ SCARTI (<span id="disc-count">0</span>)</span></div>
+
+        <div class="col-half col-discard" id="discard-panel">
+            <div class="panel-header" style="color: #e74c3c;">⚠️ SCARTI DA CORREGGERE (<span id="disc-count">0</span>)</div>
             <div class="table-wrap">
                 <table id="discard-table">
-                    <thead><tr><th width="110">Azioni</th><th width="90">Data</th><th width="60">Inizio</th><th width="60">Fine</th><th>Dipendente</th><th>Note</th><th>Errore</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Azioni</th>
+                            <th class="col-date">Data</th>
+                            <th>Inizio</th>
+                            <th>Fine</th>
+                            <th>Dipendente</th>
+                            <th>Cliente</th>
+                            <th class="wide-cell">Mansione</th>
+                            <th style="color: #e74c3c;">Errore</th>
+                        </tr>
+                    </thead>
                     <tbody id="discard-body"></tbody>
                 </table>
             </div>
         </div>
-        <div class="col-side">
-            <div class="side-box" style="border-color:#3498db; color:#3498db;"><div style="font-size:30px;">👥</div><div id="stats-active">0 Attivi</div></div>
-            <div class="side-box" style="border-color:#e67e22; color:#e67e22;"><div style="font-size:30px;">🏺</div><div id="stats-old">0 Storici</div></div>
-        </div>
     </div>
 
     <div class="footer-bar">
-        <span style="color:#888; font-size:13px; margin-right:20px;">Slot totali: <b id="total-slots" style="color:#27ae60;">0</b></span>
-        <button id="btn-confirm" class="btn-confirm" onclick="uploadToFirebase()">CONFERMA E IMPORTA 🚀</button>
+        <div id="status-msg">In attesa di file...</div>
+        <span style="color:#888; font-size:12px; margin-right:15px;">Slot totali: <b id="total-slots" style="color:#27ae60;">0</b></span>
+        <button id="btn-confirm" class="btn-confirm" onclick="uploadToFirebase()">CONFERMA E IMPORTA NEL PLANNING 🚀</button>
     </div>
 
     <script>
+        // CONFIGURAZIONE FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const dipendentiAttivi = ["Camara", "Filippo", "Fofo", "Ibra", "Ico", "Lorenzo", "Teo", "Roberto", "Simone", "Tonino"];
+        let dipendentiAttivi = ["Camara", "Filippo", "Fofo", "Ibra", "Ico", "Lorenzo", "Teo", "Roberto", "Simone", "Tonino"];
+        let anagrafica = {};
         let rawJsonData = []; 
         let currentMapping = JSON.parse(localStorage.getItem('dip_mapping') || '{}'); 
-        
-        const dropArea = document.getElementById('drop-area');
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => { dropArea.addEventListener(e, (ev) => { ev.preventDefault(); ev.stopPropagation(); }); });
-        dropArea.addEventListener('drop', (e) => handleFile(e.dataTransfer.files[0]));
+        const mesiMap = { "GENNAIO":"01","FEBBRAIO":"02","MARZO":"03","APRILE":"04","MAGGIO":"05","GIUGNO":"06","LUGLIO":"07","AGOSTO":"08","SETTEMBRE":"09","OTTOBRE":"10","NOVEMBRE":"11","DICEMBRE":"12" };
 
-        function handleFile(file) {
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                rawJsonData = XLSX.utils.sheet_to_json(sheet);
-                analizzaNomi(rawJsonData);
-            };
-            reader.readAsArrayBuffer(file);
+        window.onload = function() {
+            if(typeof XLSX === 'undefined') {
+                alert("ERRORE CRITICO: La libreria Excel non è stata caricata. Controlla la connessione.");
+                document.getElementById('status-msg').innerHTML = "<span style='color:red'>LIBRERIA MANCANTE!</span>";
+            }
+            db.ref('anagrafica').once('value', snap => {
+                anagrafica = snap.val() || {};
+                let dbAttivi = Object.keys(anagrafica).filter(k => anagrafica[k].type === 'active');
+                if(dbAttivi.length > 0) dipendentiAttuali = dbAttivi.sort();
+            });
+        };
+
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-inp');
+        const statusMsg = document.getElementById('status-msg');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropArea.addEventListener(eventName, preventDefaults, false); document.body.addEventListener(eventName, preventDefaults, false); });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        ['dragenter', 'dragover'].forEach(eventName => { dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false); });
+        ['dragleave', 'drop'].forEach(eventName => { dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false); });
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        function handleDrop(e) { const dt = e.dataTransfer; const files = dt.files; handleFiles(files); }
+        
+        dropArea.addEventListener('click', () => { fileInput.value = ''; fileInput.click(); });
+        fileInput.addEventListener('change', function() { handleFiles(this.files); });
+
+        function handleFiles(files) {
+            if(files.length > 0) {
+                statusMsg.innerText = "⏳ Lettura file in corso...";
+                const file = files[0];
+                document.getElementById('drop-text').innerText = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        rawJsonData = XLSX.utils.sheet_to_json(sheet);
+                        statusMsg.innerText = `✅ File letto: ${rawJsonData.length} righe. Analisi nomi...`;
+                        analizzaNomi(rawJsonData);
+                    } catch(err) {
+                        alert("Errore lettura file: " + err.message);
+                        statusMsg.innerText = "❌ Errore lettura";
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
         }
 
-        // --- SISTEMA MAPPATURA NOMI ---
+        // --- LOGICA EXCEL MANAGER ---
         function analizzaNomi(data) {
             let foundNames = new Set();
             data.forEach(row => { let n = row['Operatore'] || row['Dipendente']; if(n) foundNames.add(n.trim()); });
             let unknowns = [];
             foundNames.forEach(name => {
-                let upper = name.toUpperCase();
-                if(dipendentiAttivi.some(d => d.toUpperCase() === upper)) return;
-                if(currentMapping[upper]) return;
-                unknowns.push(name);
+                let resolved = resolveName(name); 
+                if (!resolved) unknowns.push(name);
             });
             if(unknowns.length > 0) mostraModalMapping(unknowns);
             else parseData(data);
@@ -179,10 +228,10 @@
         function mostraModalMapping(names) {
             const list = document.getElementById('mapping-list'); list.innerHTML = "";
             names.forEach(n => {
-                let options = `<option value="OLD">🏛️ MANTIENI (Storico)</option><option value="SKIP">🚫 IGNORA</option><optgroup label="Mappa su:">`;
+                let options = `<option value="OLD">🏛️ STORICO</option><option value="SKIP">🚫 IGNORA</option><optgroup label="Mappa su:">`;
                 dipendentiAttivi.forEach(d => { options += `<option value="${d}">${d}</option>`; });
                 options += `</optgroup>`;
-                list.innerHTML += `<div class="map-row"><span class="unknown-name">${n}</span><span>➡️</span><select class="action-select" data-orig="${n.toUpperCase()}">${options}</select></div>`;
+                list.innerHTML += `<div class="map-row"><span>${n}</span><select class="action-select" data-orig="${n.toUpperCase()}">${options}</select></div>`;
             });
             document.getElementById('mapping-modal').style.display = 'flex';
         }
@@ -199,179 +248,224 @@
         function resolveName(name) {
             if(!name) return null;
             let upper = name.trim().toUpperCase();
-            let active = dipendentiAttivi.find(d => d.toUpperCase() === upper);
-            if(active) return active;
-            let mapped = currentMapping[upper];
-            if(mapped) { if(mapped === "SKIP") return null; if(mapped === "OLD") return name.trim(); return mapped; }
-            return name.trim(); 
+            if(dipendentiAttivi.some(d => d.toUpperCase() === upper)) return dipendentiAttivi.find(d => d.toUpperCase() === upper);
+            for (let realName in anagrafica) {
+                let d = anagrafica[realName];
+                if (d.aliases) {
+                    let aliasList = d.aliases.toUpperCase().split(',').map(a => a.trim());
+                    if (aliasList.includes(upper)) return realName;
+                }
+            }
+            if(currentMapping[upper]) {
+                let mapped = currentMapping[upper];
+                if(mapped === "SKIP") return null;
+                if(mapped === "OLD") return name.trim();
+                return mapped;
+            }
+            return null;
         }
 
-        // --- PARSING CON ARROTONDAMENTO ---
         function parseData(data) {
-            const mese = document.getElementById('sel-mese').value;
-            const anno = document.getElementById('sel-anno').value;
             const validBody = document.getElementById('preview-body');
             const discBody = document.getElementById('discard-body');
             validBody.innerHTML = ''; discBody.innerHTML = '';
-            let statsAct = 0; let statsOld = 0;
 
             data.forEach((row) => {
                 let nomeRaw = row['Operatore'] || row['Dipendente'];
                 let nomeFinal = resolveName(nomeRaw);
                 if(!nomeFinal) return; 
-                if(dipendentiAttivi.includes(nomeFinal)) statsAct++; else statsOld++;
 
-                let giorno = row['Data'] || row['Giorno'];
+                // DATA AUTO
+                let y = row['Anno'] || row['__EMPTY']; 
+                let mRaw = row['Mese'] || row['__EMPTY_1'];
+                let dNum = row['Data'] || row['Giorno']; 
+                let m = mRaw && mesiMap[mRaw.toString().trim().toUpperCase()] ? mesiMap[mRaw.toString().trim().toUpperCase()] : "01";
                 
-                // --- QUI AVVIENE LA MAGIA DELL'ARROTONDAMENTO ---
-                // parseExcelTimeRound restituisce GIA' l'orario arrotondato ai 15 minuti
+                let dataStr = "";
+                if(y && m && dNum) { dataStr = `${y}-${m}-${String(dNum).padStart(2,'0')}`; }
+
                 let inizio = parseExcelTimeRound(row['Inizio']);
                 let fine = parseExcelTimeRound(row['Fine']);
-                
                 let comm = row['Commessa'] || "";
+                let cliente = row['Cliente'] || "";
                 let mans = row['Mansione'] || "";
                 let totOre = row['Tot Ore'];
-                let dataStr = "";
-                if(giorno) dataStr = `${anno}-${mese}-${String(giorno).padStart(2,'0')}`;
 
                 let error = null;
-                if (!totOre || totOre == 0) error = "Ore a Zero";
+                if (!dataStr) error = "Data Mancante";
+                else if (!totOre || totOre == 0) error = "Ore a Zero";
                 else if (!inizio || !fine) error = "Manca Orario";
-                else if (inizio === fine) error = "Durata 0 min (dopo arrotondamento)";
+                else if (inizio === fine) error = "Durata 0m";
 
-                let tr = document.createElement('tr');
                 if (error) {
-                    tr.innerHTML = `
-                        <td style="display:flex; justify-content:center; gap:3px;">
-                            <div class="act-btn full-day-btn" title="Tutto Giorno" onclick="setFullDay(this)">☀️</div>
-                            <div class="act-btn note-time-btn" title="Note" onclick="setNoteTime(this)">📝</div>
-                            <div class="act-btn rec-row" title="Recupera" onclick="tryRecover(this)">♻️</div>
-                            <div class="act-btn kill-row" title="Elimina" onclick="this.closest('tr').remove(); updateCounts()">✕</div>
-                        </td>
-                        <td><input type="text" value="${dataStr}" class="inp-date"></td>
-                        <td><input type="text" value="${inizio||''}" class="inp-start" placeholder="HH:MM" style="border:1px solid #444; border-radius:4px; text-align:center;"></td>
-                        <td><input type="text" value="${fine||''}" class="inp-end" placeholder="HH:MM" style="border:1px solid #444; border-radius:4px; text-align:center;"></td>
-                        <td><input type="text" value="${nomeFinal}" class="inp-name" style="${!dipendentiAttivi.includes(nomeFinal) ? 'color:#e67e22' : ''}"></td>
-                        <td><input type="text" value="${mans}" class="inp-mans" style="color:#aaa;"></td>
-                        <td style="color:#e74c3c;font-size:11px;">${error}</td>
-                        <td style="display:none"><input type="text" value="${comm}" class="inp-comm"></td>
-                    `;
-                    discBody.appendChild(tr);
+                    addDiscardRow(dataStr, inizio, fine, nomeFinal, cliente, mans, error, comm);
                 } else {
-                    tr.innerHTML = `
-                        <td style="text-align:center;"><div class="act-btn del-row" onclick="this.closest('tr').remove(); updateCounts()">✕</div></td>
-                        <td><input type="text" value="${dataStr}" class="inp-date"></td>
-                        <td><input type="text" value="${inizio}" class="inp-start" style="text-align:center;"></td>
-                        <td><input type="text" value="${fine}" class="inp-end" style="text-align:center;"></td>
-                        <td><input type="text" value="${nomeFinal}" class="inp-name" style="${!dipendentiAttivi.includes(nomeFinal) ? 'color:#e67e22; font-weight:bold;' : ''}"></td>
-                        <td><input type="text" value="${comm}" class="inp-comm"></td>
-                        <td><input type="text" value="${mans}" class="inp-mans"></td>
-                    `;
-                    validBody.appendChild(tr);
+                    addValidRow(dataStr, inizio, fine, nomeFinal, cliente, comm, mans);
                 }
             });
             updateCounts();
-            document.getElementById('stats-active').innerText = statsAct + " Attivi";
-            document.getElementById('stats-old').innerText = statsOld + " Storici";
         }
 
-        // --- HELPERS (Uguali a prima) ---
-        window.setFullDay = function(btn) { let tr=btn.closest('tr'); tr.querySelector('.inp-start').value="07:30"; tr.querySelector('.inp-end').value="16:30"; }
-        window.setNoteTime = function(btn) { let tr=btn.closest('tr'); tr.querySelector('.inp-start').value="05:00"; tr.querySelector('.inp-end').value="06:00"; }
+        function addValidRow(date, start, end, name, client, comm, mans) {
+            const validBody = document.getElementById('preview-body');
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><div class="act-btn del-row" onclick="this.closest('tr').remove(); updateCounts()">✕</div></td>
+                <td class="td-date">${date}</td>
+                <td class="td-start">${start}</td>
+                <td class="td-end">${end}</td>
+                <td class="td-name">${name}</td>
+                <td class="td-client">${client}</td>
+                <td class="td-comm">${comm}</td>
+                <td class="wide-cell td-mans">${mans}</td>
+            `;
+            validBody.appendChild(tr);
+        }
+
+        function addDiscardRow(dataStr, inizio, fine, nomeFinal, cliente, mans, error, comm) {
+            const discBody = document.getElementById('discard-body');
+            let nameOptions = "";
+            dipendentiAttivi.forEach(d => {
+                let sel = (d === nomeFinal) ? "selected" : "";
+                nameOptions += `<option value="${d}" ${sel}>${d}</option>`;
+            });
+
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="display:flex; gap:2px;">
+                    <div class="act-btn full-day-btn" title="07:30-16:30" onclick="setFullDay(this)">☀️</div>
+                    <div class="act-btn note-time-btn" title="06:00-06:15" onclick="setNoteTime(this)">📝</div>
+                    <div class="act-btn rec-row" title="Ricicla" onclick="tryRecover(this)">♻️</div>
+                    <div class="act-btn kill-row" title="Elimina" onclick="this.closest('tr').remove(); updateCounts()">✕</div>
+                </td>
+                <td><input type="text" value="${dataStr||''}" class="editable-input inp-date-edit inp-date-err" placeholder="AAAA-MM-GG"></td>
+                <td><input type="text" value="${inizio||''}" class="editable-input inp-start"></td>
+                <td><input type="text" value="${fine||''}" class="editable-input inp-end"></td>
+                <td><select class="select-name inp-name">${nameOptions}</select></td>
+                <td><input type="text" value="${cliente}" class="editable-input inp-text-edit inp-client"></td>
+                <td class="wide-cell"><input type="text" value="${mans}" class="editable-input inp-text-edit inp-mans" style="width: 220px !important; text-align:left;"></td>
+                <td style="color:#e74c3c; font-weight:bold;">${error}</td>
+                <input type="hidden" class="hidden-comm" value="${comm}">
+            `;
+            discBody.appendChild(tr);
+        }
+
+        window.setFullDay = function(btn) { 
+            let tr=btn.closest('tr'); 
+            tr.querySelector('.inp-start').value="07:30"; 
+            tr.querySelector('.inp-end').value="16:30"; 
+            tryRecover(btn); 
+        }
+        
+        window.setNoteTime = function(btn) { 
+            let tr=btn.closest('tr'); 
+            tr.querySelector('.inp-start').value="06:00"; 
+            tr.querySelector('.inp-end').value="06:15";   
+            tryRecover(btn); 
+        }
         
         window.tryRecover = function(btn) {
             let tr = btn.closest('tr');
-            let dataVal = tr.querySelector('.inp-date').value;
-            let startVal = tr.querySelector('.inp-start').value;
-            let endVal = tr.querySelector('.inp-end').value;
-            let nameVal = tr.querySelector('.inp-name').value;
-            let commVal = tr.querySelector('.inp-comm').value;
-            let mansVal = tr.querySelector('.inp-mans').value;
+            let date = tr.querySelector('.inp-date-err').value;
+            let start = tr.querySelector('.inp-start').value;
+            let end = tr.querySelector('.inp-end').value;
+            let name = tr.querySelector('.inp-name').value;
+            let client = tr.querySelector('.inp-client').value;
+            let mans = tr.querySelector('.inp-mans').value;
+            let comm = tr.querySelector('.hidden-comm').value;
 
-            if(!nameVal) return alert("Inserisci Nome!");
-            if(!timeToMins(startVal) || !timeToMins(endVal)) return alert("Orari errati!");
+            if(!date || date.length < 10) { alert("Data incompleta! Usa AAAA-MM-GG"); return; }
+            if(!name || !timeToMins(start) || !timeToMins(end)) { alert("Controlla orari e nome!"); return; }
+            
+            addValidRow(date, start, end, name, client, comm, mans);
+            tr.remove(); 
+            updateCounts();
+        }
 
-            let isOld = !dipendentiAttivi.includes(nameVal);
-            let newTr = document.createElement('tr');
-            newTr.innerHTML = `
-                <td style="text-align:center;"><div class="act-btn del-row" onclick="this.closest('tr').remove(); updateCounts()">✕</div></td>
-                <td><input type="text" value="${dataVal}" class="inp-date"></td>
-                <td><input type="text" value="${startVal}" class="inp-start" style="text-align:center;"></td>
-                <td><input type="text" value="${endVal}" class="inp-end" style="text-align:center;"></td>
-                <td><input type="text" value="${nameVal}" class="inp-name" style="${isOld ? 'color:#e67e22; font-weight:bold;' : ''}"></td>
-                <td><input type="text" value="${commVal}" class="inp-comm"></td>
-                <td><input type="text" value="${mansVal}" class="inp-mans"></td>
-            `;
-            document.getElementById('preview-body').prepend(newTr);
-            tr.remove(); updateCounts();
+        function recalculateAll() {
+            let rows = document.querySelectorAll('#preview-body tr');
+            let validRows = []; let invalidRows = [];
+            rows.forEach(tr => {
+                let d = tr.querySelector('.td-date').innerText.trim();
+                let s = tr.querySelector('.td-start').innerText.trim();
+                let e = tr.querySelector('.td-end').innerText.trim();
+                let n = tr.querySelector('.td-name').innerText.trim();
+                let cl = tr.querySelector('.td-client').innerText.trim();
+                let c = tr.querySelector('.td-comm').innerText.trim();
+                let m = tr.querySelector('.td-mans').innerText.trim();
+                if(d && n && timeToMins(s) && timeToMins(e)) validRows.push({ d, s, e, n, cl, c, m });
+                else invalidRows.push({ d, s, e, n, cl, c, m, err: "Dati persi" });
+            });
+            document.getElementById('preview-body').innerHTML = "";
+            validRows.sort((a, b) => { if (a.d !== b.d) return a.d.localeCompare(b.d); return timeToMins(a.s) - timeToMins(b.s); });
+            validRows.forEach(r => addValidRow(r.d, r.s, r.e, r.n, r.cl, r.c, r.m));
+            invalidRows.forEach(r => addDiscardRow(r.d, r.s, r.e, r.n, r.cl, r.m, r.err, r.c));
+            updateCounts(); alert("Ricalcolo completato!");
         }
 
         function updateCounts() {
-            let nValid = document.getElementById('preview-body').rows.length;
-            let nDisc = document.getElementById('discard-body').rows.length;
-            document.getElementById('valid-count').innerText = nValid;
-            document.getElementById('disc-count').innerText = nDisc;
-            document.getElementById('discard-panel').style.display = nDisc > 0 ? 'flex' : 'none';
-            document.getElementById('btn-confirm').style.display = nValid > 0 ? 'block' : 'none';
-            let totalSlots = 0;
+            let nV = document.getElementById('preview-body').rows.length, nD = document.getElementById('discard-body').rows.length;
+            document.getElementById('valid-count').innerText = nV; document.getElementById('disc-count').innerText = nD;
+            document.getElementById('discard-panel').style.display = nD > 0 ? 'flex' : 'none';
+            document.getElementById('btn-confirm').style.display = nV > 0 ? 'block' : 'none';
+            let slots = 0;
             document.querySelectorAll('#preview-body tr').forEach(tr => {
-                let s = timeToMins(tr.querySelector('.inp-start').value);
-                let e = timeToMins(tr.querySelector('.inp-end').value);
-                if(s && e) totalSlots += Math.floor((e-s)/15);
+                let sTxt = tr.querySelector('.td-start').innerText;
+                let eTxt = tr.querySelector('.td-end').innerText;
+                let s = timeToMins(sTxt), e = timeToMins(eTxt);
+                if(s && e) slots += Math.floor((e-s)/15);
             });
-            document.getElementById('total-slots').innerText = totalSlots;
+            document.getElementById('total-slots').innerText = slots;
         }
 
-        function uploadToFirebase() {
+        // --- UPLOAD CON AUTO-PAUSA ---
+        async function uploadToFirebase() {
             const rows = document.querySelectorAll('#preview-body tr');
-            if(!confirm(`Importare ${rows.length} record?`)) return;
+            if(!confirm(`Caricare ${rows.length} record nel Planning?`)) return;
             const updates = {};
+            
             rows.forEach(tr => {
-                let inps = tr.querySelectorAll('input');
-                let dataVal = inps[0].value;
-                let startMins = timeToMins(inps[1].value);
-                let endMins = timeToMins(inps[2].value);
-                let nome = inps[3].value.trim();
-                let comm = inps[4].value.trim();
-                let mans = inps[5].value.trim();
-                if(startMins && endMins) {
-                    for(let t=startMins; t<endMins; t+=15) {
-                        let h = Math.floor(t/60); let m = t%60;
-                        let timeKey = String(h).padStart(2,'0') + ":" + String(m).padStart(2,'0');
-                        let baseKey = `turni/${dataVal}/${timeKey}-${nome}`;
-                        updates[`${baseKey}-commessa`] = comm; 
-                        updates[`${baseKey}-note`] = mans;     
+                let d = tr.querySelector('.td-date').innerText.trim();
+                let sTxt = tr.querySelector('.td-start').innerText.trim();
+                let eTxt = tr.querySelector('.td-end').innerText.trim();
+                let n = tr.querySelector('.td-name').innerText.trim();
+                let cl = tr.querySelector('.td-client').innerText.trim();
+                let c = tr.querySelector('.td-comm').innerText.trim();
+                let m = tr.querySelector('.td-mans').innerText.trim();
+
+                let sM = timeToMins(sTxt);
+                let eM = timeToMins(eTxt);
+
+                let empData = anagrafica[n] || {};
+                let pStart = timeToMins(empData.pausaStart || "12:00");
+                let pEnd = timeToMins(empData.pausaEnd || "13:00");
+
+                if(sM && eM && d && n) {
+                    for(let t=sM; t<eM; t+=15) {
+                        let tk = String(Math.floor(t/60)).padStart(2,'0') + ":" + String(t%60).padStart(2,'0');
+                        let bk = `turni/${d}/${tk}-${n}`;
+                        
+                        if (t >= pStart && t < pEnd) {
+                            updates[bk+'-commessa'] = "PAUSA"; 
+                            updates[bk+'-cliente'] = ""; 
+                            updates[bk+'-note'] = "Pausa Pranzo";
+                        } else {
+                            updates[bk+'-commessa'] = c; 
+                            updates[bk+'-cliente'] = cl; 
+                            updates[bk+'-note'] = m;
+                        }
                     }
                 }
             });
-            db.ref().update(updates).then(() => { alert("✅ IMPORTAZIONE OK!"); location.reload(); }).catch(err => alert("Errore: " + err.message));
+            
+            db.ref().update(updates).then(() => { 
+                alert("✅ IMPORTAZIONE RIUSCITA!"); 
+                location.href = "planning.html"; // Redirect automatico
+            }).catch(err => alert("Errore Firebase: " + err.message));
         }
 
-        // --- PARSING CON ARROTONDAMENTO (CORE LOGIC) ---
-        function parseExcelTimeRound(val) {
-            let totalM = 0;
-            
-            if(typeof val === 'number') {
-                // Excel fraction (es. 0.5 = 12:00)
-                totalM = Math.round(val * 24 * 60);
-            } else if(typeof val === 'string' && val.includes(':')) {
-                // Stringa "09:50"
-                let parts = val.split(':');
-                totalM = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-            } else {
-                return null;
-            }
-
-            // ARROTONDAMENTO AI 15 MINUTI
-            let roundedM = Math.round(totalM / 15) * 15;
-            
-            // Riconversione in HH:MM
-            let h = Math.floor(roundedM / 60);
-            let m = roundedM % 60;
-            return String(h).padStart(2,'0') + ":" + String(m).padStart(2,'0');
-        }
-
-        function timeToMins(str) { if(!str || !str.includes(':')) return null; let p = str.split(':'); return parseInt(p[0])*60 + parseInt(p[1]); }
+        function parseExcelTimeRound(v) { let t = 0; if(typeof v === 'number') t = Math.round(v * 1440); else if(typeof v === 'string' && v.includes(':')) { let p = v.split(':'); t = parseInt(p[0]) * 60 + parseInt(p[1]); } else return null; let r = Math.round(t / 15) * 15; return String(Math.floor(r/60)).padStart(2,'0') + ":" + String(r%60).padStart(2,'0'); }
+        function timeToMins(s) { if(!s || !s.includes(':')) return null; let p = s.split(':'); return parseInt(p[0])*60 + parseInt(p[1]); }
     </script>
 </body>
 </html>

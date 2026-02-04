@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Beam Master - V3.5 (10 Ton)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        /* --- STILE PRO DARK --- */
+        :root {
+            --bg-color: #050505;
+            --sidebar-bg: #0a0a0a;
+            --panel-bg: #111;
+            --border-color: #222;
+            --text-main: #e0e0e0;
+            --text-dim: #888;
+            --accent-blue: #2962ff;
+            --accent-green: #00c853;
+            --accent-red: #d50000;
+            --accent-warn: #ffab00;
+        }
+
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        * { box-sizing: border-box; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        /* TOP BAR */
+        .top-bar { height: 50px; background: #000; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; flex-shrink: 0; z-index: 100; }
+        .logo { font-size: 16px; font-weight: 900; letter-spacing: 2px; color: white; display: flex; align-items: center; gap: 10px; }
+        .logo span { background: var(--accent-blue); padding: 2px 6px; border-radius: 2px; font-size: 10px; color: white; }
+        .btn-reset { background: transparent; border: 1px solid #333; color: #666; padding: 5px 15px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; border-radius: 2px; }
+        .btn-reset:hover { border-color: var(--accent-red); color: var(--accent-red); }
+
+        .app-body { display: flex; flex: 1; overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { width: 300px; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px; gap: 20px; overflow-y: auto; flex-shrink: 0; }
+
+        /* STATUS CARD */
+        .status-card { background: #161616; border-radius: 4px; padding: 20px; text-align: center; border: 1px solid var(--border-color); position: relative; overflow: hidden; transition: 0.3s; }
+        .status-text { font-size: 24px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .status-sub { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .status-card::before { content:''; position: absolute; top:0; left:0; width:4px; height:100%; background: #333; transition:0.3s; }
+        .status-card.ok { border-color: rgba(0, 200, 83, 0.3); } .status-card.ok .status-text { color: var(--accent-green); } .status-card.ok::before { background: var(--accent-green); }
+        .status-card.warn { border-color: rgba(255, 171, 0, 0.3); } .status-card.warn .status-text { color: var(--accent-warn); } .status-card.warn::before { background: var(--accent-warn); }
+        .status-card.fail { border-color: rgba(213, 0, 0, 0.3); } .status-card.fail .status-text { color: var(--accent-red); } .status-card.fail::before { background: var(--accent-red); }
+
+        /* METRICS */
+        .metric-group { margin-bottom: 15px; }
+        .metric-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        .metric-val { color: white; font-family: monospace; }
+        .progress-track { height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; transition: width 0.5s ease; border-radius: 2px; }
+
+        /* PIE CHART */
+        .chart-box { background: #111; border: 1px solid var(--border-color); border-radius: 4px; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .chart-title { font-size: 10px; color: var(--text-dim); width: 100%; text-align: left; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; }
+        .pie-legend { width: 100%; font-size: 10px; margin-top: 10px; display: flex; justify-content: space-between; color: #888; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        /* EXPORT */
+        .export-bar { display: flex; gap: 5px; margin-top: auto; }
+        .btn-export { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #ccc; padding: 10px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-export:hover { background: #222; color: white; border-color: #555; }
+
+        /* MAIN AREA */
+        .main-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+        /* CANVAS CONTAINER */
+        .viz-area { 
+            display: flex; height: 350px; border-bottom: 1px solid var(--border-color); 
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            flex-shrink: 0;
+        }
+        .canvas-left { width: 300px; border-right: 1px solid var(--border-color); position: relative; }
+        .canvas-right { flex: 1; position: relative; }
+        canvas { width: 100%; height: 100%; display: block; }
+        .cv-label { position: absolute; top: 10px; left: 10px; font-size: 10px; color: #444; font-weight: bold; text-transform: uppercase; pointer-events: none; }
+
+        /* CONTROLS */
+        .controls-grid { padding: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 1400px; }
+        .input-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 4px; display: flex; flex-direction: column; gap: 12px; }
+        .card-head { font-size: 11px; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .inp-row { display: flex; align-items: center; gap: 10px; }
+        .inp-label { font-size: 11px; color: #888; width: 60px; font-weight: bold; }
+        .val-input { background: #000; border: 1px solid #333; color: white; padding: 10px; width: 100%; font-family: monospace; font-size: 14px; text-align: center; border-radius: 2px; font-weight: bold; }
+        .val-input:focus { border-color: var(--accent-blue); outline: none; }
+        
+        /* Sliders */
+        .range-slider { -webkit-appearance: none; width: 100%; height: 6px; background: #333; border-radius: 3px; outline: none; margin-top: 5px; }
+        .range-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid white; }
+        
+        .btn-prof-select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 10px; width: 100%; text-align: left; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; align-items: center; transition: 0.2s; }
+        .btn-prof-select:hover { border-color: var(--accent-blue); }
+        .prof-stats { font-size: 10px; color: #666; display: flex; gap: 10px; margin-top: -5px; }
+
+        /* MODALE PROFILI */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #111; width: 95%; max-width: 900px; height: 85%; border: 1px solid var(--accent-blue); display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .modal-head { padding: 15px 20px; background: #0a0a0a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .modal-tabs { display: flex; gap: 5px; background: #0f0f0f; padding: 10px 20px; border-bottom: 1px solid #333; overflow-x: auto; flex-shrink: 0; }
+        .tab-btn { background: #222; border: 1px solid #333; color: #888; padding: 8px 20px; cursor: pointer; font-weight: bold; font-size: 11px; white-space: nowrap; transition: 0.2s; border-radius: 4px; }
+        .tab-btn:hover { color: white; border-color: white; }
+        .tab-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(41,98,255,0.3); }
+        
+        .prof-header-row { display: flex; padding: 10px 20px; background: rgba(41,98,255,0.1); border-bottom: 1px solid #333; color: var(--accent-blue); font-size: 11px; font-weight: 800; text-transform: uppercase; flex-shrink: 0; }
+        .ph-col { flex: 1; text-align: center; } .ph-col.wide { flex: 1.5; text-align: left; }
+
+        .prof-grid { flex: 1; overflow-y: auto; padding: 0; background: #000; }
+        .prof-row { display: flex; padding: 12px 20px; border-bottom: 1px solid #222; cursor: pointer; align-items: center; transition: 0.2s; }
+        .prof-row:hover { background: rgba(41,98,255,0.1); padding-left: 25px; border-left: 3px solid var(--accent-blue); }
+        .pr-col { flex: 1; text-align: center; font-size: 13px; color: #aaa; font-family: monospace; }
+        .pr-col.name { flex: 1.5; text-align: left; font-weight: bold; color: white; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
+        .pr-col.hl { color: var(--accent-warn); font-weight: bold; }
+
+        @media (max-width: 900px) {
+            .app-body { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #333; order: 2; }
+            .main-area { overflow: visible; order: 1; }
+            .viz-area { flex-direction: column; height: 500px; }
+            .canvas-left { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid #333; }
+            .prof-header-row { display: none; }
+            .prof-row { flex-direction: column; align-items: flex-start; gap: 5px; padding: 15px; }
+            .pr-col { text-align: left; width: 100%; display: flex; justify-content: space-between; }
+            .pr-col::before { content: attr(data-label); font-weight: bold; color: #555; font-size: 10px; }
+            .pr-col.name::before { content: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo">🏗️ BEAM MASTER <span>PRO</span></div>
+        <button class="btn-reset" onclick="if(confirm('Reset?')) location.reload()">NUOVO CALCOLO</button>
+    </div>
+
+    <div class="app-body">
+        
+        <div class="sidebar">
+            <div id="status-card" class="status-card ok">
+                <div class="status-text" id="status-txt">A NORMA</div>
+                <div class="status-sub" id="status-sub">VERIFICA SUPERATA</div>
+            </div>
+
+            <div>
+                <div class="metric-group">
+                    <div class="metric-label"><span>Sforzo Elastico</span> <span class="metric-val" id="val-stress">0%</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="bar-stress" style="background:var(--accent-green)"></div></div>
+                </div>
+                <div class="metric-group">
+                    <div class="metric-label"><span>Freccia (Def.)</span> <span class="metric-val" id="val-def">0 mm</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="bar-def" style="background:var(--accent-blue)"></div></div>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-title">Analisi Carico</div>
+                <canvas id="pieChart" width="120" height="120"></canvas>
+                <div class="pie-legend">
+                    <div class="legend-item"><div class="dot" style="background:#444"></div> <span id="leg-load">Carico</span></div>
+                    <div class="legend-item"><div class="dot" style="background:var(--accent-warn)"></div> <span id="leg-sw">Trave</span></div>
+                </div>
+            </div>
+
+            <div class="export-bar">
+                <button class="btn-export" onclick="exportPDF()">📄 PDF</button>
+                <button class="btn-export" onclick="exportXLS()">📊 XLS</button>
+            </div>
+        </div>
+
+        <div class="main-area">
+            <div class="viz-area">
+                <div class="canvas-left">
+                    <div class="cv-label">Sezione Reale</div>
+                    <canvas id="frontCanvas"></canvas>
+                </div>
+                <div class="canvas-right">
+                    <div class="cv-label">Schema & Vettori</div>
+                    <canvas id="sideCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="controls-grid">
+                <div class="input-card">
+                    <div class="card-head"><span>Geometria</span></div>
+                    <div class="inp-row">
+                        <div class="inp-label">LUCE</div>
+                        <input type="number" id="inp-L" class="val-input" value="4000" onchange="calc()">
+                        <span style="font-size:10px; color:#666">mm</span>
+                    </div>
+                    <input type="range" min="500" max="12000" step="100" value="4000" class="range-slider" style="accent-color:var(--accent-blue)" oninput="document.getElementById('inp-L').value=this.value; calc()">
+                </div>
+
+                <div class="input-card">
+                    <div class="card-head"><span>Carico</span></div>
+                    <div class="inp-row">
+                        <div class="inp-label">TIPO</div>
+                        <select id="load-type" class="val-input" onchange="calc()">
+                            <option value="distr">Distribuito (kg/m)</option>
+                            <option value="conc">Concentrato (kg)</option>
+                        </select>
+                    </div>
+                    <div class="inp-row">
+                        <div class="inp-label">VALORE</div>
+                        <input type="number" id="inp-Q" class="val-input" value="300" onchange="calc()">
+                    </div>
+                    <input type="range" id="slider-Q" min="0" max="10000" step="10" value="300" class="range-slider" style="accent-color:var(--accent-warn)" oninput="document.getElementById('inp-Q').value=this.value; calc()">
+                    
+                    <label style="font-size:11px; color:#888; display:flex; align-items:center; gap:8px; margin-top:10px; cursor:pointer;">
+                        <input type="checkbox" id="chk-sw" checked onchange="calc()"> Includi Peso Proprio Trave
+                    </label>
+                </div>
+
+                <div class="input-card">
+                    <div class="card-head"><span>Profilo</span></div>
+                    <button class="btn-prof-select" onclick="openModal()">
+                        <span id="sel-name" style="color:var(--accent-warn)">IPE 120</span>
+                        <span>▼</span>
+                    </button>
+                    <div class="prof-stats">
+                        <span id="lbl-dim">120x64 mm</span>
+                        <span id="lbl-w">10.4 kg/m</span>
+                    </div>
+                    <input type="hidden" id="v-type" value="IPE"><input type="hidden" id="v-h" value="120"><input type="hidden" id="v-b" value="64"><input type="hidden" id="v-tw" value="4.4"><input type="hidden" id="v-tf" value="6.3"><input type="hidden" id="v-jx" value="3180000"><input type="hidden" id="v-wx" value="53000"><input type="hidden" id="v-kgm" value="10.4">
+                </div>
+
+                <div class="input-card">
+                    <div class="card-head"><span>Materiale</span></div>
+                    <select id="sel-mat" class="val-input" onchange="calc()">
+                        <option value="235">S235 JR</option>
+                        <option value="275" selected>S275 JR</option>
+                        <option value="355">S355 JR</option>
+                    </select>
+                    <div class="inp-row" style="margin-top:10px;">
+                        <div class="inp-label">SICUREZZA</div>
+                        <input type="number" id="inp-gamma" class="val-input" value="1.5" step="0.1" onchange="calc()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-prof" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-head">
+                <span style="color:white; font-weight:bold; font-size:18px;">LIBRERIA PROFILI</span>
+                <button onclick="document.getElementById('modal-prof').style.display='none'" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <button class="tab-btn active" onclick="loadProfs('IPE')">IPE</button>
+                <button class="tab-btn" onclick="loadProfs('HEA')">HEA</button>
+                <button class="tab-btn" onclick="loadProfs('HEB')">HEB</button>
+                <button class="tab-btn" onclick="loadProfs('HEM')">HEM</button>
+                <button class="tab-btn" onclick="loadProfs('TubQ')">TUBI Q.</button>
+                <button class="tab-btn" onclick="loadProfs('TubR')">TUBI R.</button>
+                <button class="tab-btn" onclick="loadProfs('Tondi')">TONDI</button>
+            </div>
+            <div class="prof-header-row">
+                <div class="ph-col wide">SIGLA</div>
+                <div class="ph-col">MISURE (mm)</div>
+                <div class="ph-col">PESO (kg/m)</div>
+                <div class="ph-col">Jx (cm⁴)</div>
+                <div class="ph-col">Wx (cm³)</div>
+            </div>
+            <div class="prof-grid" id="prof-list"></div>
+        </div>
+    </div>
+
+<script>
+    // --- MONSTER DATABASE ---
+    const DB = {
+        'IPE': [
+            {n:'IPE 80', h:80, b:46, tw:3.8, tf:5.2, jx:80.1, wx:20.0, kgm:6.0}, {n:'IPE 100', h:100, b:55, tw:4.1, tf:5.7, jx:171, wx:34.2, kgm:8.1},
+            {n:'IPE 120', h:120, b:64, tw:4.4, tf:6.3, jx:318, wx:53.0, kgm:10.4}, {n:'IPE 140', h:140, b:73, tw:4.7, tf:6.9, jx:541, wx:77.3, kgm:12.9},
+            {n:'IPE 160', h:160, b:82, tw:5.0, tf:7.4, jx:869, wx:109, kgm:15.8}, {n:'IPE 180', h:180, b:91, tw:5.3, tf:8.0, jx:1317, wx:146, kgm:18.8},
+            {n:'IPE 200', h:200, b:100, tw:5.6, tf:8.5, jx:1943, wx:194, kgm:22.4}, {n:'IPE 220', h:220, b:110, tw:5.9, tf:9.2, jx:2772, wx:252, kgm:26.2},
+            {n:'IPE 240', h:240, b:120, tw:6.2, tf:9.8, jx:3892, wx:324, kgm:30.7}, {n:'IPE 270', h:270, b:135, tw:6.6, tf:10.2, jx:5790, wx:429, kgm:36.1},
+            {n:'IPE 300', h:300, b:150, tw:7.1, tf:10.7, jx:8356, wx:557, kgm:42.2}, {n:'IPE 330', h:330, b:160, tw:7.5, tf:11.5, jx:11770, wx:713, kgm:49.1},
+            {n:'IPE 360', h:360, b:170, tw:8.0, tf:12.7, jx:16270, wx:904, kgm:57.1}, {n:'IPE 400', h:400, b:180, tw:8.6, tf:13.5, jx:23130, wx:1160, kgm:66.3},
+            {n:'IPE 450', h:450, b:190, tw:9.4, tf:14.6, jx:33740, wx:1500, kgm:77.6}, {n:'IPE 500', h:500, b:200, tw:10.2, tf:16.0, jx:48200, wx:1930, kgm:90.7},
+            {n:'IPE 550', h:550, b:210, tw:11.1, tf:17.2, jx:67120, wx:2440, kgm:106}, {n:'IPE 600', h:600, b:220, tw:12.0, tf:19.0, jx:92080, wx:3070, kgm:122}
+        ],
+        'HEA': [
+            {n:'HEA 100', h:96, b:100, tw:5, tf:8, jx:349, wx:72.8, kgm:16.7}, {n:'HEA 120', h:114, b:120, tw:5, tf:8, jx:606, wx:106, kgm:19.9},
+            {n:'HEA 140', h:133, b:140, tw:5.5, tf:8.5, jx:1033, wx:155, kgm:24.7}, {n:'HEA 160', h:152, b:160, tw:6, tf:9, jx:1673, wx:220, kgm:30.4},
+            {n:'HEA 180', h:171, b:180, tw:6, tf:9.5, jx:2510, wx:294, kgm:35.5}, {n:'HEA 200', h:190, b:200, tw:6.5, tf:10, jx:3692, wx:389, kgm:42.3},
+            {n:'HEA 220', h:210, b:220, tw:7, tf:11, jx:5410, wx:515, kgm:50.5}, {n:'HEA 240', h:230, b:240, tw:7.5, tf:12, jx:7763, wx:675, kgm:60.3},
+            {n:'HEA 260', h:250, b:260, tw:7.5, tf:12.5, jx:10450, wx:836, kgm:68.2}, {n:'HEA 280', h:270, b:280, tw:8, tf:13, jx:13670, wx:1010, kgm:76.4},
+            {n:'HEA 300', h:290, b:300, tw:8.5, tf:14, jx:18260, wx:1260, kgm:88.3}, {n:'HEA 320', h:310, b:300, tw:9, tf:15.5, jx:22930, wx:1480, kgm:97.6},
+            {n:'HEA 340', h:330, b:300, tw:9.5, tf:16.5, jx:27690, wx:1680, kgm:105}, {n:'HEA 360', h:350, b:300, tw:10, tf:17.5, jx:33090, wx:1890, kgm:112},
+            {n:'HEA 400', h:390, b:300, tw:11, tf:19, jx:45070, wx:2310, kgm:125}, {n:'HEA 450', h:440, b:300, tw:11.5, tf:21, jx:63720, wx:2900, kgm:140},
+            {n:'HEA 500', h:490, b:300, tw:12, tf:23, jx:86970, wx:3550, kgm:155}, {n:'HEA 550', h:540, b:300, tw:12.5, tf:24, jx:111900, wx:4150, kgm:166},
+            {n:'HEA 600', h:590, b:300, tw:13, tf:25, jx:141200, wx:4790, kgm:178}
+        ],
+        'HEB': [
+            {n:'HEB 100', h:100, b:100, tw:6, tf:10, jx:450, wx:89.9, kgm:20.4}, {n:'HEB 120', h:120, b:120, tw:6.5, tf:11, jx:864, wx:144, kgm:26.7},
+            {n:'HEB 140', h:140, b:140, tw:7, tf:12, jx:1509, wx:216, kgm:33.7}, {n:'HEB 160', h:160, b:160, tw:8, tf:13, jx:2492, wx:311, kgm:42.6},
+            {n:'HEB 180', h:180, b:180, tw:8.5, tf:14, jx:3831, wx:426, kgm:51.2}, {n:'HEB 200', h:200, b:200, tw:9, tf:15, jx:5696, wx:570, kgm:61.3},
+            {n:'HEB 220', h:220, b:220, tw:9.5, tf:16, jx:8091, wx:736, kgm:71.5}, {n:'HEB 240', h:240, b:240, tw:10, tf:17, jx:11260, wx:938, kgm:83.2},
+            {n:'HEB 260', h:260, b:260, tw:10, tf:17.5, jx:14920, wx:1150, kgm:93.0}, {n:'HEB 280', h:280, b:280, tw:10.5, tf:18, jx:19270, wx:1380, kgm:103},
+            {n:'HEB 300', h:300, b:300, tw:11, tf:19, jx:25170, wx:1680, kgm:117}
+        ],
+        'HEM': [
+            {n:'HEM 100', h:120, b:106, tw:12, tf:20, jx:1143, wx:190, kgm:41.8}, {n:'HEM 120', h:140, b:126, tw:12.5, tf:21, jx:2018, wx:288, kgm:52.1},
+            {n:'HEM 140', h:160, b:146, tw:13, tf:22, jx:3291, wx:411, kgm:63.2}, {n:'HEM 160', h:180, b:166, tw:14, tf:23, jx:5098, wx:566, kgm:76.2},
+            {n:'HEM 180', h:200, b:186, tw:14.5, tf:24, jx:7483, wx:748, kgm:88.9}, {n:'HEM 200', h:220, b:206, tw:15, tf:25, jx:10640, wx:967, kgm:103},
+            {n:'HEM 220', h:240, b:226, tw:15.5, tf:26, jx:14600, wx:1220, kgm:117}, {n:'HEM 240', h:270, b:248, tw:18, tf:32, jx:24290, wx:1800, kgm:157}
+        ],
+        'TubQ': [], 'TubR': [], 'Tondi': []
+    };
+
+    // GENERATORE TUBOLARI (Monster Lite per demo)
+    function genTubQ(l, t) {
+        if(t>=l/2) return;
+        let Hi=l-2*t; let j=(Math.pow(l,4)-Math.pow(Hi,4))/120000; let w=j/(l/20); let wg=(l*l-Hi*Hi)*7.85/1000;
+        DB['TubQ'].push({n:`TQ ${l}x${l}x${t}`, h:l, b:l, tw:t, tf:t, jx:j, wx:w, kgm:wg.toFixed(2)});
+    }
+    function genTubR(h, b, t) {
+        if(t>=Math.min(h,b)/2) return;
+        let hi=h-2*t; let bi=b-2*t; let j=(b*Math.pow(h,3)-bi*Math.pow(hi,3))/120000; let w=j/(h/20); let wg=(h*b-hi*bi)*7.85/1000;
+        DB['TubR'].push({n:`TR ${h}x${b}x${t}`, h:h, b:b, tw:t, tf:t, jx:j, wx:w, kgm:wg.toFixed(2)});
+    }
+    function genTondi(d, t) {
+        if(t>=d/2) return;
+        let di=d-2*t; let j=(Math.PI*(Math.pow(d,4)-Math.pow(di,4)))/640000; let w=j/(d/20); let wg=Math.PI*(Math.pow(d/2,2)-Math.pow(di/2,2))*7.85/1000;
+        DB['Tondi'].push({n:`Ø${d}x${t}`, h:d, b:d, tw:t, tf:t, jx:j, wx:w, kgm:wg.toFixed(2)});
+    }
+
+    let thks = [2,3,4,5,6,8,10,12];
+    [40,50,60,80,100,120,150,200,250,300].forEach(l => thks.forEach(t => genTubQ(l,t)));
+    [[60,40],[80,40],[100,50],[120,60],[150,100],[200,100],[300,150]].forEach(d => thks.forEach(t => genTubR(d[0],d[1],t)));
+    [33.7, 42.4, 48.3, 60.3, 76.1, 88.9, 101.6, 114.3, 139.7, 168.3, 219.1].forEach(d => thks.forEach(t => genTondi(d,t)));
+
+    // --- CALCOLO ---
+    function calc() {
+        let L = parseFloat(document.getElementById('inp-L').value);
+        let Q = parseFloat(document.getElementById('inp-Q').value);
+        let Type = document.getElementById('load-type').value;
+        let fy = parseFloat(document.getElementById('sel-mat').value);
+        let gamma = parseFloat(document.getElementById('inp-gamma').value);
+        let sw = document.getElementById('chk-sw').checked;
+
+        let Jx = parseFloat(document.getElementById('v-jx').value) * 10000; 
+        let Wx = parseFloat(document.getElementById('v-wx').value) * 1000;
+        let Weight = parseFloat(document.getElementById('v-kgm').value);
+
+        document.getElementById('slider-Q').value = Q; // Sync Slider
+
+        // Carichi
+        let q_sw = sw ? (Weight * 9.81 / 1000) : 0; 
+        let M_max = 0, f_max = 0;
+
+        if (Type === 'distr') {
+            let q_user = (Q * 9.81 / 1000);
+            let q_tot = (q_user * gamma) + (q_sw * 1.3);
+            M_max = (q_tot * L * L) / 8;
+            f_max = (5 * (q_user + q_sw) * Math.pow(L, 4)) / (384 * 210000 * Jx);
+        } else {
+            let P_user = Q * 9.81;
+            M_max = (P_user * gamma * L) / 4;
+            let f_p = (P_user * Math.pow(L, 3)) / (48 * 210000 * Jx);
+            let f_sw = (5 * q_sw * Math.pow(L, 4)) / (384 * 210000 * Jx);
+            f_max = f_p + f_sw;
+        }
+
+        let Sigma = M_max / Wx;
+        let Util = (Sigma / fy) * 100;
+        
+        document.getElementById('val-stress').innerText = Util.toFixed(1) + "%";
+        document.getElementById('bar-stress').style.width = Math.min(Util, 100) + "%";
+        document.getElementById('bar-stress').style.background = Util > 100 ? "var(--accent-red)" : "var(--accent-green)";
+        
+        document.getElementById('val-def').innerText = f_max.toFixed(1) + " mm";
+        let defPerc = (f_max / (L/250)) * 100;
+        document.getElementById('bar-def').style.width = Math.min(defPerc, 100) + "%";
+
+        let card = document.getElementById('status-card');
+        let txt = document.getElementById('status-txt');
+        let sub = document.getElementById('status-sub');
+        card.className = "status-card";
+        if (Util > 100) { card.classList.add("fail"); txt.innerText = "CROLLA"; sub.innerText = "SFORZO ECCESSIVO"; } 
+        else if (defPerc > 100) { card.classList.add("warn"); txt.innerText = "NON IDONEO"; sub.innerText = "TROPPA FRECCIA"; } 
+        else { card.classList.add("ok"); txt.innerText = "A NORMA"; sub.innerText = "TUTTO OK"; }
+
+        drawPie(Q, (Weight * L / 1000));
+
+        let pType = document.getElementById('v-type').value;
+        let H = parseFloat(document.getElementById('v-h').value);
+        let B = parseFloat(document.getElementById('v-b').value);
+        let Tw = parseFloat(document.getElementById('v-tw').value);
+        let Tf = parseFloat(document.getElementById('v-tf').value);
+        
+        drawFront(pType, H, B, Tw, Tf, f_max);
+        drawSide(L, f_max, Util, Type, Q);
+    }
+
+    // --- DISEGNO 2D ---
+    function drawFront(t, h, b, tw, tf, f) {
+        let c = document.getElementById('frontCanvas'); let ctx = c.getContext('2d');
+        let w = c.width = c.clientWidth; let hc = c.height = c.clientHeight;
+        ctx.clearRect(0,0,w,hc);
+
+        let scale = Math.min(w, hc) / (Math.max(h,b)*1.8);
+        let cx = w/2; let cy = hc/3;
+        let sh = h*scale; let sb = b*scale; let stw = tw*scale; let stf = tf*scale;
+        let drop = Math.min(f*scale*3, hc*0.4); if(f>0.1 && drop<2) drop=2;
+
+        ctx.strokeStyle = "#444"; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+        drawProfilePath(ctx, t, cx, cy, sh, sb, stw, stf); ctx.stroke(); ctx.setLineDash([]); 
+
+        ctx.fillStyle = "rgba(41, 98, 255, 0.3)"; ctx.strokeStyle = "#2962ff"; ctx.lineWidth=2;
+        let dy = cy + drop;
+        drawProfilePath(ctx, t, cx, dy, sh, sb, stw, stf); ctx.fill(); ctx.stroke();
+
+        if (f>0) {
+            ctx.font = "bold 14px Roboto"; ctx.fillStyle = "#d50000"; ctx.textAlign = "center";
+            ctx.fillText("DEFORMAZIONE: " + f.toFixed(1) + " mm", w/2, hc - 20);
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, dy); ctx.strokeStyle="#d50000"; ctx.stroke();
+        }
+    }
+
+    function drawProfilePath(ctx, t, x, y, h, b, tw, tf) {
+        ctx.beginPath();
+        let x0 = x - b/2; let y0 = y - h/2;
+        if (t.includes('IPE') || t.includes('HE')) {
+            ctx.rect(x0, y0, b, tf); ctx.rect(x0+(b-tw)/2, y0+tf, tw, h-2*tf); ctx.rect(x0, y0+h-tf, b, tf);
+        } else if(t.includes('Tondi')) {
+            ctx.arc(x, y, h/2, 0, 2*Math.PI); ctx.arc(x, y, h/2-tw, 0, 2*Math.PI, true);
+        } else {
+            ctx.rect(x0, y0, b, h); 
+            ctx.moveTo(x0+tw, y0+tw); ctx.lineTo(x0+tw, y0+h-tw); ctx.lineTo(x0+b-tw, y0+h-tw); ctx.lineTo(x0+b-tw, y0+tw); ctx.closePath();
+        }
+    }
+
+    function drawSide(L, f, util, type, Qval) {
+        let c = document.getElementById('sideCanvas'); let ctx = c.getContext('2d');
+        let w = c.width = c.clientWidth; let h = c.height = c.clientHeight;
+        ctx.clearRect(0,0,w,h);
+
+        let m = 30; let y0 = h/2 + 20; let Ld = w - 2*m;
+        let col = util > 100 ? "#d50000" : "#2962ff";
+        let vDef = Math.min(f, 60); if(f>0.1 && vDef<2) vDef=2;
+
+        ctx.beginPath(); ctx.lineWidth=4; ctx.strokeStyle = col;
+        ctx.moveTo(m, y0); ctx.quadraticCurveTo(w/2, y0+vDef*2, w-m, y0); ctx.stroke(); 
+
+        ctx.fillStyle="#666"; 
+        ctx.beginPath(); ctx.moveTo(m, y0+5); ctx.lineTo(m-8, y0+20); ctx.lineTo(m+8, y0+20); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(w-m, y0+5); ctx.lineTo(w-m-8, y0+20); ctx.lineTo(w-m+8, y0+20); ctx.fill();
+
+        // VETTORI CON ETICHETTE
+        ctx.fillStyle = "#fff"; ctx.font = "bold 11px Roboto"; ctx.textAlign="center";
+
+        if (type === 'distr') {
+            ctx.fillStyle = "rgba(41, 121, 255, 0.5)"; ctx.strokeStyle = "#2979ff"; ctx.lineWidth = 1;
+            let arrows = 10;
+            ctx.beginPath(); ctx.moveTo(m, y0-40); ctx.lineTo(w-m, y0-40); ctx.stroke();
+            for(let i=0; i<=arrows; i++){
+                let x = m + (Ld/arrows)*i;
+                let relX = (x - m) / Ld;
+                let curveY = y0 + (vDef*2) * 4 * relX * (1 - relX);
+                drawVectorArrow(ctx, x, y0-40, x, curveY-4);
+            }
+            // Etichetta q
+            ctx.fillStyle = "#2962ff";
+            ctx.fillText("q = " + Qval + " kg/m", w/2, y0-50);
+        } else {
+            let cx = w/2; let cy = y0 + (vDef*2);
+            ctx.strokeStyle = "#ff9100"; ctx.fillStyle = "#ff9100"; ctx.lineWidth = 3;
+            drawVectorArrow(ctx, cx, y0-50, cx, cy-4);
+            // Etichetta P
+            ctx.fillText("P = " + Qval + " kg", cx, y0-60);
+        }
+    }
+
+    function drawVectorArrow(ctx, x1, y1, x2, y2) {
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        let head = 5; ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2-head, y2-head); ctx.lineTo(x2+head, y2-head); ctx.fill();
+    }
+
+    function drawPie(load, sw) {
+        let c = document.getElementById('pieChart'); let ctx = c.getContext('2d');
+        let w = c.width; let h = c.height;
+        ctx.clearRect(0,0,w,h);
+        
+        let tot = load + sw; if(tot===0) return;
+        let angLoad = (load/tot) * 2 * Math.PI;
+        
+        ctx.beginPath(); ctx.moveTo(w/2, h/2); ctx.arc(w/2, h/2, 50, -1.57, -1.57+angLoad); ctx.fillStyle="#444"; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(w/2, h/2); ctx.arc(w/2, h/2, 50, -1.57+angLoad, -1.57+2*Math.PI); ctx.fillStyle="#ffab00"; ctx.fill();
+        ctx.beginPath(); ctx.arc(w/2, h/2, 30, 0, 2*Math.PI); ctx.fillStyle="#111"; ctx.fill();
+    }
+
+    // --- MODAL ---
+    function openModal() { document.getElementById('modal-prof').style.display = 'flex'; loadProfs('IPE'); }
+    function loadProfs(type) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active');
+        let list = document.getElementById('prof-list'); list.innerHTML = "";
+        
+        (DB[type] || []).forEach(p => {
+            let d = document.createElement('div'); d.className = 'prof-row';
+            d.innerHTML = `<div class="pr-col name" data-label="SIGLA">${p.n}</div><div class="pr-col" data-label="MISURE">${p.h}x${p.b}</div><div class="pr-col hl" data-label="PESO">${p.kgm}</div><div class="pr-col" data-label="Jx">${Math.round(p.jx)}</div><div class="pr-col" data-label="Wx">${Math.round(p.wx)}</div>`;
+            d.onclick = () => {
+                document.getElementById('sel-name').innerText = p.n;
+                document.getElementById('lbl-dim').innerText = `${p.h}x${p.b} mm`;
+                document.getElementById('lbl-w').innerText = `${p.kgm} kg/m`;
+                document.getElementById('v-type').value = type;
+                document.getElementById('v-h').value = p.h; document.getElementById('v-b').value = p.b;
+                document.getElementById('v-tw').value = p.tw; document.getElementById('v-tf').value = p.tf;
+                document.getElementById('v-jx').value = p.jx; document.getElementById('v-wx').value = p.wx;
+                document.getElementById('v-kgm').value = p.kgm;
+                document.getElementById('modal-prof').style.display = 'none';
+                calc();
+            };
+            list.appendChild(d);
+        });
+    }
+
+    function exportPDF() { html2pdf(document.body, { margin:0, filename:'BeamCalcolo.pdf' }); }
+    function exportXLS() {
+        let wb = XLSX.utils.book_new();
+        let ws_data = [ ["CALCOLO TRAVE", ""], ["Data", new Date().toLocaleDateString()], [], ["INPUT", ""], ["Luce", document.getElementById('inp-L').value], ["Carico", document.getElementById('inp-Q').value], ["Profilo", document.getElementById('sel-name').innerText], [], ["RISULTATI", ""], ["Sforzo", document.getElementById('val-stress').innerText], ["Freccia", document.getElementById('val-def').innerText] ];
+        let ws = XLSX.utils.aoa_to_sheet(ws_data); XLSX.utils.book_append_sheet(wb, ws, "Calcolo"); XLSX.writeFile(wb, "Calcolo.xlsx");
+    }
+
+    calc();
+</script>
+</body>
+</html>

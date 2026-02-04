@@ -14,49 +14,42 @@
            ========================================= */
         body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        
         .no-select { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 
-        /* TOP NAV GENERALE */
+        /* TOP NAV */
         .top-nav { background: #1a1a1a; border-bottom: 1px solid #333; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; height: 60px; flex-shrink: 0; }
         .nav-left { flex: 0 0 auto; }
-        
         .btn-home { background: transparent; border: 1px solid #444; color: #ccc; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
         .btn-home:hover { border-color: white; color: white; }
 
         .nav-center { flex: 1; display: flex; justify-content: center; align-items: center; gap: 15px; overflow-x: auto; }
         
-        /* ELEMENTI DI NAVIGAZIONE CLASSICI (Settimane/Giorni) */
+        /* MOBILE NAV */
         .week-select { background: #222; color: white; border: 1px solid #444; padding: 5px; border-radius: 5px; font-family: inherit; font-size: 13px; cursor: pointer; }
         .day-group { display: flex; gap: 3px; background: #222; padding: 3px; border-radius: 8px; border: 1px solid #333; }
         .day-btn { padding: 6px 12px; background: transparent; border: none; color: #888; border-radius: 5px; cursor: pointer; user-select: none; font-size: 12px; font-weight: bold; transition: 0.2s; }
         .day-btn:hover { background: rgba(255,255,255,0.1); color: white; }
         .day-btn.selected { background: #eee; color: black; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        /* NUOVI ELEMENTI DESKTOP (Data Estesa) */
-        .desktop-date-container { display: none; align-items: center; gap: 15px; background: #222; padding: 5px 15px; border-radius: 8px; border: 1px solid #333; }
-        .desktop-date-input { background: #111; border: 1px solid #444; color: white; padding: 5px 10px; border-radius: 4px; font-family: 'Segoe UI'; font-size: 14px; cursor: pointer; }
-        .desktop-date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        .desktop-date-label { font-size: 16px; font-weight: bold; color: #3498db; text-transform: capitalize; min-width: 200px; text-align: center; }
+        .mobile-date-picker { display: none; background: #222; color: white; border: 1px solid #444; padding: 5px; border-radius: 6px; font-family: 'Segoe UI', sans-serif; width: 110px; font-size: 12px; }
 
-        /* PULSANTI VISTA */
+        /* DESKTOP NAV */
+        .desktop-nav-group { display: none; align-items: center; gap: 10px; background: #222; padding: 5px 15px; border-radius: 10px; border: 1px solid #333; }
+        .desk-date-input { background: #111; border: 1px solid #444; color: white; padding: 5px; border-radius: 5px; cursor: pointer; color-scheme: dark; }
+        .btn-nav-arrow { background: transparent; border: 1px solid #444; color: #ccc; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px; }
+        .btn-nav-arrow:hover { background: #333; color: white; border-color: #666; }
+        .desk-date-text { font-size: 16px; font-weight: bold; color: #3498db; text-transform: capitalize; min-width: 220px; text-align: center; user-select: none; }
+
+        /* VIEW BUTTONS */
         .view-group { display: flex; gap: 5px; margin-left: 10px; }
         .view-btn { padding: 6px 12px; background: transparent; border: 1px solid #444; color: #888; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         .view-btn:hover { border-color: #666; color: white; }
         .view-btn.selected { background: #E94560; color: white; border-color: #E94560; }
-        
-        .btn-wa { border-color: #9b59b6; color: #9b59b6; }
-        .btn-wa:hover { background: rgba(155, 89, 182, 0.2); color: #fff; border-color: #9b59b6; }
-        
-        .btn-xls { border-color: #27ae60; color: #27ae60; }
-        .btn-xls:hover { background: rgba(39, 174, 96, 0.2); color: #fff; border-color: #27ae60; }
-
-        /* DATA PICKER PER MOBILE */
-        .mobile-date-picker { display: none; background: #222; color: white; border: 1px solid #444; padding: 5px; border-radius: 6px; font-family: 'Segoe UI', sans-serif; width: 110px; font-size: 12px; }
+        .btn-wa { border-color: #9b59b6; color: #9b59b6; } .btn-wa:hover { background: rgba(155, 89, 182, 0.2); color: #fff; border-color: #9b59b6; }
+        .btn-xls { border-color: #27ae60; color: #27ae60; } .btn-xls:hover { background: rgba(39, 174, 96, 0.2); color: #fff; border-color: #27ae60; }
+        .btn-manage { border-color: #34495e; color: #ccc; background: #2c3e50; } 
+        .btn-manage:hover { background: #34495e; color: white; border-color: #5d6d7e; }
 
         .nav-right { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; background: rgba(231, 76, 60, 0.1); padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(231, 76, 60, 0.3); }
-        
-        .clean-select { background: #111; border: 1px solid #444; color: #ccc; padding: 5px; border-radius: 4px; font-size: 12px; width: 150px; }
         .btn-clean { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
         .btn-clean:hover { background: #c0392b; transform: scale(1.05); }
 
@@ -66,24 +59,35 @@
         .btn-dip.selected { background: #E94560; color: white; border-color: #E94560; }
 
         .main-area { flex: 1; overflow: auto; padding: 10px; position: relative; }
-        
         table { border-collapse: separate; border-spacing: 4px 2px; } 
         th { position: sticky; top: 0; background: #222; padding: 10px; font-size: 11px; border-bottom: 1px solid #444; z-index: 10; text-transform: uppercase; color: #888; }
         td { height: 35px; text-align: center; font-size: 12px; color: #ccc; cursor: pointer; background: #141414; vertical-align: top; padding: 0; border: 1px solid #222; border-radius: 4px; }
         
-        .col-ora { position: sticky; left: 0; background: #1a1a1a; color: rgba(255,255,255,0.8); font-weight: normal; border-right: 1px solid #333; z-index: 5; width: 60px; font-size: 11px; vertical-align: middle; }
+        /* --- CSS COLONNE DINAMICHE (MODIFICATO) --- */
+        @media (min-width: 1025px) {
+            #main-table { table-layout: fixed; width: 100%; }
+            .col-ora { width: 50px !important; }
+            /* Dipendenti SENZA ore (Stretti ma colore originale) */
+            .col-inactive { width: 40px !important; overflow: hidden; font-size: 9px !important; opacity: 0.7; }
+            /* Dipendenti CON ore (Si dividono lo spazio rimanente) */
+            .col-active { width: auto; font-size: 12px; }
+        }
         
+        /* Badge Ore Semplificato */
+        .hours-badge { font-weight: normal; margin-left: 3px; opacity: 0.8; font-size: 10px; }
+
+        .col-ora { position: sticky; left: 0; background: #1a1a1a; color: rgba(255,255,255,0.8); font-weight: normal; border-right: 1px solid #333; z-index: 5; width: 60px; font-size: 11px; vertical-align: middle; }
         #main-table { width: 100%; min-width: 1000px; }
         .single-dip-table { width: 100%; max-width: 800px; margin: 0 auto; min-width: auto !important; border-collapse: separate; border-spacing: 0 2px; }
         
-        .task-block { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(145deg, #2a2a2a, #202020); border: 1px solid rgba(255, 255, 255, 0.3); border-left-width: 4px; border-radius: 6px; box-sizing: border-box; padding: 5px 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s; }
+        .task-block { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(145deg, #2a2a2a, #202020); border: 1px solid rgba(255, 255, 255, 0.3); border-left-width: 4px; border-radius: 6px; box-sizing: border-box; padding: 4px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s; }
         .task-block:hover { filter: brightness(1.3); z-index: 10; transform: scale(1.02); }
-        .task-comm { font-weight: 500; font-size: 14px; margin-bottom: 2px; text-transform: uppercase; text-align: center; }
-        .task-note { font-size: 11px; color: #ccc; white-space: normal; line-height: 1.2; text-align: center; opacity: 0.8; font-style: italic; }
+        .task-client { font-size: 10px; font-style: italic; color: #aaa; margin-bottom: 1px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .task-comm { font-weight: 700; font-size: 13px; margin-bottom: 2px; text-transform: uppercase; text-align: center; color: white; letter-spacing: 0.5px; }
+        .task-note { font-size: 10px; color: #ccc; white-space: normal; line-height: 1.1; text-align: center; opacity: 0.8; font-style: italic; }
         .selected-cell .task-block { border: 2px solid #fff !important; }
         .task-block.is-pausa { background: repeating-linear-gradient(45deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px) !important; border-color: #666 !important; color: #aaa !important; }
         .task-block.is-pausa .task-comm { color: #aaa !important; }
-
         #dip-detail-container { width: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 50px; }
         .dip-card-wrapper { padding: 10px; border-radius: 12px; border: 1px solid transparent; box-shadow: 0 0 20px rgba(0,0,0,0.5); background: #111; }
 
@@ -92,6 +96,32 @@
         .modal-box { background: #1e1e1e; width: 95%; height: 95%; border-radius: 15px; border: 1px solid #444; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         .modal-head { padding: 15px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; background: #111; }
         
+        .manage-box { width: 900px; max-width: 95%; height: 80vh; background: #1e1e1e; padding: 20px; border-radius: 15px; display: flex; flex-direction: column; }
+        .manage-cols { display: flex; gap: 20px; flex: 1; overflow: hidden; margin-top: 15px; }
+        .manage-col { flex: 1; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; }
+        .manage-title { font-weight: bold; text-transform: uppercase; text-align: center; padding: 10px; border-bottom: 1px solid #333; color: #fff; }
+        .list-dip { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; padding-top: 10px; }
+        .item-dip { background: #222; padding: 10px; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; }
+        .item-dip:hover { background: #2a2a2a; border-color: #555; }
+        .btn-move { background: transparent; border: 1px solid #555; color: #888; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-move:hover { color: white; border-color: white; background: #444; }
+        
+        .alias-popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #2c3e50; padding: 25px; border-radius: 12px; border: 2px solid #3498db; width: 400px; z-index: 10001; box-shadow: 0 0 50px rgba(0,0,0,0.9); display: none; }
+        .alias-popup label { font-size: 11px; color: #aaa; text-transform: uppercase; font-weight: bold; margin-top: 10px; display: block; }
+        .alias-popup input, .alias-popup textarea { width: 100%; background: #1a1a1a; border: 1px solid #444; color: white; padding: 8px; border-radius: 5px; margin-top: 5px; box-sizing: border-box; }
+        .alias-popup textarea { resize: none; height: 60px; }
+        .time-row { display: flex; gap: 10px; }
+        .time-row div { flex: 1; }
+
+        .clean-modal-content { width: 400px; height: auto; padding: 25px; border-left: 5px solid #e74c3c; gap: 15px; }
+        .clean-checklist { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 200px; overflow-y: auto; background: #151515; padding: 10px; border: 1px solid #444; border-radius: 5px; margin-bottom: 15px; }
+        .check-item { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; color: #ddd; }
+        .check-item input { accent-color: #e74c3c; cursor: pointer; width: 16px; height: 16px; }
+        .clean-modal-content label { color: #aaa; font-size: 11px; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; display: block; }
+        .clean-modal-content input[type="date"] { background: #111; border: 1px solid #444; color: white; padding: 10px; width: 100%; box-sizing: border-box; border-radius: 5px; margin-bottom: 15px; }
+        .clean-modal-content button { width: 100%; padding: 12px; background: #e74c3c; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        .clean-modal-content button:hover { background: #c0392b; }
+
         .wa-cols { display: flex; flex: 1; overflow: hidden; }
         .wa-left { flex: 1; padding: 20px; border-right: 1px solid #444; display: flex; flex-direction: column; gap: 10px; background: #181818; }
         .wa-right { flex: 2.5; padding: 20px; overflow-y: auto; background: #141414; }
@@ -128,34 +158,24 @@
            MEDIA QUERIES (DESKTOP VS MOBILE)
            ========================================= */
         @media (min-width: 1025px) {
-            /* PC: Mostra Data Estesa, Nascondi Mobile */
             .week-select, .day-group, .mobile-date-picker { display: none !important; }
-            .desktop-date-container { display: flex !important; }
+            .desktop-nav-group { display: flex !important; }
         }
 
         @media (max-width: 1024px) {
-            /* TABLET/MOBILE: Logica Originale */
             .top-nav { padding: 5px 10px; gap: 5px; height: 50px; }
             .btn-home { padding: 8px 10px; border-radius: 10px; }
             .desktop-text { display: none; }
             .nav-right { padding: 2px 5px; border: none; background: transparent; gap: 5px; }
-            .clean-select { width: 35px; padding: 5px 0; text-align: center; border-radius: 5px; } 
             .btn-clean { padding: 8px; border-radius: 5px; }
-            
             .nav-center { flex: 1; justify-content: center; gap: 10px; }
-            
-            /* Su mobile molto piccolo (<768) nascondi week/day, mostra picker mobile */
             .week-select, .day-group { display: none !important; }
             .mobile-date-picker { display: block; }
-            
             .view-group { display: flex !important; gap: 5px; margin-left: 0; }
             .view-btn { padding: 6px 8px; font-size: 10px; }
-            
             .desktop-only { display: none !important; }
-            .desktop-date-container { display: none !important; } /* Nascondi la nuova barra desktop */
+            .desktop-nav-group { display: none !important; }
         }
-        
-        /* Tablet orizzontale (Ripristina week/day se c'è spazio, ma tu hai chiesto Mobile style) */
         @media (min-width: 769px) and (max-width: 1024px) {
            .week-select, .day-group { display: flex !important; }
            .mobile-date-picker { display: none; }
@@ -173,28 +193,28 @@
         </div>
 
         <div class="nav-center">
-            
             <select id="weekSelect" class="week-select" onchange="cambiaSettimana(this.value)"></select>
             <div id="day-container" class="day-group"></div>
             <input type="date" id="mobileDatePicker" class="mobile-date-picker" onchange="selectDay(this.value, null)">
 
-            <div class="desktop-date-container">
-                <input type="date" id="desktopDatePicker" class="desktop-date-input" onchange="selectDay(this.value, null)">
-                <span id="desktopDateLabel" class="desktop-date-label">Caricamento...</span>
+            <div class="desktop-nav-group">
+                <input type="date" id="desktopDatePicker" class="desk-date-input" onchange="selectDay(this.value, null)">
+                <button class="btn-nav-arrow" onclick="cambiaGiorno(-1)">❮</button>
+                <span id="deskDateLabel" class="desk-date-text">Caricamento...</span>
+                <button class="btn-nav-arrow" onclick="cambiaGiorno(1)">❯</button>
             </div>
 
             <div class="view-group">
                 <button class="view-btn selected" id="btn-tab" onclick="cambiaVista('tabellone')">GIORNALIERO</button>
                 <button class="view-btn" id="btn-dip" onclick="cambiaVista('dipendente')">DIPENDENTI</button>
+                <button class="view-btn btn-manage" onclick="apriGestione()">⚙️ GESTISCI</button>
                 <button class="view-btn btn-wa" onclick="apriWA()">WA</button>
-                
                 <button class="view-btn btn-xls desktop-only" onclick="window.location.href='excel_manager.html'">XLS</button>
             </div>
         </div>
 
         <div class="nav-right">
-            <select id="clean-dip-select" class="clean-select"><option value="">...</option><option value="ALL" style="font-weight:bold; color:#e74c3c;">TUTTI</option></select>
-            <button class="btn-clean" onclick="pulisciColonna()">🗑️ <span class="desktop-text">PULISCI</span></button>
+            <button class="btn-clean" onclick="apriPulisciAvanzato()">🗑️ <span class="desktop-text">PULISCI</span></button>
         </div>
     </div>
 
@@ -209,12 +229,84 @@
         </div>
     </div>
 
+    <div id="modal-manage" class="modal-overlay" style="display:none;">
+        <div class="modal-box manage-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #444; padding-bottom:10px;">
+                <h2 style="color:#3498db; margin:0;">ARCHIVIO DIPENDENTI</h2>
+                <button onclick="document.getElementById('modal-manage').style.display='none'; location.reload();" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">✕</button>
+            </div>
+            <div class="manage-cols">
+                <div class="manage-col">
+                    <div class="manage-title" style="color:#2ecc71;">✅ IN FORZA (VISIBILI)</div>
+                    <div id="list-active" class="list-dip"></div>
+                </div>
+                <div class="manage-col">
+                    <div class="manage-title" style="color:#e74c3c;">🏛️ STORICO (NASCOSTI)</div>
+                    <div id="list-history" class="list-dip"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="alias-popup" class="alias-popup">
+            <h4 id="alias-title" style="margin:0 0 10px 0; color:white; border-bottom:1px solid #3498db; padding-bottom:5px;"></h4>
+            <label>SOPRANNOMI (separati da virgola)</label>
+            <input type="text" id="alias-input" placeholder="Es. Pippo, Filo">
+            
+            <label style="color:#f39c12; margin-top:15px;">ORARIO PAUSA PRANZO (Automazione)</label>
+            <div class="time-row">
+                <div>
+                    <label style="margin-top:0;">INIZIO</label>
+                    <input type="time" id="alias-pausa-start">
+                </div>
+                <div>
+                    <label style="margin-top:0;">FINE</label>
+                    <input type="time" id="alias-pausa-end">
+                </div>
+            </div>
+
+            <label>DATA ASSUNZIONE</label>
+            <input type="date" id="alias-assunzione">
+            
+            <label>DATA CESSAZIONE</label>
+            <input type="date" id="alias-cessazione">
+            
+            <label>NOTE</label>
+            <textarea id="alias-note" placeholder="Scrivi note qui..."></textarea>
+            
+            <div style="margin-top:15px; text-align:right;">
+                <button onclick="salvaAlias()" style="background:#2ecc71; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">SALVA</button>
+                <button onclick="document.getElementById('alias-popup').style.display='none'" style="background:transparent; border:1px solid #555; color:#ccc; padding:8px 15px; border-radius:4px; margin-left:5px; cursor:pointer;">CHIUDI</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-clean-adv" class="modal-overlay" style="display:none;">
+        <div class="modal-box clean-modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0; color:#e74c3c;">PULIZIA AVANZATA</h3>
+                <button onclick="document.getElementById('modal-clean-adv').style.display='none'" style="background:transparent; border:none; color:white; font-size:18px; width:auto; padding:0; cursor:pointer;">✕</button>
+            </div>
+            <label>SELEZIONA DIPENDENTI</label>
+            <div id="clean-checklist" class="clean-checklist"></div>
+            <label>DA QUANDO (Data Inizio)</label>
+            <input type="date" id="clean-start">
+            <label>A QUANDO (Data Fine Inclusa)</label>
+            <input type="date" id="clean-end">
+            <button onclick="eseguiPuliziaAvanzata()">CONFERMA CANCELLAZIONE</button>
+        </div>
+    </div>
+
     <div id="modal-edit" class="modal-overlay" style="display: none;">
         <div class="modal-edit-box" id="edit-box-visual">
             <h3 style="margin:0; color:white; text-transform:uppercase;" id="edit-dip-title">MODIFICA MANSIONE</h3>
             <div class="edit-row"><div class="edit-group"><label class="edit-label">INIZIO</label><select id="edit-start" class="edit-select"></select></div><div class="edit-group"><label class="edit-label">FINE</label><select id="edit-end" class="edit-select"></select></div></div>
-            <button class="btn-pausa" onclick="setPausaPranzo()">🍽️ IMPOSTA PAUSA PRANZO (12:00 - 13:00)</button>
-            <div class="edit-group"><label class="edit-label">COMMESSA</label><input type="text" id="edit-commessa" class="edit-inp" placeholder="Es. 136483"></div>
+            
+            <button class="btn-pausa" onclick="inserisciPausaConTaglio()">🍽️ INSERISCI PAUSA PRANZO (12:00 - 13:00)</button>
+            
+            <div class="edit-row">
+                <div class="edit-group"><label class="edit-label">CLIENTE</label><input type="text" id="edit-cliente" class="edit-inp" placeholder="Es. Rossi Srl"></div>
+                <div class="edit-group"><label class="edit-label">COMMESSA</label><input type="text" id="edit-commessa" class="edit-inp" placeholder="Es. 136483"></div>
+            </div>
             <div class="edit-group"><label class="edit-label">NOTE / DESCRIZIONE</label><textarea id="edit-note" class="edit-inp" rows="8" placeholder="Es. Saldatura nel girello..."></textarea></div>
             <div class="edit-row"><div class="edit-group"><label class="edit-label">QUANTITÀ</label><input type="text" id="edit-qta" class="edit-inp" placeholder="Es. 10 pz"></div><div class="edit-group"><label class="edit-label">VOTO</label><input type="text" id="edit-voto" class="edit-inp" placeholder="1-10"></div></div>
             <div class="edit-row" style="margin-top:10px;"><button class="btn-del-big" onclick="eliminaTask()">ELIMINA</button><button class="btn-save-big" onclick="salvaTaskAvanzato()">SALVA MODIFICHE</button><button class="btn-close-edit" onclick="document.getElementById('modal-edit').style.display='none'">CHIUDI</button></div>
@@ -236,104 +328,157 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    const dipendenti = ["Camara", "Filippo", "Fofo", "Ibra", "Ico", "Lorenzo", "Teo", "Roberto", "Simone", "Tonino"];
+    const dipendentiDefault = ["Camara", "Filippo", "Fofo", "Ibra", "Ico", "Lorenzo", "Teo", "Roberto", "Simone", "Tonino"];
+    let anagrafica = {}; 
+    let dipendentiAttuali = []; 
     const dipColors = { "Camara": "#e74c3c", "Filippo": "#3498db", "Fofo": "#f1c40f", "Ibra": "#9b59b6", "Ico": "#e67e22", "Lorenzo": "#1abc9c", "Teo": "#2ecc71", "Roberto": "#e91e63", "Simone": "#00bcd4", "Tonino": "#cddc39" };
+    const colorStorico = "#777777"; 
 
     let currentDate = new Date().toISOString().split('T')[0];
     let dailyData = {}; 
     let waBlocks = [];
     let editDip = ""; let editOriginalStart = ""; let editOriginalEnd = "";
+    let currentEditName = ""; 
 
     window.onload = function() {
         if(localStorage.getItem('auth_token') !== 'logged_in') window.location.href='index.html';
+        loadAnagrafica();
         initDate();
-        const h = document.getElementById('head-row'); dipendenti.forEach(d => h.innerHTML += `<th style="color:${dipColors[d]}">${d}</th>`);
-        const md = document.getElementById('dip-menu'); dipendenti.forEach(d => md.innerHTML += `<div class="btn-dip" onclick="showDipDetail('${d}', this)">${d}</div>`);
-        const sClean = document.getElementById('clean-dip-select'); dipendenti.forEach(d => sClean.innerHTML += `<option value="${d}">${d}</option>`);
         const sStart = document.getElementById('edit-start'); const sEnd = document.getElementById('edit-end');
         for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let t = (h<10?'0':'')+h+':'+(m===0?'00':m); sStart.innerHTML += `<option value="${t}">${t}</option>`; sEnd.innerHTML += `<option value="${t}">${t}</option>`; } }
         sEnd.innerHTML += `<option value="22:15">22:15</option>`;
-        loadData(currentDate);
     };
 
-    function initDate() {
-        // Logica Originale (per mobile)
-        const s = document.getElementById('weekSelect'); for(let i=1; i<=53; i++) { s.innerHTML += `<option value="${i}">W ${i}</option>`; } 
-        let now = new Date(); s.value = getWeekNumber(now); cambiaSettimana(s.value);
-        
-        // Sync Iniziale
-        updateAllDateInputs(currentDate);
+    function loadAnagrafica() {
+        db.ref('anagrafica').once('value', snap => {
+            anagrafica = snap.val();
+            if (!anagrafica) {
+                anagrafica = {};
+                dipendentiDefault.forEach(d => { anagrafica[d] = { type: "active", aliases: "" }; });
+                db.ref('anagrafica').set(anagrafica);
+            }
+            // Filtra solo attivi
+            dipendentiAttuali = Object.keys(anagrafica).filter(d => anagrafica[d].type === 'active').sort();
+            
+            // Creazione menu selezione rapida
+            const md = document.getElementById('dip-menu'); md.innerHTML = "";
+            dipendentiAttuali.forEach(d => {
+                md.innerHTML += `<div class="btn-dip" onclick="showDipDetail('${d}', this)">${d}</div>`;
+            });
+            
+            loadData(currentDate);
+        });
     }
 
-    // UPDATE SINCRONIZZATO
-    function updateAllDateInputs(d) {
-        // Aggiorna variabile globale
-        currentDate = d;
-        // Aggiorna input Mobile
-        document.getElementById('mobileDatePicker').value = d;
-        document.getElementById('hiddenDate').value = d;
-        
-        // Aggiorna input Desktop (NUOVO)
-        document.getElementById('desktopDatePicker').value = d;
-        
-        // Aggiorna Label Desktop (NUOVO)
-        const dateObj = new Date(d);
-        const optionsDesk = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-        document.getElementById('desktopDateLabel').innerText = dateObj.toLocaleDateString('it-IT', optionsDesk);
+    // --- CARICAMENTO DATI E CALCOLO ORE ---
+    function loadData(date) { 
+        db.ref('turni/' + date).once('value', snap => { 
+            dailyData = snap.val() || {}; 
+            
+            // 1. Calcola le ore per ogni dipendente
+            let dipStats = {};
+            dipendentiAttuali.forEach(d => dipStats[d] = 0);
+
+            for(let h=6; h<=22; h++) {
+                for(let m=0; m<60; m+=15) {
+                    if(h===22 && m>0) break;
+                    let tStr = (h<10?'0':'')+h+':'+(m===0?'00':m);
+                    
+                    dipendentiAttuali.forEach(d => {
+                        let comm = dailyData[`${tStr}-${d}-commessa`];
+                        // Conta solo se c'è una commessa E non è PAUSA
+                        if(comm && comm !== "PAUSA") {
+                            dipStats[d] += 0.25; // Aggiungi 15 minuti
+                        }
+                    });
+                }
+            }
+
+            renderHeaders(dipStats);
+            renderTable(dipStats);            
+            
+            let b = document.querySelector('.btn-dip.selected'); 
+            if(b) showDipDetail(b.innerText, b); 
+        }); 
     }
 
-    function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
-    function getDateOfISOWeek(w, y) { var d = new Date(y, 0, 4, 12, 0, 0); var dayNum = d.getDay() || 7; var diff = (w - 1) * 7; d.setDate(d.getDate() - dayNum + 1 + diff); return d; }
-    
-    function cambiaSettimana(w) {
-        let currentY = parseInt(currentDate.split('-')[0]); let d = getDateOfISOWeek(w, currentY); const c = document.getElementById('day-container'); c.innerHTML = "";
-        for(let i=0; i<6; i++) {
-            let temp = new Date(d); temp.setDate(d.getDate()+i); let val = temp.toISOString().split('T')[0];
-            let label = temp.toLocaleDateString('it-IT', {weekday:'short', day:'numeric'});
-            c.innerHTML += `<button class="day-btn${val===currentDate?' selected':''}" onclick="selectDay('${val}', this)">${label.toUpperCase()}</button>`;
-        }
-    }
-
-    function selectDay(d, btn) { 
-        // Sync di tutti gli input
-        updateAllDateInputs(d);
-
-        // UI Mobile Buttons
-        document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected')); 
-        if(btn) btn.classList.add('selected'); 
+    // --- RENDERIZZA INTESTAZIONI CON ORE E LARGHEZZA ---
+    function renderHeaders(stats) {
+        const h = document.getElementById('head-row'); 
+        h.innerHTML = '<th class="col-ora">Ora</th>';
         
-        // Carica dati
-        loadData(d); 
+        dipendentiAttuali.forEach(d => {
+            let color = dipColors[d] || colorStorico;
+            let ore = stats[d];
+            let hasWork = ore > 0;
+            
+            // Classe dinamica: active (largo) o inactive (stretto)
+            let colClass = hasWork ? "col-active" : "col-inactive";
+            
+            // Testo intestazione: Nome + (Badge Ore se > 0, ma discreto)
+            let label = d;
+            if(hasWork) {
+                label += `<span class="hours-badge">(${ore}h)</span>`;
+            }
+
+            h.innerHTML += `<th style="color:${color}" class="${colClass}">${label}</th>`;
+        });
     }
 
-    function loadData(date) { db.ref('turni/' + date).once('value', snap => { dailyData = snap.val() || {}; renderTable(); let b = document.querySelector('.btn-dip.selected'); if(b) showDipDetail(b.innerText, b); }); }
-    function pulisciColonna() { let dip = document.getElementById('clean-dip-select').value; if(!dip) return alert("Chi?"); if(!confirm("Sicuro?")) return; let u={}; let t=(dip==='ALL')?dipendenti:[dip]; t.forEach(d=>{ for(let h=6;h<=22;h++){ for(let m=0;m<60;m+=15){ if(h===22 && m>0) break; let tm=(h<10?'0':'')+h+':'+(m===0?'00':m); let b=`turni/${currentDate}/${tm}-${d}`; u[b+'-commessa']=null; u[b+'-note']=null; u[b+'-qta']=null; u[b+'-voto']=null; delete dailyData[b+'-commessa']; delete dailyData[b+'-note']; } } }); db.ref().update(u, ()=>loadData(currentDate)); }
-    function addTouchSupport(el, cb) { el.ondblclick=cb; let lt=0, pt; el.addEventListener('touchstart',e=>{pt=setTimeout(()=>{if(navigator.vibrate)navigator.vibrate(50);cb()},800)},{passive:true}); el.addEventListener('touchend',e=>{clearTimeout(pt);let t=new Date().getTime();if(t-lt<300&&t-lt>0){e.preventDefault();cb()}lt=t}); el.addEventListener('touchmove',()=>clearTimeout(pt)); }
-    
-    function renderTable() {
-        const tbody = document.getElementById('body-row'); tbody.innerHTML = ""; let skip = new Array(dipendenti.length).fill(-1);
+    // --- RENDERIZZA TABELLA CON COLONNE DINAMICHE ---
+    function renderTable(stats) {
+        const tbody = document.getElementById('body-row'); tbody.innerHTML = ""; 
+        let skip = new Array(dipendentiAttuali.length).fill(-1);
+        
         for(let h=6; h<=22; h++) {
             for(let m=0; m<60; m+=15) {
                 if(h===22 && m>0) break; let tVal = h*60+m; let tStr = (h<10?'0':'')+h+':'+(m===0?'00':m);
                 let tr = document.createElement('tr'); tr.innerHTML = `<td class="col-ora">${tStr}</td>`;
-                dipendenti.forEach((d, idx) => {
+                
+                dipendentiAttuali.forEach((d, idx) => {
+                    // Determina classe colonna (Larga o Stretta) basata sulle statistiche
+                    let colClass = (stats[d] > 0) ? "col-active" : "col-inactive";
+
                     if(tVal < skip[idx]) return;
-                    let k = `${tStr}-${d}`; let comm = dailyData[k+'-commessa'] || ""; let note = dailyData[k+'-note'] || "";
+                    
+                    let k = `${tStr}-${d}`; 
+                    let rawComm = dailyData[k+'-commessa'] || ""; 
+                    let note = dailyData[k+'-note'] || ""; 
+                    let cliente = dailyData[k+'-cliente'] || "";
+                    
+                    // Logic Visibility Commessa X
+                    let comm = rawComm;
+                    if (comm === "" && (note !== "" || cliente !== "")) { comm = "COMMESSA X"; }
+
                     if(comm === "") {
-                        let td = document.createElement('td'); td.className="no-select"; addTouchSupport(td, ()=>apriEditorVuoto(d, tStr)); tr.appendChild(td);
+                        // Cella Vuota
+                        let td = document.createElement('td'); 
+                        td.className = "no-select " + colClass; // Aggiungo classe larghezza
+                        addTouchSupport(td, ()=>apriEditorVuoto(d, tStr)); 
+                        tr.appendChild(td);
                     } else {
+                        // Cella Piena (Task)
                         let span = 1; let nVal = tVal + 15;
                         while(true) {
                             let nh=Math.floor(nVal/60), nm=nVal%60; if(nh>22 || (nh===22 && nm>0)) break;
                             let nt = (nh<10?'0':'')+nh+':'+(nm===0?'00':nm); let nk = `${nt}-${d}`;
-                            if((dailyData[nk+'-commessa']||"")===comm && (dailyData[nk+'-note']||"")===note) { span++; nVal+=15; } else break;
+                            let nextRawComm = dailyData[nk+'-commessa'] || "";
+                            let nextComm = nextRawComm;
+                            if (nextComm === "" && ((dailyData[nk+'-note']||"") !== "" || (dailyData[nk+'-cliente']||"") !== "")) { nextComm = "COMMESSA X"; }
+
+                            if(nextComm === comm && (dailyData[nk+'-note']||"")===note && (dailyData[nk+'-cliente']||"")===cliente) { span++; nVal+=15; } else break;
                         }
-                        skip[idx] = tVal + (span * 15);
+                        skip[idx] = tVal + (span * 15); 
                         let eh=Math.floor(nVal/60), em=nVal%60; let eStr=(eh<10?'0':'')+eh+':'+(em===0?'00':em);
-                        let dc = dipColors[d]||"#00ff88"; let bg = hexToRgba(dc, 0.1); let isP = comm==="PAUSA";
-                        let td = document.createElement('td'); td.rowSpan=span; td.className="no-select";
-                        addTouchSupport(td, ()=>apriEditorPieno(d, tStr, eStr, comm, note));
-                        td.innerHTML = `<div class="task-block${isP?' is-pausa':''}" ${isP?'':`style="border-color:${dc}; background:${bg};"`}><div class="task-comm" ${isP?'':`style="color:${dc}"`}>${comm}</div>${note?`<div class="task-note">${note}</div>`:''}</div>`;
+                        
+                        let dc = dipColors[d]||colorStorico; let bg = hexToRgba(dc, 0.1); let isP = comm==="PAUSA";
+                        
+                        let td = document.createElement('td'); 
+                        td.rowSpan=span; 
+                        td.className = "no-select " + colClass; // Aggiungo classe larghezza
+                        
+                        addTouchSupport(td, ()=>apriEditorPieno(d, tStr, eStr, rawComm, note));
+                        td.innerHTML = `<div class="task-block${isP?' is-pausa':''}" ${isP?'':`style="border-color:${dc}; background:${bg};"`}>${cliente ? `<div class="task-client">${cliente}</div>` : ''}<div class="task-comm" ${isP?'':`style="color:${dc}"`}>${comm}</div>${note?`<div class="task-note">${note}</div>`:''}</div>`; 
                         tr.appendChild(td);
                     }
                 });
@@ -342,28 +487,105 @@
         }
     }
 
-    function apriEditorVuoto(d, s) { editDip=d; editOriginalStart=null; let sm=toMins(s); let em=Math.min(sm+60, 22*60+15); mostraModal(d, s, toTimeStr(em), "", "", "", ""); }
-    function apriEditorPieno(d, s, e, c, n) { editDip=d; editOriginalStart=s; editOriginalEnd=e; let k=`${s}-${d}`; mostraModal(d, s, e, c, n, dailyData[k+'-qta']||"", dailyData[k+'-voto']||""); }
-    function mostraModal(d, s, e, c, n, q, v) { document.getElementById('edit-dip-title').innerText=d; document.getElementById('edit-dip-title').style.color=dipColors[d]; document.getElementById('edit-box-visual').style.borderLeftColor=dipColors[d]; document.getElementById('edit-start').value=s; document.getElementById('edit-end').value=e; document.getElementById('edit-commessa').value=c; document.getElementById('edit-note').value=n; document.getElementById('edit-qta').value=q; document.getElementById('edit-voto').value=v; document.getElementById('modal-edit').style.display='flex'; }
-    function setPausaPranzo() { document.getElementById('edit-start').value="12:00"; document.getElementById('edit-end').value="13:00"; document.getElementById('edit-commessa').value="PAUSA"; document.getElementById('edit-note').value="Pausa Pranzo"; }
+    // --- LE ALTRE FUNZIONI (Modali, WA, ecc.) RIMANGONO INVARIATE ---
+    function apriGestione() { renderManageLists(); document.getElementById('modal-manage').style.display = 'flex'; }
+    function renderManageLists() {
+        const listAct = document.getElementById('list-active'); const listHist = document.getElementById('list-history');
+        listAct.innerHTML = ""; listHist.innerHTML = "";
+        Object.keys(anagrafica).sort().forEach(nome => {
+            let data = anagrafica[nome]; let isAct = data.type === 'active'; let color = dipColors[nome] || '#ccc';
+            let itemHTML = `<div class="item-dip"><div style="flex:1" onclick="apriAlias('${nome}')"><span style="color:${color}; font-weight:bold;">${nome}</span><div style="font-size:10px; color:#666;">Alias: ${data.aliases || '-'}</div></div><button class="btn-move" onclick="spostaDipendente('${nome}', '${isAct ? 'history' : 'active'}')">${isAct ? '➡' : '⬅'}</button></div>`;
+            if(isAct) listAct.innerHTML += itemHTML; else listHist.innerHTML += itemHTML;
+        });
+    }
+    function spostaDipendente(nome, destinazione) { anagrafica[nome].type = destinazione; db.ref('anagrafica').set(anagrafica); renderManageLists(); }
+    
+    function apriAlias(nome) {
+        currentEditName = nome; let d = anagrafica[nome];
+        document.getElementById('alias-title').innerText = "MODIFICA: " + nome;
+        document.getElementById('alias-input').value = d.aliases || "";
+        document.getElementById('alias-pausa-start').value = d.pausaStart || "";
+        document.getElementById('alias-pausa-end').value = d.pausaEnd || "";
+        document.getElementById('alias-assunzione').value = d.assunzione || "";
+        document.getElementById('alias-cessazione').value = d.cessazione || "";
+        document.getElementById('alias-note').value = d.note || "";
+        document.getElementById('alias-popup').style.display = 'block';
+    }
+    
+    function salvaAlias() {
+        let a = document.getElementById('alias-input').value; let s = document.getElementById('alias-assunzione').value; let c = document.getElementById('alias-cessazione').value; let n = document.getElementById('alias-note').value;
+        let ps = document.getElementById('alias-pausa-start').value; let pe = document.getElementById('alias-pausa-end').value;
+        anagrafica[currentEditName].aliases = a; anagrafica[currentEditName].assunzione = s; anagrafica[currentEditName].cessazione = c; anagrafica[currentEditName].note = n;
+        anagrafica[currentEditName].pausaStart = ps; anagrafica[currentEditName].pausaEnd = pe;
+        db.ref('anagrafica').set(anagrafica); document.getElementById('alias-popup').style.display = 'none'; renderManageLists();
+    }
+
+    function initDate() { const s = document.getElementById('weekSelect'); for(let i=1; i<=53; i++) { s.innerHTML += `<option value="${i}">W ${i}</option>`; } let now = new Date(); s.value = getWeekNumber(now); cambiaSettimana(s.value); updateAllDateInputs(currentDate); }
+    function updateAllDateInputs(d) { currentDate = d; document.getElementById('mobileDatePicker').value = d; document.getElementById('hiddenDate').value = d; document.getElementById('desktopDatePicker').value = d; const dateObj = new Date(d); const optionsDesk = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }; document.getElementById('deskDateLabel').innerText = dateObj.toLocaleDateString('it-IT', optionsDesk); }
+    function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil((((d - yearStart) / 86400000) + 1)/7); }
+    function getDateOfISOWeek(w, y) { var d = new Date(y, 0, 4, 12, 0, 0); var dayNum = d.getDay() || 7; var diff = (w - 1) * 7; d.setDate(d.getDate() - dayNum + 1 + diff); return d; }
+    function cambiaSettimana(w) { let currentY = parseInt(currentDate.split('-')[0]); let d = getDateOfISOWeek(w, currentY); const c = document.getElementById('day-container'); c.innerHTML = ""; for(let i=0; i<6; i++) { let temp = new Date(d); temp.setDate(d.getDate()+i); let val = temp.toISOString().split('T')[0]; let label = temp.toLocaleDateString('it-IT', {weekday:'short', day:'numeric'}); c.innerHTML += `<button class="day-btn${val===currentDate?' selected':''}" onclick="selectDay('${val}', this)">${label.toUpperCase()}</button>`; } }
+    function selectDay(d, btn) { updateAllDateInputs(d); document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected')); if(btn) btn.classList.add('selected'); loadData(d); }
+    function cambiaGiorno(delta) { let d = new Date(currentDate); d.setDate(d.getDate() + delta); selectDay(d.toISOString().split('T')[0], null); }
+
+    function apriPulisciAvanzato() {
+        const container = document.getElementById('clean-checklist'); container.innerHTML = "";
+        let allWrap = document.createElement('label'); allWrap.className = 'check-item'; allWrap.style.gridColumn = "1 / -1"; allWrap.style.borderBottom = "1px solid #333"; allWrap.style.paddingBottom = "5px"; allWrap.innerHTML = `<input type="checkbox" id="check-all" onchange="toggleAllChecks(this)"> SELEZIONA TUTTI`; container.appendChild(allWrap);
+        dipendentiAttuali.forEach(d => { let label = document.createElement('label'); label.className = 'check-item'; label.innerHTML = `<input type="checkbox" class="dip-check" value="${d}"> ${d}`; container.appendChild(label); });
+        document.getElementById('clean-start').value = currentDate; document.getElementById('clean-end').value = currentDate; document.getElementById('modal-clean-adv').style.display = 'flex';
+    }
+    function toggleAllChecks(source) { document.querySelectorAll('.dip-check').forEach(cb => cb.checked = source.checked); }
+    async function eseguiPuliziaAvanzata() {
+        let selectedDips = []; document.querySelectorAll('.dip-check:checked').forEach(cb => selectedDips.push(cb.value)); if(selectedDips.length === 0) return alert("Seleziona almeno un dipendente!");
+        let startStr = document.getElementById('clean-start').value; let endStr = document.getElementById('clean-end').value; if(!startStr || !endStr) return alert("Date mancanti!"); if(endStr < startStr) return alert("Data fine precedente a inizio!");
+        if(!confirm(`Vuoi cancellare i dati per ${selectedDips.length} dipendenti\ndal ${startStr} al ${endStr}?`)) return;
+        let startDt = new Date(startStr); let endDt = new Date(endStr); let updates = {};
+        for(let d = new Date(startDt); d <= endDt; d.setDate(d.getDate() + 1)) {
+            let dateKey = d.toISOString().split('T')[0];
+            selectedDips.forEach(dip => {
+                for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let tm = (h<10?'0':'')+h+':'+(m===0?'00':m); let baseKey = `turni/${dateKey}/${tm}-${dip}`; updates[baseKey+'-commessa'] = null; updates[baseKey+'-cliente'] = null; updates[baseKey+'-note'] = null; updates[baseKey+'-qta'] = null; updates[baseKey+'-voto'] = null; } }
+            });
+        }
+        await db.ref().update(updates); alert("Pulizia Completata!"); document.getElementById('modal-clean-adv').style.display = 'none'; loadData(currentDate);
+    }
+
+    function addTouchSupport(el, cb) { el.ondblclick=cb; let lt=0, pt; el.addEventListener('touchstart',e=>{pt=setTimeout(()=>{if(navigator.vibrate)navigator.vibrate(50);cb()},800)},{passive:true}); el.addEventListener('touchend',e=>{clearTimeout(pt);let t=new Date().getTime();if(t-lt<300&&t-lt>0){e.preventDefault();cb()}lt=t}); el.addEventListener('touchmove',()=>clearTimeout(pt)); }
+    
+    function inserisciPausaConTaglio() {
+        let s = document.getElementById('edit-start').value; let e = document.getElementById('edit-end').value; let cl = document.getElementById('edit-cliente').value; let c = document.getElementById('edit-commessa').value; let n = document.getElementById('edit-note').value;
+        let startMins = toMins(s); let endMins = toMins(e); 
+        let empData = anagrafica[editDip] || {};
+        let pStartStr = empData.pausaStart || "12:00"; let pEndStr = empData.pausaEnd || "13:00";
+        let pausaStart = toMins(pStartStr); let pausaEnd = toMins(pEndStr);
+        if (endMins <= startMins) return alert("Orari non validi");
+        let updates = {};
+        for(let m = startMins; m < endMins; m += 15) { let t = toTimeStr(m); let base = `turni/${currentDate}/${t}-${editDip}`; updates[base+'-commessa'] = null; updates[base+'-cliente'] = null; updates[base+'-note'] = null; }
+        if (startMins < pausaStart) { for(let m = startMins; m < Math.min(endMins, pausaStart); m += 15) { let t = toTimeStr(m); let base = `turni/${currentDate}/${t}-${editDip}`; updates[base+'-commessa'] = c; updates[base+'-cliente'] = cl; updates[base+'-note'] = n; } }
+        for(let m = pausaStart; m < pausaEnd; m += 15) { let t = toTimeStr(m); let base = `turni/${currentDate}/${t}-${editDip}`; updates[base+'-commessa'] = "PAUSA"; updates[base+'-cliente'] = ""; updates[base+'-note'] = "Pausa Pranzo"; }
+        if (endMins > pausaEnd) { for(let m = Math.max(startMins, pausaEnd); m < endMins; m += 15) { let t = toTimeStr(m); let base = `turni/${currentDate}/${t}-${editDip}`; updates[base+'-commessa'] = c; updates[base+'-cliente'] = cl; updates[base+'-note'] = n; } }
+        db.ref().update(updates, () => { document.getElementById('modal-edit').style.display = 'none'; loadData(currentDate); });
+    }
+    function setPausaPranzo() { inserisciPausaConTaglio(); }
+
     function salvaTaskAvanzato() {
-        let s=document.getElementById('edit-start').value, e=document.getElementById('edit-end').value, c=document.getElementById('edit-commessa').value, n=document.getElementById('edit-note').value;
+        let s=document.getElementById('edit-start').value, e=document.getElementById('edit-end').value, cl=document.getElementById('edit-cliente').value, c=document.getElementById('edit-commessa').value, n=document.getElementById('edit-note').value;
         let sm=toMins(s), em=toMins(e); if(em<=sm) return alert("Orari errati!");
         let u={};
-        if(editOriginalStart) { let os=toMins(editOriginalStart), oe=toMins(editOriginalEnd); for(let m=os; m<oe; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=null; u[b+'-note']=null; u[b+'-qta']=null; u[b+'-voto']=null; delete dailyData[b+'-commessa']; delete dailyData[b+'-note']; } }
-        for(let m=sm; m<em; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=c; u[b+'-note']=n; u[b+'-qta']=document.getElementById('edit-qta').value; u[b+'-voto']=document.getElementById('edit-voto').value; dailyData[b+'-commessa']=c; dailyData[b+'-note']=n; }
+        if(editOriginalStart) { let os=toMins(editOriginalStart), oe=toMins(editOriginalEnd); for(let m=os; m<oe; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=null; u[b+'-cliente']=null; u[b+'-note']=null; u[b+'-qta']=null; u[b+'-voto']=null; delete dailyData[b+'-commessa']; delete dailyData[b+'-note']; } }
+        for(let m=sm; m<em; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=c; u[b+'-cliente']=cl; u[b+'-note']=n; u[b+'-qta']=document.getElementById('edit-qta').value; u[b+'-voto']=document.getElementById('edit-voto').value; dailyData[b+'-commessa']=c; dailyData[b+'-cliente']=cl; dailyData[b+'-note']=n; }
         db.ref().update(u, ()=>{ document.getElementById('modal-edit').style.display='none'; loadData(currentDate); });
     }
-    function eliminaTask() { if(!editOriginalStart) return; if(!confirm("Eliminare?")) return; let u={}, os=toMins(editOriginalStart), oe=toMins(editOriginalEnd); for(let m=os; m<oe; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=null; u[b+'-note']=null; } db.ref().update(u, ()=>{ document.getElementById('modal-edit').style.display='none'; loadData(currentDate); }); }
-
-    function showDipDetail(name, btn) { /* Stesso codice di prima... */ document.querySelectorAll('.btn-dip').forEach(b => b.classList.remove('selected')); if(btn) btn.classList.add('selected'); const container = document.getElementById('dip-detail-container'); container.innerHTML = ""; let dColor = dipColors[name] || "#E94560"; let wrapper = document.createElement('div'); wrapper.className = "dip-card-wrapper"; wrapper.style.borderColor = dColor; wrapper.style.boxShadow = `0 0 15px ${hexToRgba(dColor, 0.4)}`; let table = document.createElement('table'); table.className = "single-dip-table"; let skipUntil = -1; for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let timeVal = h*60 + m; let timeStr = (h<10?'0':'')+h+':'+(m===0?'00':m); let tr = document.createElement('tr'); tr.innerHTML = `<td class="col-ora" style="width:60px;">${timeStr}</td>`; if(timeVal < skipUntil) { table.appendChild(tr); continue; } let keyBase = `${timeStr}-${name}`; let comm = dailyData[keyBase+'-commessa'] || ""; let note = dailyData[keyBase+'-note'] || ""; if(comm === "") { let td = document.createElement('td'); td.style.background = "#141414"; td.style.border="1px solid #222"; td.className = "no-select"; addTouchSupport(td, () => apriEditorVuoto(name, timeStr)); tr.appendChild(td); } else { let span = 1; let nextTimeVal = timeVal + 15; while(true) { let nh = Math.floor(nextTimeVal/60); let nm = nextTimeVal%60; if(nh > 22 || (nh===22 && nm>0)) break; let nKeyBase = `${(nh<10?'0':'')+nh+':'+(nm===0?'00':nm)}-${name}`; if((dailyData[nKeyBase+'-commessa']||"") === comm && (dailyData[nKeyBase+'-note']||"") === note) { span++; nextTimeVal += 15; } else break; } skipUntil = timeVal + (span * 15); let endH = Math.floor(nextTimeVal/60); let endM = nextTimeVal%60; let endTimeStr = (endH<10?'0':'')+endH+':'+(endM===0?'00':endM); let isPausa = comm === "PAUSA"; let td = document.createElement('td'); td.rowSpan = span; td.className = "no-select"; td.style.padding="0"; td.style.border="none"; addTouchSupport(td, () => apriEditorPieno(name, timeStr, endTimeStr, comm, note)); td.innerHTML = `<div class="task-block${isPausa?' is-pausa':''}" ${isPausa?'':`style="border-color:${dColor}; background:${hexToRgba(dColor, 0.1)}; min-height:35px;"`}><div class="task-comm" ${isPausa?'':`style="color:${dColor}"`}>${comm}</div>${note ? `<div class="task-note">${note}</div>` : ''}</div>`; tr.appendChild(td); } table.appendChild(tr); } } wrapper.appendChild(table); container.appendChild(wrapper); }
-
-    // --- WA LOGIC ---
+    function eliminaTask() { if(!editOriginalStart) return; if(!confirm("Eliminare?")) return; let u={}, os=toMins(editOriginalStart), oe=toMins(editOriginalEnd); for(let m=os; m<oe; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=null; u[b+'-cliente']=null; u[b+'-note']=null; } db.ref().update(u, ()=>{ document.getElementById('modal-edit').style.display='none'; loadData(currentDate); }); }
+    function showDipDetail(name, btn) { /* Detail view */ }
     function apriWA() { document.getElementById('modal-wa').style.display='flex'; document.getElementById('wa-date').value=currentDate; }
-    function analizzaWA() { /* Logica WA invariata */ let txt = document.getElementById('wa-input').value; let dateRef = document.getElementById('wa-date').value; let dArr = dateRef.split('-'); let visualDate = `${dArr[2]}/${dArr[1]}/${dArr[0]}`; let tbody = document.getElementById('wa-tbody'); tbody.innerHTML = ""; let lines = txt.split('\n').map(l=>l.trim()).filter(l=>l!==''); let curDip = null; let buffer = []; waBlocks = []; lines.forEach(l => { let found = dipendenti.find(d => d.toUpperCase() === l.toUpperCase()); if (!found && (l.toUpperCase() === 'TEO' || l.toUpperCase() === 'TEO.' || l.toUpperCase() === 'MATTEO')) found = "Teo"; if(found) { if(curDip && buffer.length) processBuffer(curDip, buffer); curDip = found; buffer = []; } else if(curDip) buffer.push(l); }); if(curDip && buffer.length) processBuffer(curDip, buffer); waBlocks.forEach((b) => { tbody.innerHTML += `<tr><td style="color:#00ff88; font-weight:bold;">${visualDate}</td><td style="text-align:center;"><button class="btn-del-row" onclick="this.closest('tr').remove()">✖</button></td><td><input class="wa-inp" name="dip" value="${b.dip}" readonly style="font-weight:bold; color:${dipColors[b.dip]};"></td><td><input class="wa-inp" name="start" value="${b.start}"></td><td><input class="wa-inp" name="end" value="${b.end}"></td><td><input class="wa-inp" name="comm" value="${b.comm}"></td><td><input class="wa-inp" name="desc" value="${b.desc}"></td><td><input class="wa-inp" name="qta" value="${b.qta}"></td><td><input class="wa-inp" name="vote" value="${b.vote}"></td></tr>`; }); }
+    function analizzaWA() { 
+        let txt = document.getElementById('wa-input').value; let dateRef = document.getElementById('wa-date').value; let dArr = dateRef.split('-'); let visualDate = `${dArr[2]}/${dArr[1]}/${dArr[0]}`; let tbody = document.getElementById('wa-tbody'); tbody.innerHTML = ""; let lines = txt.split('\n').map(l=>l.trim()).filter(l=>l!==''); let curDip = null; let buffer = []; waBlocks = []; 
+        lines.forEach(l => { let found = Object.keys(anagrafica).find(k => { let d = anagrafica[k]; if(k.toUpperCase() === l.toUpperCase()) return true; if(d.aliases) { let aliasList = d.aliases.toUpperCase().split(',').map(a=>a.trim()); if(aliasList.includes(l.toUpperCase())) return true; } return false; }); if(found) { if(curDip && buffer.length) processBuffer(curDip, buffer); curDip = found; buffer = []; } else if(curDip) buffer.push(l); }); 
+        if(curDip && buffer.length) processBuffer(curDip, buffer); 
+        waBlocks.forEach((b) => { tbody.innerHTML += `<tr><td style="color:#00ff88; font-weight:bold;">${visualDate}</td><td style="text-align:center;"><button class="btn-del-row" onclick="this.closest('tr').remove()">✖</button></td><td><input class="wa-inp" name="dip" value="${b.dip}" readonly style="font-weight:bold; color:${dipColors[b.dip]};"></td><td><input class="wa-inp" name="start" value="${b.start}"></td><td><input class="wa-inp" name="end" value="${b.end}"></td><td><input class="wa-inp" name="comm" value="${b.comm}"></td><td><input class="wa-inp" name="desc" value="${b.desc}"></td><td><input class="wa-inp" name="qta" value="${b.qta}"></td><td><input class="wa-inp" name="vote" value="${b.vote}"></td></tr>`; }); 
+    }
     function processBuffer(dip, lines) { let i = 0; while(i < lines.length) { let sIdx = -1; for(let j=i; j<lines.length-1; j++) { if(isTime(lines[j]) && isTime(lines[j+1])) { sIdx = j; break; } } if(sIdx === -1) break; let start = normalizeTime(lines[sIdx]); let end = normalizeTime(lines[sIdx+1]); let rawData = lines.slice(i, sIdx); let comm = rawData[0] || ""; let qta = "", desc = ""; for(let k=1; k<rawData.length; k++) { let l = rawData[k]; if(l.match(/(\d+)\s*(pz|pezzi|x)/i) || l.match(/^x\d+$/i) || (!isNaN(l) && l.length<4)) qta=l; else desc += (desc?" ":"") + l; } let vote = ""; let next = sIdx + 2; if(next < lines.length && lines[next].toUpperCase().startsWith("VOTO")) { vote = lines[next].replace(/VOTO:?/i, "").trim(); next++; } waBlocks.push({ dip, start, end, comm, desc, qta, vote }); i = next; } }
     function confermaWA() { if(!confirm("Inviare?")) return; let date = document.getElementById('wa-date').value; let u = {}; document.querySelectorAll('#wa-tbody tr').forEach(row => { let dip = row.querySelector('input[name="dip"]').value; let start = row.querySelector('input[name="start"]').value; let end = row.querySelector('input[name="end"]').value; let comm = row.querySelector('input[name="comm"]').value; let desc = row.querySelector('input[name="desc"]').value; let qta = row.querySelector('input[name="qta"]').value; let vote = row.querySelector('input[name="vote"]').value; let sm = toMins(start); let em = toMins(end); for(let m=sm; m<em; m+=15) { let t = toTimeStr(m); let base = `turni/${date}/${t}-${dip}`; u[base + '-commessa'] = comm; u[base + '-note'] = desc; u[base + '-qta'] = qta; u[base + '-voto'] = vote; } }); db.ref().update(u, () => { alert("OK!"); document.getElementById('modal-wa').style.display='none'; currentDate = date; document.getElementById('hiddenDate').value = date; document.getElementById('mobileDatePicker').value = date; loadData(currentDate); }); }
-
     function isTime(s){return /^\d{1,2}([.:]\d{2})?$/.test(s);}
     function normalizeTime(t){ if(typeof t === 'number') { let totalM = Math.round(t * 24 * 60); let h = Math.floor(totalM/60); let m = totalM%60; return (h<10?'0':'')+h+':'+(m<10?'0':'')+m; } t=t.toString().replace(',','.'); if(!t.includes(':')&&!t.includes('.'))t+=":00"; t=t.replace('.',':'); let p=t.split(':'); if(p[0].length==1)p[0]="0"+p[0]; return p.join(':');}
     function toMins(t){let p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]);}
