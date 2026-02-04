@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Commesse - Gestionale</title>
+    <title>Commesse - Gestionale V3.2 (Sandbox)</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -24,6 +24,10 @@
         .btn-client:hover { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
         .btn-client.selected { background: transparent; border-color: #00ff88; color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.4), inset 0 0 5px rgba(0, 255, 136, 0.1); font-weight: 600; }
         
+        /* PULSANTE GESTISCI */
+        .btn-manage { background: #222; border: 1px solid #00e5ff; color: #00e5ff; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; margin-left: 10px; }
+        .btn-manage:hover { background: #00e5ff; color: #000; }
+
         #workspace { flex: 1; display: none; flex-direction: column; overflow: hidden; }
         .tabs { display: flex; justify-content: center; padding: 10px; gap: 10px; background: #111; }
         .tab-btn { padding: 8px 30px; background: transparent; border: 1px solid #444; color: #777; border-radius: 20px; cursor: pointer; font-size: 12px; transition: 0.2s;}
@@ -141,6 +145,195 @@
         .comp-table input { background: transparent; border: none; color: white; width: 100%; }
         .btn-add-comp { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 5px; }
 
+        /* MODALE GESTIONE CLIENTI */
+        .manage-box-modal { background: #181818; width: 800px; height: 600px; border: 1px solid #444; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); border-radius: 8px; overflow: hidden; }
+        .manage-head { padding: 15px 20px; background: #111; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .manage-body { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
+        .manage-col { flex: 1; background: #111; border: 1px solid #333; display: flex; flex-direction: column; border-radius: 4px; }
+        .col-title { padding: 10px; text-align: center; font-weight: bold; border-bottom: 1px solid #333; background: #1a1a1a; color: #aaa; text-transform: uppercase; font-size: 12px; }
+        .col-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .manage-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; margin-bottom: 5px; border-radius: 4px; border: 1px solid #333; }
+        .manage-item:hover { border-color: #555; }
+        .btn-arrow { background: #333; border: 1px solid #555; color: white; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 3px; }
+        .btn-arrow:hover { background: #00e5ff; color:black; border-color: #00e5ff; }
+        .btn-del { background: #2c0b0b; border: 1px solid #500; color: #f00; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 3px; margin-left: 5px; }
+        .btn-del:hover { background: #f00; color: white; border-color: #f00; }
+        .new-client-box { background: #222; border: 1px solid #444; padding: 15px; margin-top: auto; display: flex; gap: 10px; align-items: center; border-top: 1px solid #333; }
+        .inp-new { background: #000; border: 1px solid #444; color: white; padding: 10px; flex: 1; border-radius: 4px; }
+        .btn-save-new { background: #27ae60; color: white; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//===============================================================================
+// SANDBOX STYLE // - INIZIO X PENSO FILE CSS
+//===============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /* SANDBOX STYLES (SOLO PROVA 1) */
+        .sandbox-container { display:none; flex-direction:column; gap:20px; padding:10px; }
+        .sandbox-box { border:1px solid #9b59b6; background:#16101a; border-radius:4px; margin-bottom:20px; }
+        .sandbox-head { background:#2a1a35; padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #9b59b6; }
+        .sandbox-title { color:#9b59b6; font-weight:bold; text-transform:uppercase; font-size:14px; }
+        .sandbox-note { background:#111; border:1px solid #555; color:#ccc; padding:5px; width:250px; font-size:12px; }
+        .sandbox-drop { border:2px dashed #9b59b6; color:#9b59b6; padding:15px; text-align:center; font-size:11px; margin:10px; cursor:pointer; background:rgba(155,89,182,0.05); }
+        .sandbox-btn-add { background:#9b59b6; color:white; border:none; width:100%; padding:8px; font-weight:bold; cursor:pointer; margin-top:5px; text-transform:uppercase; }
+
+
+/* --- STILI V4.3 (PROVA 1) --- */
+    .sandbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; padding: 10px; }
+    .sandbox-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 10px; height: 220px; justify-content: space-between; transition: 0.2s; cursor: pointer; position:relative; }
+    .sandbox-card:hover { transform: translateY(-3px); border-color: #9b59b6; box-shadow: 0 5px 15px rgba(155, 89, 182, 0.1); }
+    .sb-card-head { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .sb-card-title { font-weight: bold; color: white; font-size: 16px; }
+    .sb-card-badge { background: #2a1a35; color: #9b59b6; padding: 2px 8px; border-radius: 4px; font-size: 11px; border: 1px solid #9b59b6; }
+    
+    /* MODALE SMART PASTE */
+    .p1-modal-grid { display: flex; gap: 20px; }
+    .p1-img-area { width: 180px; height: 180px; border: 2px dashed #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; background: #111; overflow: hidden; position: relative; }
+    .p1-img-area:focus { border-color: #00ff88; outline: none; }
+    .p1-img-prev { width: 100%; height: 100%; object-fit: contain; display: none; position:absolute; top:0; left:0; }
+    .p1-fields { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+    .p1-row { display: flex; gap: 15px; }
+    .p1-lbl { font-size: 11px; color: #888; text-transform: uppercase; display: block; margin-bottom: 5px; }
+    .p1-inp { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+
+
+
+
+
+
+
+/* --- STILI V4.8 (LAYOUT ORIZZONTALE) --- */
+    
+    /* 1. Barra in Alto (Box Azzurro) */
+    .sb-header-horizontal {
+        width: 100%;
+        height: 60px;
+        background: #111;
+        border-bottom: 1px solid #333;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        box-sizing: border-box;
+        justify-content: space-between; /* Titolo a sx, Bottoni a dx */
+        flex-shrink: 0; /* Non si schiaccia */
+    }
+
+    /* Bottoni allineati in riga */
+    .sb-nav-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    /* 2. Contenitore Colonne (Box Giallo) */
+    .sb-kanban-fullwidth {
+        display: flex;
+        flex: 1; /* Occupa tutto lo spazio verticale rimasto */
+        width: 100%;
+        padding: 15px;
+        gap: 15px;
+        box-sizing: border-box;
+        overflow-x: auto; /* Scorre se lo schermo è minuscolo */
+        background: #0a0a0a;
+    }
+
+    /* 3. Le Colonne si dividono lo spazio (flex: 1) */
+    .sb-col-equal {
+        flex: 1; /* <--- QUESTO DIVIDE LO SPAZIO IN MODO UGUALE */
+        min-width: 200px; /* Sicurezza per non farle esplodere se restringi troppo */
+        background: #141414;
+        border: 1px solid #333;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .sb-col-header {
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        color: #9b59b6;
+        background: #1a1a1a;
+        border-bottom: 1px solid #333;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+    
+    .sb-col-body {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//===============================================================================
+// SANDBOX STYLE // - FINE X PENSO FILE CSS
+//===============================================================================
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -225,22 +418,51 @@
         </div>
     </div>
 
+    <div id="modal-manage" class="modal-overlay">
+        <div class="manage-box-modal">
+            <div class="manage-head">
+                <span style="color:white; font-weight:bold; font-size:16px;">DASHBOARD FORNITORI</span>
+                <button onclick="document.getElementById('modal-manage').style.display='none'" style="background:none; border:none; color:#888; font-size:24px; cursor:pointer;">×</button>
+            </div>
+            <div class="manage-body">
+                <div class="manage-col">
+                    <div class="col-title" style="color:#00e5ff;">ATTIVI</div>
+                    <div class="col-list" id="list-active"></div>
+                </div>
+                <div class="manage-col">
+                    <div class="col-title" style="color:#666;">ARCHIVIO</div>
+                    <div class="col-list" id="list-archive"></div>
+                </div>
+            </div>
+            <div class="new-client-box">
+                <input type="text" id="new-client-name" class="inp-new" placeholder="Nome Nuovo Fornitore...">
+                <button class="btn-save-new" onclick="addClient()">AGGIUNGI</button>
+            </div>
+        </div>
+    </div>
+
     <div class="header-bar">
         <button class="btn-back" onclick="window.location.href='index.html'">⬅ HOME</button>
         <div class="clients-scroll" id="clients-bar"></div>
+        <button class="btn-manage" onclick="openManage()">⚙️ GESTISCI</button>
     </div>
 
     <div id="workspace">
-        <div class="tabs">
-            <button class="tab-btn active" id="btn-lavori" onclick="switchTab('lavori')">LAVORI</button>
-            <button class="tab-btn" id="btn-archivio" onclick="switchTab('archivio')">ARCHIVIO</button>
+        <div id="view-standard">
+            <div class="tabs">
+                <button class="tab-btn active" id="btn-lavori" onclick="switchTab('lavori')">LAVORI</button>
+                <button class="tab-btn" id="btn-archivio" onclick="switchTab('archivio')">ARCHIVIO</button>
+            </div>
+            <div id="view-lavori" style="flex:1; overflow:hidden;">
+                <div class="kanban" id="kanban-area"></div>
+            </div>
+            <div id="view-archivio" style="display:none; flex:1; overflow-y:auto;">
+                <div class="archive-list"><button class="btn-add-archive" onclick="apriModalNuovoArticolo()">+ NUOVO ARTICOLO</button><div id="archive-list"></div></div>
+            </div>
         </div>
-        <div id="view-lavori" style="flex:1; overflow:hidden;">
-            <div class="kanban" id="kanban-area"></div>
-        </div>
-        <div id="view-archivio" style="display:none; flex:1; overflow-y:auto;">
-            <div class="archive-list"><button class="btn-add-archive" onclick="apriModalNuovoArticolo()">+ NUOVO ARTICOLO</button><div id="archive-list"></div></div>
-        </div>
+
+        <div id="view-sandbox" class="sandbox-container">
+            </div>
     </div>
     
     <div id="placeholder" style="text-align:center; padding:100px; color:#444; font-size: 14px; letter-spacing: 1px;">SELEZIONA UN CLIENTE DALLA BARRA IN ALTO</div>
@@ -249,7 +471,24 @@
     const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const clients = ["Altro", "F.R. srl", "Fond-Stamp", "Scotta", "Tomatis", "Tre Emme"];
+    
+    // GESTIONE CLIENTI DINAMICA
+    let allClients = JSON.parse(localStorage.getItem('my_clients')) || [
+        { name: "Altro", active: true },
+        { name: "F.R. srl", active: true },
+        { name: "Fond-Stamp", active: true },
+        { name: "Scotta", active: true },
+        { name: "Tomatis", active: true },
+        { name: "Tre Emme", active: true },
+        { name: "Prova 1", active: true } // Aggiunto per il test
+    ];
+
+    // Se "Prova 1" non esiste nel localStorage salvato, aggiungilo
+    if(!allClients.find(c => c.name === "Prova 1")) {
+        allClients.push({name: "Prova 1", active: true});
+        localStorage.setItem('my_clients', JSON.stringify(allClients));
+    }
+
     const stati = ["ANCORA DA ORDINARE", "In Attesa di Materiale", "In Produzione", "Pronto per la Spedizione", "Ordini Chiusi", "Archiviati"];
     const stages = {
         stage1: { title: "IN ATTESA MATERIALE", items: ["Commerciale", "Sagomati", "Laser Tubo"] },
@@ -262,22 +501,210 @@
 
     window.onload = function() {
         if(localStorage.getItem('auth_token') !== 'logged_in') window.location.href='index.html';
-        const bar = document.getElementById('clients-bar');
-        clients.forEach(c => {
-            bar.innerHTML += `<button class="btn-client" onclick="selectClient('${c}', this)">${c}</button>`;
-        });
+        renderClientsBar();
     };
 
+    function renderClientsBar() {
+        const bar = document.getElementById('clients-bar');
+        bar.innerHTML = "";
+        allClients.forEach(c => {
+            if(c.active) {
+                bar.innerHTML += `<button class="btn-client" onclick="selectClient('${c.name}', this)">${c.name}</button>`;
+            }
+        });
+    }
+
+    // --- SELEZIONE CLIENTE (CON SEMAFORO) ---
     function selectClient(c, btn) {
         currentClient = c;
         document.querySelectorAll('.btn-client').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
+        if(btn) btn.classList.add('selected');
         document.getElementById('placeholder').style.display = 'none';
         document.getElementById('workspace').style.display = 'flex';
-        loadKanban();
-        loadArchive();
+
+        // --- BIVIO ---
+        if (c === "Prova 1") {
+            // MOSTRA SANDBOX, NASCONDI STANDARD
+            document.getElementById('view-standard').style.display = 'none';
+            document.getElementById('view-sandbox').style.display = 'flex';
+            renderSandbox(); // Funzione isolata
+        } else {
+            // MOSTRA STANDARD, NASCONDI SANDBOX
+            document.getElementById('view-standard').style.display = 'block';
+            document.getElementById('view-sandbox').style.display = 'none';
+            loadKanban();
+            loadArchive();
+        }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // =======================================================================
+    // AREA SANDBOX - SOLO PER CLIENTE "PROVA 1" (V4.0)
+    // =======================================================================
+    // =======================================================================
+    // AREA SANDBOX - SOLO PER CLIENTE "PROVA 1" (V4.0)
+    // =======================================================================
+
+
+
+
+
+
+
+    // --- FUNZIONE SANDBOX ISOLATA ---
+
+
+
+
+
+
+function renderSandbox() {
+        const container = document.getElementById('view-sandbox');
+        
+        // FORZA IL LAYOUT VERTICALE (Barra sopra, Colonne sotto)
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column'; 
+        container.style.padding = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        
+        const columns = ["UFFICIO", "MAGAZZINO", "IN PRODUZIONE", "PRONTI", "VERNICIATURA", "FINITI", "ARCHIVIATI"];
+
+        let html = `
+            <div class="sb-header-horizontal">
+                <div style="font-size: 20px; font-weight: bold; color: #9b59b6;">
+                    🧪 PROVA 1
+                </div>
+                
+                <div class="sb-nav-group">
+                    <button class="sb-nav-btn active" id="sb-btn-lavori" onclick="switchSandboxTab('lavori')">LAVORI</button>
+                    <button class="sb-nav-btn" id="sb-btn-archivio" onclick="switchSandboxTab('archivio')">ARCHIVIO</button>
+                    <button class="sb-nav-btn" id="sb-btn-box1" onclick="switchSandboxTab('box1')">BOX 1</button>
+                    <button class="sb-nav-btn" id="sb-btn-box2" onclick="switchSandboxTab('box2')">BOX 2</button>
+                    <button class="sb-nav-btn" id="sb-btn-box3" onclick="switchSandboxTab('box3')">BOX 3</button>
+                </div>
+            </div>
+
+            <div style="flex: 1; overflow: hidden; position: relative; width: 100%;">
+                
+                <div id="sb-view-lavori" style="display: flex; width: 100%; height: 100%;">
+                    <div class="sb-kanban-fullwidth">
+                        ${columns.map((col, i) => `
+                            <div class="sb-col-equal">
+                                <div class="sb-col-header">${col}</div>
+                                <div class="sb-col-body" id="sb-col-${i}">
+                                    
+                                    ${col === "IN PRODUZIONE" ? `
+                                    <div class="sandbox-card" onclick="apriModalProva1()">
+                                        <div class="sb-card-head">
+                                            <span class="sb-card-title">2024/001</span>
+                                            <span class="sb-card-badge">PRIORITÀ</span>
+                                        </div>
+                                        <div class="sb-card-body" style="font-size:12px; color:#aaa;">
+                                            <div><strong style="color:#9b59b6">CENTRALE:</strong> T-500</div>
+                                            <div><strong style="color:#9b59b6">DISEGNO:</strong> D-123</div>
+                                            <div style="margin-top:5px; color:white;">Lavorazione test...</div>
+                                        </div>
+                                    </div>` : ''}
+
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div id="sb-view-archivio" style="display:none; padding:20px; width:100%; height:100%; box-sizing:border-box; overflow-y:auto;">
+                    <div class="scotta-box" style="border-color:#9b59b6;">
+                        <div class="scotta-head" style="border-bottom:1px solid #9b59b6;">
+                            <span class="scotta-title" style="color:#9b59b6;">ARCHIVIO</span>
+                        </div>
+                        <div style="padding:10px;">
+                            <table class="commessa-table">
+                                <thead><tr><th style="color:#9b59b6;">MATR</th><th>CLIENTE</th><th>NOTE</th><th style="width:30px"></th></tr></thead>
+                                <tbody id="sb-archive-body">
+                                    <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove()">✖</td></tr>
+                                </tbody>
+                            </table>
+                            <button class="btn-add-row" style="color:#9b59b6; background:#2a1a35;" onclick="addSandboxArchiveRow()">+ NUOVA</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sb-view-box1" style="display:none; padding:50px; text-align:center;">BOX 1</div>
+                <div id="sb-view-box2" style="display:none; padding:50px; text-align:center;">BOX 2</div>
+                <div id="sb-view-box3" style="display:none; padding:50px; text-align:center;">BOX 3</div>
+
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // --- FINE SANDBOX ---
+
+
+
+
+    // =======================================================================
+    // FINE AREA SANDBOX
+    // =======================================================================
+    // =======================================================================
+    // FINE AREA SANDBOX
+    // =======================================================================
+
+
+
+
+
+
+
+
+
+
+
+    // --- FUNZIONI STANDARD (NON TOCCATE) ---
     function switchTab(t) {
         document.getElementById('view-lavori').style.display = t==='lavori'?'block':'none';
         document.getElementById('view-archivio').style.display = t==='archivio'?'block':'none';
@@ -285,7 +712,6 @@
         document.getElementById('btn-archivio').className = t==='archivio'?'tab-btn active':'tab-btn';
     }
 
-    // --- KANBAN & COMMESSE ---
     function loadKanban() {
         const k = document.getElementById('kanban-area'); k.innerHTML = "";
         stati.forEach((s, i) => {
@@ -411,7 +837,6 @@
     }
     window.saveDistData = function(id, cid, f, v) { db.ref(`commesse/${currentClient}/${id}/checklist/distintaDati/${cid}/${f}`).set(v); }
 
-    // --- ARCHIVIO & GESTIONE ARTICOLI ---
     function loadArchive() {
         const l = document.getElementById('archive-list'); l.innerHTML = "Caricamento...";
         db.ref('archivio/' + currentClient).on('value', snap => {
@@ -455,7 +880,6 @@
         });
     }
 
-    // --- NUOVO/MODIFICA ARTICOLO ---
     function apriModalNuovoArticolo() {
         currentArtId = null; currentArtImg = null;
         document.getElementById('art-modal-title').innerText = "NUOVO ARTICOLO";
@@ -569,12 +993,61 @@
         r.readAsDataURL(f);
     }
 
-    // --- EDITOR CELLE ---
-    let currentEditCell = null;
-    function clickCell(td) { /* ... */ } // Placeholder
-    function editCell(td) { /* ... */ } // Placeholder
-    function chiudiEditor() { document.getElementById('editor-popup').style.display = 'none'; }
-    function salvaEditor() { /* ... */ } // Placeholder
+    // --- NUOVE FUNZIONI DI GESTIONE CLIENTI ---
+    function openManage() {
+        document.getElementById('modal-manage').style.display = 'flex';
+        renderManageLists();
+    }
+
+    function renderManageLists() {
+        const act = document.getElementById('list-active');
+        const arch = document.getElementById('list-archive');
+        act.innerHTML = ""; arch.innerHTML = "";
+
+        allClients.forEach((c, i) => {
+            let item = `<div class="manage-item"><span>${c.name}</span>`;
+            if(c.active) {
+                item += `<div style="display:flex; gap:5px;"><button class="btn-del" onclick="deleteClient(${i})">X</button><button class="btn-arrow" onclick="toggleClient(${i})">⬇</button></div></div>`;
+                act.innerHTML += item;
+            } else {
+                item += `<div style="display:flex; gap:5px;"><button class="btn-del" onclick="deleteClient(${i})">X</button><button class="btn-arrow" onclick="toggleClient(${i})">⬆</button></div></div>`;
+                arch.innerHTML += item;
+            }
+        });
+    }
+
+    function toggleClient(idx) {
+        allClients[idx].active = !allClients[idx].active;
+        localStorage.setItem('my_clients', JSON.stringify(allClients));
+        renderManageLists();
+        renderClientsBar();
+    }
+
+    function addClient() {
+        let name = document.getElementById('new-client-name').value;
+        if(name) {
+            allClients.push({name: name, active: true});
+            document.getElementById('new-client-name').value = "";
+            localStorage.setItem('my_clients', JSON.stringify(allClients));
+            renderManageLists();
+            renderClientsBar();
+        }
+    }
+
+    function deleteClient(idx) {
+        if(confirm("Eliminare definitivamente?")) {
+            allClients.splice(idx, 1);
+            localStorage.setItem('my_clients', JSON.stringify(allClients));
+            renderManageLists();
+            renderClientsBar();
+        }
+    }
+
+    // EDITOR PLACEHOLDERS
+    function clickCell(td) {}
+    function editCell(td) {}
+    function chiudiEditor() { document.getElementById('editor-popup').style.display='none'; }
+    function salvaEditor() {}
 
 </script>
 </body>
