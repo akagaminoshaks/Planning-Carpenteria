@@ -1,14 +1,43 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
+
     <meta charset="UTF-8">
-    <title>Commesse - Gestionale V3.2 (Sandbox)</title>
+    <title>Commesse - Gestionale V3.6 (Commented & Merged)</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        /* ================================================================= */
+        /* FIX LAVORO (LORENZO 10/02/2026) - INTEGRATI QUI */
+        /* Ho modificato il BODY per lo scroll e il workspace per non tagliare */
+        /* ================================================================= */
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #111; 
+            color: white; 
+            margin: 0; 
+            min-height: 100vh; /* Permette alla pagina di allungarsi (Fix Lavoro) */
+            display: flex; 
+            flex-direction: column; 
+            overflow-y: auto; /* Abilita la barra di scorrimento laterale (Fix Lavoro) */
+        }
+
+        #workspace { 
+            flex: 1; 
+            display: none; 
+            flex-direction: column; 
+            overflow: visible; /* Evita che il contenuto venga tagliato (Fix Lavoro) */
+        }
+        
+        #view-standard {
+            overflow: visible;
+            height: auto; /* (Fix Lavoro) */
+        }
+        /* ================================================================= */
+
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         
         /* HEADER BAR */
@@ -28,7 +57,6 @@
         .btn-manage { background: #222; border: 1px solid #00e5ff; color: #00e5ff; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; margin-left: 10px; }
         .btn-manage:hover { background: #00e5ff; color: #000; }
 
-        #workspace { flex: 1; display: none; flex-direction: column; overflow: hidden; }
         .tabs { display: flex; justify-content: center; padding: 10px; gap: 10px; background: #111; }
         .tab-btn { padding: 8px 30px; background: transparent; border: 1px solid #444; color: #777; border-radius: 20px; cursor: pointer; font-size: 12px; transition: 0.2s;}
         .tab-btn:hover { border-color: #666; color: #aaa; }
@@ -171,46 +199,23 @@
 
 
 
+ /*QUA HO IL CODICE CSS X LA SANDBOX! MOLTO UTILE*/
+/*===============================================================================*/
+ SANDBOX STYLE  INIZIO X PENSO FILE CSS
+/*===============================================================================*/
 
 
+    /* SANDBOX STYLES (SOLO PROVA 1) */
+    .sandbox-container { display:none; flex-direction:column; gap:20px; padding:10px; }
+    .sandbox-box { border:1px solid #9b59b6; background:#16101a; border-radius:4px; margin-bottom:20px; }
+    .sandbox-head { background:#2a1a35; padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #9b59b6; }
+    .sandbox-title { color:#9b59b6; font-weight:bold; text-transform:uppercase; font-size:14px; }
+    .sandbox-note { background:#111; border:1px solid #555; color:#ccc; padding:5px; width:250px; font-size:12px; }
+    .sandbox-drop { border:2px dashed #9b59b6; color:#9b59b6; padding:15px; text-align:center; font-size:11px; margin:10px; cursor:pointer; background:rgba(155,89,182,0.05); }
+    .sandbox-btn-add { background:#9b59b6; color:white; border:none; width:100%; padding:8px; font-weight:bold; cursor:pointer; margin-top:5px; text-transform:uppercase; }
 
 
-
-
-
-
-
-
-
-//===============================================================================
-// SANDBOX STYLE // - INIZIO X PENSO FILE CSS
-//===============================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /* SANDBOX STYLES (SOLO PROVA 1) */
-        .sandbox-container { display:none; flex-direction:column; gap:20px; padding:10px; }
-        .sandbox-box { border:1px solid #9b59b6; background:#16101a; border-radius:4px; margin-bottom:20px; }
-        .sandbox-head { background:#2a1a35; padding:10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #9b59b6; }
-        .sandbox-title { color:#9b59b6; font-weight:bold; text-transform:uppercase; font-size:14px; }
-        .sandbox-note { background:#111; border:1px solid #555; color:#ccc; padding:5px; width:250px; font-size:12px; }
-        .sandbox-drop { border:2px dashed #9b59b6; color:#9b59b6; padding:15px; text-align:center; font-size:11px; margin:10px; cursor:pointer; background:rgba(155,89,182,0.05); }
-        .sandbox-btn-add { background:#9b59b6; color:white; border:none; width:100%; padding:8px; font-weight:bold; cursor:pointer; margin-top:5px; text-transform:uppercase; }
-
-
-/* --- STILI V4.3 (PROVA 1) --- */
+    /* --- STILI V4.3 (PROVA 1) --- */
     .sandbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; padding: 10px; }
     .sandbox-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 10px; height: 220px; justify-content: space-between; transition: 0.2s; cursor: pointer; position:relative; }
     .sandbox-card:hover { transform: translateY(-3px); border-color: #9b59b6; box-shadow: 0 5px 15px rgba(155, 89, 182, 0.1); }
@@ -230,16 +235,22 @@
 
 
 
-
-
-
-
-/* --- STILI V4.8 (LAYOUT ORIZZONTALE) --- */
+    /* ============================================================= */
+    /*BENE BENE BENE - DA QUA MODIFICO IL LAYOUT DELLA SCHDA PROVA 1 - LORENZO 08/02/2026 - 11:46/*
+    /* ============================================================= */
+    /* QUESTO DOVREBBE ESSERE IL CODICE CSS X CAMBIARE COLORI ECC... */
+    /* ============================================================= */
+    /* --- STILI V4.8 (LAYOUT ORIZZONTALE) --- */
     
-    /* 1. Barra in Alto (Box Azzurro) */
+
+
+    /* ================================================================================================================================================================================= */
+    /* INIZIO CONTROLLO CSS/LAYOUT - RIGA PROVA 1 --- LAVORI ARCHIVIO BOX123 */
+    /* ================================================================================================================================================================================= */
+    /* QUESTA è LA RIGA ORIZZONATALE CON IL SELETTORE  LAVORI - ARCHIVIO - BOX 1 2 3 - NE GESTISCO LE PROPRIETà */
     .sb-header-horizontal {
         width: 100%;
-        height: 60px;
+        height: 50px;
         background: #111;
         border-bottom: 1px solid #333;
         display: flex;
@@ -248,15 +259,52 @@
         box-sizing: border-box;
         justify-content: space-between; /* Titolo a sx, Bottoni a dx */
         flex-shrink: 0; /* Non si schiaccia */
+        position: relative;  
     }
 
-    /* Bottoni allineati in riga */
+    /* 1. || GESTISCE I BOTTONI - DISPLAY:___ GAP: DISTANZA TRA I BOTTONI */
     .sb-nav-group {
         display: flex;
         gap: 10px;
-    }
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        }
 
-    /* 2. Contenitore Colonne (Box Giallo) */
+    /* 1.1 Aspetto del bottone a riposo */
+    .sb-nav-btn {
+        background: transparent;        /* Sfondo trasparente */
+        border: 1px solid #444;      /* Bordo grigio scuro */
+        color: #888;                 /* Colore del testo spento */
+        padding: 8px 25px;             /* Dimensioni */
+        border-radius: 20px;           /* Pillola arrotondata */
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        transition: all 0.3s ease;       /* Animazione fluida */
+        }
+
+    /* 1.2 Quando passi il mouse sopra (Hover) */
+    .sb-nav-btn:hover {
+        border-color: white;
+        color: white;
+        background: rgba(255,255,255,0.1);
+        transform: translateY(-3px);    /* Effetto 3D - FIGHISSIMO!!! */ 
+        }
+
+    /* 1.3 Quando il bottone è SELEZIONATO (Active) */
+    .sb-nav-btn.active {
+        background: #2f1f36b0;            /* Sfondo VIOLA ACCESO */
+        border-color: #9b59b6;
+        color: white;
+        box-shadow: 0 0 15px rgba(228, 30, 235, 0.4); /* Alone luminoso */
+        }
+    /* --- FINE STILE BOTTONI --- */
+    /* =============================================== */
+
+
+    /* 2. || QUESTò è IL CONTENITORE, LA BASE SOTTO LE COLONNE! -- CAMBIA COLORE X VEDERE -- Contenitore Colonne (Box Giallo) */
     .sb-kanban-fullwidth {
         display: flex;
         flex: 1; /* Occupa tutto lo spazio verticale rimasto */
@@ -265,38 +313,296 @@
         gap: 15px;
         box-sizing: border-box;
         overflow-x: auto; /* Scorre se lo schermo è minuscolo */
-        background: #0a0a0a;
+        background: #101011;
     }
 
     /* 3. Le Colonne si dividono lo spazio (flex: 1) */
     .sb-col-equal {
         flex: 1; /* <--- QUESTO DIVIDE LO SPAZIO IN MODO UGUALE */
         min-width: 200px; /* Sicurezza per non farle esplodere se restringi troppo */
-        background: #141414;
-        border: 1px solid #333;
-        border-radius: 6px;
+        background: #141414;    /* SFONDO COLONNE */
+        border: 1px solid #686666; /* BORDI COLONNE */
+        border-radius: 15px; /* RAGGI DEI BORDI */ 
         display: flex;
         flex-direction: column;
         height: 100%;
     }
 
+
+    /* 4. IL TITOLO DELLE COLONNE*/
     .sb-col-header {
         padding: 10px;
         text-align: center;
-        font-weight: bold;
-        color: #9b59b6;
+        font-weight: bold; /*IL TESTO è IN GRASSETTO*/
+        color: #880db9;
         background: #1a1a1a;
         border-bottom: 1px solid #333;
-        text-transform: uppercase;
-        font-size: 12px;
-        letter-spacing: 1px;
+        text-transform: uppercase; /*TUTTO MAIUSOLO*/
+        font-size: 17px;
+        letter-spacing: 3px;
     }
     
+
+    /* 5. IO NON LO SO, L'INSERITORE AUTOMATICO SUGGERISCE: IL CORPO DELLE COLONNE */
     .sb-col-body {
         flex: 1;
         padding: 10px;
         overflow-y: auto;
     }
+    /* ================================================================================================================================================================================= */
+    /* FINE CONTROLLO CSS/LAYOUT - RIGA PROVA 1 --- LAVORI ARCHIVIO BOX123 */
+    /* ================================================================================================================================================================================= */
+
+
+
+
+
+
+
+    /* ================================================================================================================================================================================= */
+    /* INIZIO CSS/LAYOUT - DASHBOARD ARCHIVIO --- IL LAYOUT DI COME è FATTA LA PAGINA QUANDO SI SCLICCA NELLA RIGA IL BOTTONE ARCHIVIO - LORENZO 08/02/2026 - 15:41 */
+    /* ================================================================================================================================================================================= */
+    /* --- 1. ASPETTO GENERALE DELLA TABELLA --- */
+    .sb-table {
+        width: 100%;                /* La tabella occupa tutta la larghezza disponibile */
+        border-collapse: collapse; /* Elimina gli spazi doppi tra le celle (bordi uniti) */
+        font-size: 14px;            /* Grandezza del testo di base nella tabella */
+    }
+
+    /* --- 2. INTESTAZIONE DELLA TABELLA (La riga in alto con i titoli) --- */
+    .sb-table th {
+        text-align: center;           /* Allinea il testo a sinistra (non centrato) */
+        padding: 12px;              /* Spazio interno (aria) attorno al testo */
+        background: #2a1a35;        /* Sfondo: Viola molto scuro (quasi nero) */
+        color: #9b59b6;             /* Testo: Viola acceso (Neon) */
+        border-bottom: 2px solid #9b59b6; /* Linea spessa viola sotto i titoli */
+        text-transform: uppercase; /* Trasforma tutto il testo in MAIUSCOLO */
+        font-size: 12px;            /* Testo leggermente più piccolo del corpo */
+    }
+
+    /* --- 3. CELLE DEL CORPO TABELLA (Dove ci sono i dati) --- */
+    .sb-table td {
+        padding: 12px;              /* Spazio interno per non attaccare il testo ai bordi */
+        border-bottom: 1px solid #333; /* Linea sottile grigia scura tra una riga e l'altra */
+        color: #ccc;                /* Colore del testo: Grigio chiaro (leggibile su scuro) */
+    }
+
+    /* --- 4. EFFETTO MOUSE SOPRA LE RIGHE (Hover) --- */
+    .sb-table tr:hover {
+        background: rgba(155, 89, 182, 0.05); /* Quando passi il mouse, la riga si illumina leggermente di viola trasparente */
+    }
+
+    /* --- 5. STILE DEL BOTTONE "+ NUOVA COMMESSA" --- */
+    .sb-btn-add {
+        background: #9b59b6;        /* Colore di sfondo: Viola base */
+        color: white;               /* Testo bianco */
+        border: none;               /* Nessun bordino grigio standard */
+        padding: 10px 20px;         /* Grandezza del bottone (10px altezza, 20px larghezza) */
+        border-radius: 6px;         /* Angoli arrotondati (non spigolosi) */
+        font-weight: bold;          /* Testo in grassetto */
+        cursor: pointer;            /* Cursore diventa una manina quando ci passi sopra */
+        transition: 0.3s;           /* Animazione fluida di 0.3 secondi per i cambi di colore */
+        font-size: 12px;            /* Grandezza testo */
+        letter-spacing: 1px;        /* Leggero spazio tra le lettere per stile */
+    }
+
+    /* --- 6. EFFETTO MOUSE SOPRA IL BOTTONE (Hover) --- */
+    .sb-btn-add:hover {
+        background: #8e44ad;        /* Diventa un viola leggermente più scuro/intenso */
+        box-shadow: 0 0 15px rgba(155, 89, 182, 0.5); /* Crea un alone luminoso (effetto neon) */
+        transform: translateY(-2px); /* Sposta il bottone in su di 2 pixel (effetto 3D) */
+    }
+    
+
+
+
+
+
+    /* ========================================================= */
+    /* INCOLLA QUI IL NUOVO CODICE PER I BOTTONI DELLA TABELLA */
+    /* ========================================================= */
+    /* --- STILE BOTTONI TABELLA SANDBOX --- */
+    /* HO SOSTITUITO LO STILE DI PRIMA CON QUELLO DI ORA - LORENZO 10/02/2026 ----- GEMINI: Ora dobbiamo dire al browser come far apparire questi nuovi bottoni. */
+
+    /* Stile generale per tutti i bottoni di azione */
+    .sb-action-btn {
+        display: inline-flex;       /* Per allineare icona e testo sulla stessa riga */
+        align-items: center;        /* Centra verticalmente icona e testo */
+        gap: 6px;                   /* Spazio tra l'icona e il testo */
+        padding: 6px 12px;          /* Spazio interno un po' più grande */
+        border-radius: 20px;        /* BORDI MOLTO ARROTONDATI (forma a "pillola") */
+        cursor: pointer;            /* Cursore a manina */
+        border: 1px solid transparent; /* Bordo trasparente di base */
+        background: rgba(255,255,255,0.05); /* Sfondo leggermente visibile */
+        color: white;               /* Testo bianco */
+        font-size: 11px;            /* Dimensione testo */
+        font-weight: normal;          /* Testo in grassetto */
+        text-transform: uppercase;  /* Testo tutto maiuscolo */
+        transition: all 0.3s ease;  /* Animazione fluida per tutti i cambiamenti */
+        font-family: 'Segoe UI', sans-serif; /* Font moderno */
+    }
+
+    /* Effetto generale quando passi il mouse sopra */
+    .sb-action-btn:hover {
+        transform: translateY(-2px); /* Si sposta leggermente verso l'alto */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Aggiunge una leggera ombreggiatura */
+    }
+
+    /* Stile per l'icona dentro il bottone */
+    .sb-btn-icon {
+        font-size: 14px; /* Icona leggermente più grande del testo */
+    }
+
+    /* --- Colori specifici per ogni bottone --- */
+
+    /* Bottone PRODUCI (Verde) */
+    .sb-btn-prod {
+        color: #00ff88; /* Colore testo e icona */
+        border-color: rgba(0, 255, 136, 0.3); /* Colore bordo */
+    }
+    .sb-btn-prod:hover {
+        background: rgba(0, 255, 136, 0.15); /* Sfondo verde chiaro al passaggio del mouse */
+        border-color: #00ff88; /* Bordo verde acceso */
+    }
+
+    /* Bottone MODIFICA (Giallo/Oro) */
+    .sb-btn-edit {
+        color: #f1c40f; /* Colore testo e icona */
+        border-color: rgba(241, 196, 15, 0.3); /* Colore bordo */
+    }
+    .sb-btn-edit:hover {
+        background: rgba(241, 196, 15, 0.15); /* Sfondo giallo chiaro al passaggio del mouse */
+        border-color: #f1c40f; /* Bordo giallo acceso */
+    }
+
+    /* Bottone ELIMINA (Rosso) */
+    .sb-btn-del {
+        color: #e74c3c; /* Colore testo e icona */
+        border-color: rgba(231, 76, 60, 0.3); /* Colore bordo */
+    }
+    .sb-btn-del:hover {
+        background: rgba(231, 76, 60, 0.15); /* Sfondo rosso chiaro al passaggio del mouse */
+        border-color: #e74c3c; /* Bordo rosso acceso */
+    }
+    
+    /* ================================================================================================================================================================================= */
+    /* FINE CSS/LAYOUT - DASHBOARD ARCHIVIO --- IL LAYOUT DI COME è FATTA LA PAGINA QUANDO SI SCLICCA NELLA RIGA IL BOTTONE ARCHIVIO - LORENZO 08/02/2026 - 15:41 */
+    /* ================================================================================================================================================================================= */
+
+
+
+
+
+
+
+
+
+
+
+/* ================================================================================================================================================================================= */
+/* INIZIO CSS/LAYOUT - DASHBOARD MODIFICA ARTICOLO --- IL LAYOUT DI COME è FATTA LA PAGINA QUANDO SI SCLICCA NELLA RIGA IL BOTTONE ARCHIVIO - LORENZO 10/02/2026 - 19:21 */
+/* ================================================================================================================================================================================= */
+
+/* --- STILE DASHBOARD MODALE --- */
+.dashboard-header {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    background: #1e1e1e; /* Sfondo scuro pannello */
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+/* Contenitore Immagine */
+.img-preview-box {
+    width: 200px;
+    height: 180px;
+    background-color: #fff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #555;
+    overflow: hidden;
+}
+
+.img-preview-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Contenitore Input a Destra */
+.info-fields {
+    flex: 1; /* Prende tutto lo spazio rimanente */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-row {
+    display: flex;
+    gap: 15px;
+}
+
+.input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.input-dark {
+    background: #2b2b2b;
+    border: 1px solid #444;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    outline: none;
+}
+
+/* --- BARRA DEI FILTRI (Cerchio Verde) --- */
+.filter-bar-container {
+    margin: 15px 0;
+    padding: 10px;
+    background: #1a1a1a;
+    border-top: 2px solid #00d26a; /* Linea verde estetica */
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; /* Se sono troppi scorre */
+    white-space: nowrap;
+}
+
+.filter-btn {
+    background: #333;
+    color: #ccc;
+    border: 1px solid #444;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background: #444;
+    color: white;
+}
+
+.filter-btn.active {
+    background: #00d26a; /* Verde attivo */
+    color: #000;
+    font-weight: bold;
+    border-color: #00d26a;
+}
 
 
 
@@ -325,20 +631,50 @@
 
 
 
-//===============================================================================
-// SANDBOX STYLE // - FINE X PENSO FILE CSS
-//===============================================================================
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*QUA FINISCE IL CODICE CSS X LA SANDBOX! MOLTO UTILE*/
+/*===============================================================================*/
+SANDBOX STYLE FINE X PENSO FILE CSS
+/*===============================================================================*/
+
+    
 
 
 
 
     </style>
-</head>
+    </head>
 <body>
-
-    <div id="editor-popup">
+     <div id="editor-popup">
         <textarea id="editor-textarea"></textarea>
         <div style="text-align:right; margin-top:10px;">
             <button class="btn-editor" style="background:#444; color:white;" onclick="chiudiEditor()">ANNULLA</button>
@@ -386,7 +722,7 @@
         </div>
     </div>
 
-    <div id="modal-overlay" style="display: none;">
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
         <div class="modal-box">
             <div class="modal-head">
                 <div class="mh-left">
@@ -461,13 +797,204 @@
             </div>
         </div>
 
-        <div id="view-sandbox" class="sandbox-container">
+
+
+
+
+
+
+
+
+
+
+    <div id="view-sandbox" class="sandbox-container" style="padding: 0; width: 100%; height: 100%;">
+    
+        <div class="sb-header-horizontal">
+
+        <div style="font-size: 20px; font-weight: bold; color: #9b59b6;">
+            🧪 PROVA 1 
+        </div>
+        
+
+        <div class="sb-nav-group">
+            <button class="sb-nav-btn active" id="sb-btn-lavori" onclick="switchSandboxTab('lavori')">LAVORI</button>
+            <button class="sb-nav-btn" id="sb-btn-archivio" onclick="switchSandboxTab('archivio')">ARCHIVIO</button>
+            <button class="sb-nav-btn" id="sb-btn-box1" onclick="switchSandboxTab('box1')">BOX 1</button>
+            <button class="sb-nav-btn" id="sb-btn-box2" onclick="switchSandboxTab('box2')">BOX 2</button>
+            <button class="sb-nav-btn" id="sb-btn-box3" onclick="switchSandboxTab('box3')">BOX 3</button>
+        </div>
+        </div>
+
+
+
+
+
+
+    <div style="flex: 1; overflow: hidden; position: relative; width: 100%;">
+        
+        <div id="sb-view-lavori" style="display: flex; width: 100%; height: 100%;">
+            <div class="sb-kanban-fullwidth">
+                
+
+                <div class="sb-col-equal">
+                    <div class="sb-col-header">UFFICIO</div>
+                    <div class="sb-col-body" id="sb-col-0"></div>
+                </div>
+                
+                <div class="sb-col-equal">
+                    <div class="sb-col-header">MAGAZZINO</div>
+                    <div class="sb-col-body" id="sb-col-1"></div>
+                </div>
+                
+                <div class="sb-col-equal">
+                    <div class="sb-col-header">IN PRODUZIONE</div>
+                    <div class="sb-col-body" id="sb-col-2">
+                        <div class="sandbox-card" onclick="alert('Dettaglio...')">
+                            <div class="sb-card-head">
+                                <span class="sb-card-title">2024/001</span>
+                                <span class="sb-card-badge">PRIORITÀ</span>
+                            </div>
+                            <div class="sb-card-body" style="font-size:12px; color:#aaa;">
+                                <div><strong style="color:#9b59b6">CENTRALE:</strong> T-500</div>
+                                <div><strong style="color:#9b59b6">DISEGNO:</strong> D-123</div>
+                                <div style="margin-top:5px; color:white;">Lavorazione test...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sb-col-equal">
+                    <div class="sb-col-header">PRONTI</div>
+                    <div class="sb-col-body" id="sb-col-3"></div>
+                </div>
+
+                <div class="sb-col-equal">
+                    <div class="sb-col-header">VERNICIATURA</div>
+                    <div class="sb-col-body" id="sb-col-4"></div>
+                </div>
+
+                <div class="sb-col-equal">
+                    <div class="sb-col-header">FINITI</div>
+                    <div class="sb-col-body" id="sb-col-5"></div>
+                </div>
+
+                <div class="sb-col-equal">
+                    <div class="sb-col-header">ARCHIVIO</div>
+                    <div class="sb-col-body" id="sb-col-6"></div>
+                </div>
+
             </div>
+        </div>
+        <div id="sb-view-archivio" style="display:none; padding:30px; width:100%; height:100%; box-sizing:border-box; overflow-y:auto;">
+    
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
+        <h2 style="color:#9b59b6; margin:0; font-size:24px;">🗂️ ARCHIVIO COMMESSE</h2>
+        <button class="sb-btn-add" onclick="apriDashboardSandbox()">+ NUOVA COMMESSA</button>
+        </div>
+
+
+
+        <table class="sb-table">
+        <table class="sb-table" style="width: 100%; table-layout: fixed;">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align:center;">IMG</th>
+                    
+                    <th>COMMESSA</th>
+                    <th>CLIENTE</th>
+                    <th>DATA</th>
+                    <th>STATO</th>
+                    <th>NOTE / FORNITORI</th>
+                    
+                    <th style="width: 320px; text-align:center;">AZIONI</th>
+                </tr>
+            </thead>
+            <tbody id="sb-archive-table-body">
+                <tr><td colspan="7" style="text-align:center; color:#666;">Caricamento...</td></tr>
+            </tbody>
+        </table>
+        <tbody id="sb-archive-table-body">
+            <tr><td colspan="6" style="text-align:center; color:#666;">Caricamento...</td></tr>
+        </tbody>
+        </table>
+        </div>
+        <div id="sb-view-box1" style="display:none; padding:50px; text-align:center;">CONTENUTO BOX 1</div> 
+        <div id="sb-view-box2" style="display:none; padding:50px; text-align:center;">CONTENUTO BOX 2</div>
+        <div id="sb-view-box3" style="display:none; padding:50px; text-align:center;">CONTENUTO BOX 3</div>
+        </div>
+    </div>
+
+
+
+
     </div>
     
+
     <div id="placeholder" style="text-align:center; padding:100px; color:#444; font-size: 14px; letter-spacing: 1px;">SELEZIONA UN CLIENTE DALLA BARRA IN ALTO</div>
 
-<script>
+    <div id="modal-sb-commessa" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="width: 700px; height: auto; max-height:90%; border-color:#9b59b6;">
+        
+        <div class="modal-head" style="background:#2a1a35; border-bottom:1px solid #9b59b6;">
+            <span class="mh-order-label" style="color:#9b59b6;">NUOVA COMMESSA</span>
+            <button onclick="chiudiModalSbCommessa()" class="btn-close-modal">X</button>
+        </div>
+
+        <div class="modal-body" style="flex-direction: column; overflow-y: auto; gap: 15px;">
+            
+            <div style="display:flex; gap:15px;">
+                <div style="flex:1;">
+                    <label class="big-label" style="color:#9b59b6;">Numero Commessa / Nome</label>
+                    <input type="text" id="sb-inp-nome" class="big-input" placeholder="Es. 2026/005">
+                </div>
+                <div style="flex:1;">
+                    <label class="big-label" style="color:#9b59b6;">Cliente Finale</label>
+                    <input type="text" id="sb-inp-cliente" class="big-input" placeholder="Es. Ferrero">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:15px;">
+                <div style="flex:1;">
+                    <label class="big-label">Stato Attuale</label>
+                    <select id="sb-inp-stato" class="big-input" style="color:white; background:#222;">
+                        <option value="UFFICIO">UFFICIO</option>
+                        <option value="MAGAZZINO">MAGAZZINO</option>
+                        <option value="IN PRODUZIONE">IN PRODUZIONE</option>
+                        <option value="PRONTI">PRONTI</option>
+                        <option value="VERNICIATURA">VERNICIATURA</option>
+                        <option value="FINITI">FINITI</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label class="big-label">Data Apertura</label>
+                    <input type="date" id="sb-inp-data" class="big-input">
+                </div>
+            </div>
+
+            <div style="margin-top:10px;">
+                <label class="big-label" style="color:#00e5ff;">📝 Lista Fornitori & Materiali Ordinati</label>
+                <textarea id="sb-inp-note" class="big-input" style="height:120px; resize:none;" placeholder="Scrivi qui elenco fornitori, materiali mancanti, note urgenti..."></textarea>
+            </div>
+
+        </div>
+
+        <div style="padding:20px; background:#111; text-align:right; border-top:1px solid #333;">
+            <button class="btn-glass" style="border-color:#9b59b6; color:#9b59b6;" onclick="salvaSbCommessa()">SALVA DATI</button>
+        </div>
+    </div>
+    </div>
+
+
+    <div id="modal-dashboard-overlay" class="modal-overlay" style="display: none; justify-content: center; align-items: center;">
+        <div class="modal-box" style="width: 900px; max-width: 95%; height: 85%; background: #181818; border: 2px solid #9b59b6; box-shadow: 0 0 30px rgba(155, 89, 182, 0.3); overflow: hidden; border-radius: 10px;">
+            <div id="modal-dashboard-container" style="width: 100%; height: 100%; overflow-y: auto;">
+            </div>
+        </div>
+    </div>
+
+
+    <script>
     const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -498,6 +1025,9 @@
     let currentClient = null;
     let currentArtId = null;
     let currentArtImg = null;
+    
+    // --- VARIABILE AGGIUNTA PER MODIFICA SANDBOX ---
+    let currentSbEditId = null; // Variabile per tracciare se stiamo modificando
 
     window.onload = function() {
         if(localStorage.getItem('auth_token') !== 'logged_in') window.location.href='index.html';
@@ -559,110 +1089,80 @@
     // =======================================================================
     // AREA SANDBOX - SOLO PER CLIENTE "PROVA 1" (V4.0)
     // =======================================================================
-
-
-
-
-
-
-
     // --- FUNZIONE SANDBOX ISOLATA ---
+    // --- LORENZO + GEMINI RICOMINCIANO IL 08/02/2026 --- 
 
 
 
 
-
+// =======================================================================
+// AREA SANDBOX - SOLO PER CLIENTE "PROVA 1" (V4.0)
+// =======================================================================
 
 function renderSandbox() {
-        const container = document.getElementById('view-sandbox');
-        
-        // FORZA IL LAYOUT VERTICALE (Barra sopra, Colonne sotto)
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column'; 
-        container.style.padding = '0';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        
-        const columns = ["UFFICIO", "MAGAZZINO", "IN PRODUZIONE", "PRONTI", "VERNICIATURA", "FINITI", "ARCHIVIATI"];
+    const container = document.getElementById('view-sandbox');
+    
+    // Assicuriamoci che il container sia visibile e formattato correttamente
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column'; 
+    container.style.width = '100%';
+    container.style.height = '100%';
 
-        let html = `
-            <div class="sb-header-horizontal">
-                <div style="font-size: 20px; font-weight: bold; color: #9b59b6;">
-                    🧪 PROVA 1
-                </div>
-                
-                <div class="sb-nav-group">
-                    <button class="sb-nav-btn active" id="sb-btn-lavori" onclick="switchSandboxTab('lavori')">LAVORI</button>
-                    <button class="sb-nav-btn" id="sb-btn-archivio" onclick="switchSandboxTab('archivio')">ARCHIVIO</button>
-                    <button class="sb-nav-btn" id="sb-btn-box1" onclick="switchSandboxTab('box1')">BOX 1</button>
-                    <button class="sb-nav-btn" id="sb-btn-box2" onclick="switchSandboxTab('box2')">BOX 2</button>
-                    <button class="sb-nav-btn" id="sb-btn-box3" onclick="switchSandboxTab('box3')">BOX 3</button>
-                </div>
-            </div>
+    console.log("Sandbox Inizializzata");
 
-            <div style="flex: 1; overflow: hidden; position: relative; width: 100%;">
-                
-                <div id="sb-view-lavori" style="display: flex; width: 100%; height: 100%;">
-                    <div class="sb-kanban-fullwidth">
-                        ${columns.map((col, i) => `
-                            <div class="sb-col-equal">
-                                <div class="sb-col-header">${col}</div>
-                                <div class="sb-col-body" id="sb-col-${i}">
-                                    
-                                    ${col === "IN PRODUZIONE" ? `
-                                    <div class="sandbox-card" onclick="apriModalProva1()">
-                                        <div class="sb-card-head">
-                                            <span class="sb-card-title">2024/001</span>
-                                            <span class="sb-card-badge">PRIORITÀ</span>
-                                        </div>
-                                        <div class="sb-card-body" style="font-size:12px; color:#aaa;">
-                                            <div><strong style="color:#9b59b6">CENTRALE:</strong> T-500</div>
-                                            <div><strong style="color:#9b59b6">DISEGNO:</strong> D-123</div>
-                                            <div style="margin-top:5px; color:white;">Lavorazione test...</div>
-                                        </div>
-                                    </div>` : ''}
+    // --- FIX DI LORENZO ---
+    // Appena entro, simulo il click sul tasto "LAVORI" per caricare i dati e le colonne!
+    switchSandboxTab('lavori'); 
+}
 
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
 
-                <div id="sb-view-archivio" style="display:none; padding:20px; width:100%; height:100%; box-sizing:border-box; overflow-y:auto;">
-                    <div class="scotta-box" style="border-color:#9b59b6;">
-                        <div class="scotta-head" style="border-bottom:1px solid #9b59b6;">
-                            <span class="scotta-title" style="color:#9b59b6;">ARCHIVIO</span>
-                        </div>
-                        <div style="padding:10px;">
-                            <table class="commessa-table">
-                                <thead><tr><th style="color:#9b59b6;">MATR</th><th>CLIENTE</th><th>NOTE</th><th style="width:30px"></th></tr></thead>
-                                <tbody id="sb-archive-body">
-                                    <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td style="color:red; cursor:pointer;" onclick="this.parentElement.remove()">✖</td></tr>
-                                </tbody>
-                            </table>
-                            <button class="btn-add-row" style="color:#9b59b6; background:#2a1a35;" onclick="addSandboxArchiveRow()">+ NUOVA</button>
-                        </div>
-                    </div>
-                </div>
 
-                <div id="sb-view-box1" style="display:none; padding:50px; text-align:center;">BOX 1</div>
-                <div id="sb-view-box2" style="display:none; padding:50px; text-align:center;">BOX 2</div>
-                <div id="sb-view-box3" style="display:none; padding:50px; text-align:center;">BOX 3</div>
 
-            </div>
-        `;
+/* INIZIO -- FUNZIONE AGGIUNTA DA LORENZO X POTER CLICCARE I BOTTONI DI SCELTA - LAVORI - ARCHIVIO - BOX 123 -- 08/02/2026 */
+// --- FUNZIONE PER CAMBIARE SCHEDA (TAB) NELLA SANDBOX ---
+function switchSandboxTab(tabName) { 
+    
+    // --- 1. GESTIONE GRAFICA DEI BOTTONI ---
+    const allBtns = document.querySelectorAll('.sb-nav-btn'); 
+    allBtns.forEach(btn => { 
+        btn.classList.remove('active'); 
+    }); 
 
-        container.innerHTML = html;
+    const btnClicked = document.getElementById('sb-btn-' + tabName); 
+    if (btnClicked) { 
+        btnClicked.classList.add('active'); 
     }
 
+    // --- 2. GESTIONE DELLE VISTE ---
+    document.getElementById('sb-view-lavori').style.display = 'none'; 
+    document.getElementById('sb-view-archivio').style.display = 'none'; 
+    document.getElementById('sb-view-box1').style.display = 'none'; 
+    document.getElementById('sb-view-box2').style.display = 'none'; 
+    document.getElementById('sb-view-box3').style.display = 'none'; 
 
+    // Ora mostriamo solo quello richiesto
+    const viewToShow = document.getElementById('sb-view-' + tabName); 
 
+    if (viewToShow) { 
+        if (tabName === 'lavori') { 
+            viewToShow.style.display = 'flex'; 
+            
+            // --- QUI C'È LA MODIFICA! ---
+            // Carico i dati della Kanban solo quando apro questa scheda
+            caricaKanbanSandbox(); 
+            // ----------------------------
 
-
-
-
-
-
+        } else { 
+            viewToShow.style.display = 'block'; 
+        }
+    }
+    
+    // Se apro archivio, ricarico i dati
+    if(tabName === 'archivio') {
+        caricaArchivioSandbox();
+    }
+}
+    /* FINE -- FUNZIONE AGGIUNTA DA LORENZO X POTER CLICCARE I BOTTONI DI SCELTA - LAVORI - ARCHIVIO - BOX 123 -- 08/02/2026 */
 
 
 
@@ -718,10 +1218,16 @@ function renderSandbox() {
             k.innerHTML += `<div class="col"><div class="col-head">${s}</div><div class="col-body" id="col-${i}"></div></div>`;
         });
         db.ref('commesse/' + currentClient).on('value', snap => {
-            for(let i=0; i<stati.length; i++) document.getElementById(`col-${i}`).innerHTML="";
+            for(let i=0; i<stati.length; i++) {
+                let col = document.getElementById(`col-${i}`);
+                if(col) col.innerHTML="";
+            }
             let data = snap.val(); if(!data) return;
             for(let id in data) {
                 let d = data[id];
+                // Ignora le commesse sandbox nella vista standard
+                if(d.layout === 'sandbox') continue;
+
                 let card = document.createElement('div'); card.className = 'card';
                 card.onclick = () => openModal(id, d);
                 card.innerHTML = `
@@ -1048,6 +1554,1375 @@ function renderSandbox() {
     function editCell(td) {}
     function chiudiEditor() { document.getElementById('editor-popup').style.display='none'; }
     function salvaEditor() {}
+
+
+
+
+
+
+// INIZIO JAVASCRIPT --- IL JAVASCRIPT PER FAR FUNZIONAREIL BOX ARCHIVIO //
+// INIZIO JAVASCRIPT --- IL JAVASCRIPT PER FAR FUNZIONAREIL BOX ARCHIVIO //
+// INIZIO JAVASCRIPT --- IL JAVASCRIPT PER FAR FUNZIONAREIL BOX ARCHIVIO //
+// PASSO 4 - MOTORE ARCHIVIO SANDBOX (Gestione Modale e Database)
+/* --- 1. APRE LA MODALE PULITA (Prepara i campi vuoti) --- */
+function apriModalSbCommessa(isEdit = false) {
+    if (!isEdit) {
+        // Se è NUOVA, pulisco tutto
+        currentSbEditId = null;
+        document.getElementById('sb-inp-nome').value = ""; 
+        document.getElementById('sb-inp-cliente').value = "";
+        document.getElementById('sb-inp-data').value = new Date().toISOString().split('T')[0];
+        document.getElementById('sb-inp-note').value = ""; 
+        // Resetto il titolo della modale
+        document.querySelector('#modal-sb-commessa .mh-order-label').innerText = "NUOVA COMMESSA";
+    } else {
+        // Se è MODIFICA, cambio il titolo
+        document.querySelector('#modal-sb-commessa .mh-order-label').innerText = "MODIFICA COMMESSA";
+    }
+    document.getElementById('modal-sb-commessa').style.display = 'flex'; 
+}
+
+/* --- 2. CHIUDE LA MODALE (Nasconde la finestra) --- */
+function chiudiModalSbCommessa() {
+    document.getElementById('modal-sb-commessa').style.display = 'none';
+}
+
+/* --- 3. SALVA I DATI SU FIREBASE (Crea la commessa) --- */
+function salvaSbCommessa() {
+    // Prendo i valori scritti dall'utente nelle caselle
+    const nome = document.getElementById('sb-inp-nome').value;
+    const cliente = document.getElementById('sb-inp-cliente').value;
+    const stato = document.getElementById('sb-inp-stato').value;
+    const data = document.getElementById('sb-inp-data').value;
+    const note = document.getElementById('sb-inp-note').value;
+
+    // Controllo di sicurezza: se non c'è il nome, mi fermo e avviso
+    if(!nome) return alert("Inserisci almeno il Nome/Numero Commessa!");
+
+    // Creo l'oggetto "Pacchetto" da spedire al Database
+    const pacchettoDati = {
+        nomeOrdine: nome,       // Il nome (es. 2026/005)
+        clienteFinale: cliente, // Il cliente (es. Ferrero)
+        statoSandbox: stato,    // Lo stato (es. UFFICIO, IN PRODUZIONE)
+        data: data,             // La data
+        descrizione: note,      // Le note/fornitori
+        layout: 'sandbox'       // Etichetta per dire "Questa è roba della Sandbox"
+    };
+
+    if (currentSbEditId) {
+        // --- MODALITÀ MODIFICA (Aggiorna esistente) ---
+        db.ref('commesse/Prova 1/' + currentSbEditId).update(pacchettoDati);
+    } else {
+        // --- MODALITÀ NUOVA (Crea nuova) ---
+        db.ref('commesse/Prova 1').push(pacchettoDati);
+    }
+    
+    // Chiudo la finestra e ricarico la tabella per vedere la novità
+    chiudiModalSbCommessa();
+    caricaArchivioSandbox(); 
+}
+
+
+
+
+
+
+
+/* --- 4. LEGGE I DATI E RIEMPIE LA TABELLA (Aggiornato con il link CORRETTO al Modifica) --- */
+function caricaArchivioSandbox() {
+    const tbody = document.getElementById('sb-archive-table-body');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Caricamento...</td></tr>';
+
+    db.ref('commesse/Prova 1').once('value', snap => {
+        const data = snap.val();
+        tbody.innerHTML = ""; // Pulisco
+        
+        if(!data) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Nessuna commessa trovata.</td></tr>';
+            return;
+        }
+
+        // Converto l'oggetto in array e lo ordino per data (dal più recente)
+        const elenco = Object.keys(data).reverse(); 
+
+        elenco.forEach(id => {
+            let c = data[id];
+            
+            // GESTIONE ICONA
+            let htmlIcona = c.immagine 
+                ? `<img src="${c.immagine}" style="width:35px; height:35px; object-fit:contain; border-radius:4px; border:1px solid #444; background:#000;">` 
+                : `<div style="width:35px; height:35px; display:flex; align-items:center; justify-content:center; background:#222; border-radius:4px; color:#555;">📷</div>`;
+
+            let riga = `
+                <tr style="border-bottom:1px solid #333;">
+                    <td style="text-align:center; padding:5px;">${htmlIcona}</td>
+
+                    <td style="font-weight:bold; color:white; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.nomeOrdine}</td>
+
+                    <td style="color:#ddd; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.clienteFinale || '-'}</td>
+
+                    <td style="color:#aaa; font-size:12px;">${c.data || '-'}</td>
+
+                    <td>
+                        <span style="padding:3px 8px; border-radius:4px; background:#333; border:1px solid #555; font-size:11px; color:#ccc;">
+                            ${c.statoSandbox || 'N.D.'}
+                        </span>
+                    </td>
+
+                    <td style="font-style:italic; font-size:12px; color:#aaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        ${c.descrizione ? c.descrizione : ''}
+                    </td>
+
+                    <td style="text-align:center; padding:8px;"> 
+                        <div style="display:flex; justify-content:center; gap:5px;">
+                            <button class="sb-action-btn sb-btn-prod" onclick="produciSandbox('${id}')">
+                                <span class="sb-btn-icon">🚀</span> PRODUCI
+                            </button>
+                            
+                            <button class="sb-action-btn sb-btn-edit" onclick="apriDashboardSandbox('${id}')">
+                                <span class="sb-btn-icon">✏️</span> MODIFICA
+                            </button>
+                            
+                            <button class="sb-action-btn sb-btn-del" onclick="eliminaCommessaSandbox('${id}')">
+                                <span class="sb-btn-icon">🗑️</span> ELIMINA
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += riga;
+        });
+    });
+}
+
+
+/* --- 5. ELIMINA COMMESSA --- */
+function eliminaCommessaSandbox(id) {
+    if(confirm("Sei sicuro di voler eliminare questa commessa?")) {
+        db.ref('commesse/Prova 1/' + id).remove(); // Cancella dal database
+        caricaArchivioSandbox(); // Aggiorna la vista
+    }
+}
+
+
+
+
+
+
+//INIZIO - Sistemiamo il Layout (Griglia 2 Colonne x 3 Righe) e implementiamo il "Super Box Immagini" (Incolla col tasto destro, Ctrl+V e Trascina). (10/02/2026)
+//INIZIO - Sistemiamo il Layout (Griglia 2 Colonne x 3 Righe) e implementiamo il "Super Box Immagini" (Incolla col tasto destro, Ctrl+V e Trascina). (10/02/2026)
+//INIZIO - Sistemiamo il Layout (Griglia 2 Colonne x 3 Righe) e implementiamo il "Super Box Immagini" (Incolla col tasto destro, Ctrl+V e Trascina). (10/02/2026)
+// --- FUNZIONE MODIFICA DASHBOARD (VERSIONE CORRETTA DEFINITIVA) ---
+
+// ====================================================================================
+// PASSO 1: NUOVA DASHBOARD CON GESTIONE IMMAGINI AVANZATA E GRIGLIA ORDINATA
+// ====================================================================================
+let currentImageBase64 = null; // Variabile globale per tenere l'immagine in memoria prima di salvare
+
+// ====================================================================================
+// PASSO 2: SUPER FUNZIONE UNIFICATA (NUOVA + MODIFICA)
+// ====================================================================================
+
+// ====================================================================================
+// PASSO 1: NUOVA DASHBOARD MASTER-DETAIL (SIDEBAR + AREA DI LAVORO)
+// ====================================================================================
+
+let currentCommessaId = null; // ID della commessa aperta
+let currentDisegnoId = null;  // ID del disegno selezionato (o 'main' per la generale)
+let datiCommessaGlobal = {};  // Contenitore di tutti i dati per lavorare in memoria
+
+function apriDashboardSandbox(id = null) {
+    currentCommessaId = id;
+    currentDisegnoId = 'main'; // Di default apro la schermata principale
+    currentImageBase64 = null;
+
+    // A. CARICAMENTO DATI
+    let caricamento;
+    if (id) {
+        caricamento = db.ref('commesse/Prova 1/' + id).once('value').then(snap => snap.val());
+    } else {
+        // Struttura dati vuota per nuova commessa
+        caricamento = Promise.resolve({
+            nomeOrdine: "",
+            clienteFinale: "",
+            data: new Date().toISOString().split('T')[0],
+            statoSandbox: "UFFICIO",
+            disegni: {} // Qui ci saranno i figli (SAL02525, SAL02744...)
+        });
+    }
+
+    // B. COSTRUZIONE INTERFACCIA
+    caricamento.then(dati => {
+        datiCommessaGlobal = dati || {};
+        if(!datiCommessaGlobal.disegni) datiCommessaGlobal.disegni = {};
+
+        // 1. Costruisco il Guscio HTML (Layout a 2 Colonne)
+        let modalContent = `
+            <div style="display:flex; flex-direction:column; height:100%; color:white; font-family:'Segoe UI', sans-serif;">
+                
+                <div style="background:#1a1a1a; padding:15px 20px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; height:50px;">
+                    <div style="font-size:18px; font-weight:bold; color:#9b59b6;">
+                        ${datiCommessaGlobal.nomeOrdine ? datiCommessaGlobal.nomeOrdine : 'NUOVA COMMESSA'} 
+                        <span style="font-size:12px; color:#666; margin-left:10px;">(MASTER VIEW)</span>
+                    </div>
+                    <div>
+                        <button onclick="salvaTutto()" style="background:#27ae60; color:white; border:none; padding:8px 20px; border-radius:4px; font-weight:bold; cursor:pointer; margin-right:10px;">SALVA TUTTO</button>
+                        <button onclick="chiudiDashboard()" style="background:transparent; border:1px solid #444; color:#888; padding:8px 15px; border-radius:4px; cursor:pointer;">CHIUDI</button>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex:1; overflow:hidden;">
+                    
+                    <div style="width:240px; background:#111; border-right:1px solid #333; display:flex; flex-direction:column;">
+                        <div style="padding:15px; border-bottom:1px solid #222; font-size:11px; color:#555; font-weight:bold; letter-spacing:1px;">STRUTTURA COMMESSA</div>
+                        
+                        <div id="sidebar-list" style="flex:1; overflow-y:auto; padding:10px;">
+                            </div>
+
+                        <div style="padding:10px; border-top:1px solid #222;">
+                            <button onclick="aggiungiNuovoDisegno()" style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px dashed #444; color:#888; cursor:pointer; font-size:12px; transition:0.2s;">+ AGGIUNGI DISEGNO</button>
+                        </div>
+                        <div onclick="cambiaVista('riepilogo')" id="btn-riepilogo" style="padding:15px; background:#2a1a35; border-top:1px solid #9b59b6; color:white; text-align:center; font-weight:bold; cursor:pointer; font-size:13px;">
+                            📊 RIEPILOGO TOTALE
+                        </div>
+                    </div>
+
+                    <div id="main-area" style="flex:1; background:#181818; padding:20px; overflow-y:auto; position:relative;">
+                        </div>
+
+                </div>
+            </div>
+        `;
+
+        // Inietto l'HTML
+        const container = document.getElementById('modal-dashboard-container');
+        if(container) {
+            container.innerHTML = modalContent; 
+            document.getElementById('modal-dashboard-overlay').style.display = 'flex'; 
+            
+            // Renderizzo la sidebar e apro la vista principale
+            renderSidebar();
+            cambiaVista('main'); 
+        }
+    });
+}
+
+// ====================================================================================
+// FUNZIONI DI NAVIGAZIONE E RENDER (IL "MOTORE" VISIVO)
+// ====================================================================================
+
+// 1. Disegna la Sidebar a sinistra
+function renderSidebar() {
+    const list = document.getElementById('sidebar-list');
+    list.innerHTML = "";
+
+    // Tasto "HOME / DATI GENERALI"
+    list.innerHTML += `
+        <div onclick="cambiaVista('main')" class="drawing-btn ${currentDisegnoId === 'main' ? 'active' : ''}" 
+             style="padding:10px; margin-bottom:5px; border-radius:4px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; 
+             background:${currentDisegnoId === 'main' ? 'rgba(155,89,182,0.2)' : 'transparent'}; 
+             color:${currentDisegnoId === 'main' ? '#9b59b6' : '#ccc'}; border:1px solid ${currentDisegnoId === 'main' ? '#9b59b6' : 'transparent'};">
+            <span>🏠 Dati Generali</span>
+        </div>
+    `;
+
+    // Elenco Disegni (Figli)
+    Object.keys(datiCommessaGlobal.disegni).forEach(key => {
+        let dis = datiCommessaGlobal.disegni[key];
+        list.innerHTML += `
+            <div onclick="cambiaVista('${key}')" class="drawing-btn ${currentDisegnoId === key ? 'active' : ''}" 
+                 style="padding:10px; margin-bottom:5px; border-radius:4px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; 
+                 background:${currentDisegnoId === key ? 'rgba(155,89,182,0.2)' : 'transparent'}; 
+                 color:${currentDisegnoId === key ? '#9b59b6' : '#ccc'}; border:1px solid ${currentDisegnoId === key ? '#9b59b6' : 'transparent'};">
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${dis.nome || 'Senza Nome'}</span>
+                <span style="font-size:10px; opacity:0.5;">📄</span>
+            </div>
+        `;
+    });
+}
+
+// 2. Crea un Nuovo Disegno Vuoto
+function aggiungiNuovoDisegno() {
+    const idTemp = 'dis_' + Date.now(); // Genero un ID unico temporaneo
+    datiCommessaGlobal.disegni[idTemp] = {
+        nome: "NUOVO DISEGNO",
+        descrizione: "",
+        materiali: [],
+        immagine: null
+    };
+    renderSidebar(); // Ridisegno la sidebar per mostrare il nuovo bottone
+    cambiaVista(idTemp); // Vado subito al nuovo disegno
+}
+
+
+// 3. Cambia Vista (CON SALVATAGGIO AUTOMATICO TEMPORANEO)
+function cambiaVista(targetId) {
+    // A. PRIMA DI CAMBIARE: Salvo i dati della vista che sto lasciando!
+    if (currentDisegnoId && currentDisegnoId !== 'main' && currentDisegnoId !== 'riepilogo' && currentDisegnoId !== targetId) {
+        salvaDatiVistaCorrente();
+    }
+
+    // B. CAMBIO IL TARGET
+    currentDisegnoId = targetId;
+    renderSidebar(); // Aggiorno colori sidebar
+
+    const area = document.getElementById('main-area');
+    
+    // Recupero immagine corretta
+    let imgAttuale = "";
+    if(targetId === 'main') {
+        imgAttuale = datiCommessaGlobal.immagine;
+    } else if(targetId !== 'riepilogo' && datiCommessaGlobal.disegni[targetId]) {
+        imgAttuale = datiCommessaGlobal.disegni[targetId].immagine;
+    }
+
+    // HTML Box Foto (Standard)
+    const htmlBoxFoto = `
+        <div id="drop-area" tabindex="0" style="width: 250px; height: 200px; background: #000; border: 2px dashed #555; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; position: relative; overflow: hidden; transition: all 0.2s;"
+             onclick="document.getElementById('fileElem').click()" onpaste="gestisciIncolla(event)" ondragover="event.preventDefault(); this.style.borderColor='#00ff88';" ondragleave="this.style.borderColor='#555';" ondrop="gestisciDrop(event)">
+            <input type="file" id="fileElem" accept="image/*" style="display:none" onchange="gestisciFile(this.files)">
+            <img id="anteprima-img" src="${imgAttuale || ''}" style="max-width:100%; max-height:100%; display:${imgAttuale ? 'block' : 'none'}; object-fit:contain; z-index:1;">
+            <div id="placeholder-text" style="text-align:center; color:#666; font-size:11px; position:absolute; z-index:0; display:${imgAttuale ? 'none' : 'block'};">
+                <span style="font-size:24px; display:block; margin-bottom:5px;">📷</span>CLICCA, TRASCINA<br>O <b>CTRL+V</b>
+            </div>
+        </div>`;
+    
+    // C. RENDERIZZO LA NUOVA VISTA
+    if (targetId === 'main') {
+        // --- VISTA MAIN ---
+        area.innerHTML = `
+            <h3 style="color:#9b59b6; border-bottom:1px solid #333; padding-bottom:10px; margin-top:0;">DATI GENERALI COMMESSA</h3>
+            <div style="display:flex; gap:20px; margin-top:20px;">
+                <div style="flex-shrink:0;">${htmlBoxFoto}</div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:15px;">
+                    <div><label style="color:#888; font-size:11px;">NOME COMMESSA</label><input type="text" class="input-dark" value="${datiCommessaGlobal.nomeOrdine || ''}" oninput="datiCommessaGlobal.nomeOrdine = this.value; document.querySelector('.mh-order-label').innerText = this.value + ' (MASTER)'; renderSidebar();" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:white; font-weight:bold; font-size:14px;"></div>
+                    <div style="display:flex; gap:15px;">
+                        <div style="flex:1;"><label style="color:#888; font-size:11px;">CLIENTE</label><input type="text" class="input-dark" value="${datiCommessaGlobal.clienteFinale || ''}" oninput="datiCommessaGlobal.clienteFinale = this.value" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:white;"></div>
+                        <div style="flex:1;"><label style="color:#888; font-size:11px;">STATO</label><select class="input-dark" onchange="datiCommessaGlobal.statoSandbox = this.value" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:white;"><option value="UFFICIO" ${datiCommessaGlobal.statoSandbox === 'UFFICIO' ? 'selected' : ''}>UFFICIO</option><option value="MAGAZZINO" ${datiCommessaGlobal.statoSandbox === 'MAGAZZINO' ? 'selected' : ''}>MAGAZZINO</option><option value="IN PRODUZIONE" ${datiCommessaGlobal.statoSandbox === 'IN PRODUZIONE' ? 'selected' : ''}>IN PRODUZIONE</option></select></div>
+                    </div>
+                    <div><label style="color:#888; font-size:11px;">NOTE GENERALI</label><textarea class="input-dark" oninput="datiCommessaGlobal.note = this.value" style="width:100%; height:60px; padding:10px; background:#222; border:1px solid #444; color:#aaa; resize:none;">${datiCommessaGlobal.note || ''}</textarea></div>
+                </div>
+            </div>`;
+
+} else if (targetId === 'riepilogo') {
+        // --- VISTA RIEPILOGO TOTALE ---
+        
+        // 1. Calcolo l'elenco dei fornitori presenti per creare i bottoni
+        let tuttiMateriali = [];
+        let fornitoriSet = new Set();
+        
+        Object.values(datiCommessaGlobal.disegni).forEach(d => {
+            if(d.materiali) {
+                d.materiali.forEach(m => {
+                    tuttiMateriali.push({...m, disegnoRif: d.nome}); // Aggiungo il rif. del disegno
+                    if(m.fornitore) fornitoriSet.add(m.fornitore.toUpperCase().trim());
+                });
+            }
+        });
+        
+        // Creo l'HTML dei bottoni fornitore
+        let htmlFiltri = `<button class="filter-btn active" onclick="filtraRiepilogo('TUTTI', this)">TUTTI</button>`;
+        fornitoriSet.forEach(f => {
+            if(f) htmlFiltri += `<button class="filter-btn" onclick="filtraRiepilogo('${f}', this)">${f}</button>`;
+        });
+
+        area.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px;">
+                <h3 style="color:#9b59b6; margin:0;">📊 RIEPILOGO TOTALE COMMESSA</h3>
+                <button onclick="stampaPDF()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">📄 STAMPA ORDINE PDF</button>
+            </div>
+
+            <div class="filter-bar-container" style="margin-top:20px; border-top:none; background:#111; border-bottom:2px solid #9b59b6;">
+                <span style="color:#666; font-size:11px; margin-right:10px; text-transform:uppercase; font-weight:bold;">Filtra per Fornitore:</span>
+                ${htmlFiltri}
+            </div>
+
+            <div id="print-area" style="margin-top:0px; flex:1; overflow:hidden; background:#181818;">
+                <div style="overflow-x:auto; height:100%;">
+                    <table style="min-width:1400px; width:100%; text-align:left; border-collapse:collapse; font-size:12px;">
+                        <thead style="background:#222; color:#ccc; position:sticky; top:0;">
+                            <tr>
+                                <th style="padding:8px; width:120px; color:#9b59b6;">RIF. DISEGNO</th> <th style="padding:8px; width:100px;">Fornitore</th>
+                                <th style="padding:8px; width:40px;">#</th>
+                                <th style="padding:8px; width:150px;">Tipologia</th>
+                                <th style="padding:8px; width:100px;">Dim.</th>
+                                <th style="padding:8px; width:60px;">Spess.</th>
+                                <th style="padding:8px; width:60px;">Lungh.</th>
+                                <th style="padding:8px; width:50px; color:#00ff88;">Qta</th>
+                                <th style="padding:8px; width:100px;">Materiale</th>
+                                <th style="padding:8px; width:60px;">Kg</th>
+                                <th style="padding:8px; width:150px;">Tipo Scant.</th>
+                                <th style="padding:8px; width:100px;">Scant.</th>
+                                <th style="padding:8px; width:80px;">Fori</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-riepilogo-body">
+                            ${generareRigheRiepilogo(tuttiMateriali)}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    
+    } else {
+        // --- VISTA DISEGNO SPECIFICO (CON TABELLA E BOTTONE EXCEL!) ---
+        let dis = datiCommessaGlobal.disegni[targetId];
+        area.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #444; padding-bottom:10px;">
+                <h3 style="color:#00ff88; margin:0;">DISEGNO: ${dis.nome}</h3>
+                <button onclick="eliminaDisegno('${targetId}')" style="color:#e74c3c; background:none; border:1px solid #e74c3c; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px;">ELIMINA DISEGNO</button>
+            </div>
+
+            <div style="display:flex; gap:20px; margin-top:20px;">
+                <div style="flex-shrink:0;">${htmlBoxFoto}</div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                    <div><label style="color:#888; font-size:11px;">NOME DISEGNO</label><input type="text" value="${dis.nome}" oninput="datiCommessaGlobal.disegni['${targetId}'].nome = this.value; renderSidebar();" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:white; font-weight:bold;"></div>
+                    <div><label style="color:#888; font-size:11px;">DESCRIZIONE / NOTE</label><textarea oninput="datiCommessaGlobal.disegni['${targetId}'].descrizione = this.value" style="width:100%; height:100px; background:#222; border:1px solid #444; color:white; padding:10px; resize:none;">${dis.descrizione || ''}</textarea></div>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; flex:1; display:flex; flex-direction:column;">
+                <div style="display:flex; justify-content:space-between; align-items:end; margin-bottom:5px;">
+                    <label style="color:#00d26a; font-size:12px; font-weight:bold;">DISTINTA TECNICA COMPLETA</label>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="aggiungiRigaMateriale()" style="background:#444; color:white; border:1px solid #666; font-size:11px; padding:4px 12px; cursor:pointer;">+ AGGIUNGI RIGA</button>
+                        <input type="file" id="excel-upload" accept=".xlsx, .xls, .csv" style="display:none;" onchange="leggiExcel(this)">
+                        <button onclick="document.getElementById('excel-upload').click()" style="background:#27ae60; color:white; border:none; font-size:11px; padding:4px 12px; cursor:pointer; font-weight:bold; border-radius:4px;">+ IMPORTA EXCEL</button>
+                    </div>
+                </div>
+                
+                <div style="background:#111; border:1px solid #333; border-radius:6px; overflow-x:auto; overflow-y:visible;">
+                    <table style="min-width:1400px; width:100%; text-align:left; border-collapse:collapse; font-size:12px;">
+                        <thead style="background:#222; color:#ccc;">
+                            <tr>
+                                <th style="padding:8px; width:120px;">Fornitore</th>
+                                <th style="padding:8px; width:40px;">#</th>
+                                <th style="padding:8px; width:150px;">Tipologia</th>
+                                <th style="padding:8px; width:100px;">Dim.</th>
+                                <th style="padding:8px; width:60px;">Spess.</th>
+                                <th style="padding:8px; width:60px;">Lungh.</th>
+                                <th style="padding:8px; width:50px; color:#00ff88;">Qta</th>
+                                <th style="padding:8px; width:100px;">Materiale</th>
+                                <th style="padding:8px; width:60px;">Kg</th>
+                                <th style="padding:8px; width:150px;">Tipo Scantonatura</th>
+                                <th style="padding:8px; width:100px;">Scantonature</th>
+                                <th style="padding:8px; width:80px;">Fori</th>
+                                <th style="padding:8px; width:30px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-disegno-body">
+                            ${getTabellaMaterialiHTML(dis.materiali || [])}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+}
+
+
+// 4. Salva Tutto su Firebase
+function salvaTutto() {
+    // 1. Salva i dati della vista aperta in questo momento!
+    if (currentDisegnoId !== 'main' && currentDisegnoId !== 'riepilogo') {
+        salvaDatiVistaCorrente();
+    }
+
+    if(!datiCommessaGlobal.nomeOrdine) return alert("Inserisci almeno il nome della commessa!");
+    
+    // ... resto del codice uguale a prima ...
+    // Se è nuova
+    if (!currentCommessaId) {
+        db.ref('commesse/Prova 1').push(datiCommessaGlobal).then(() => {
+            alert("Salvata!");
+            chiudiDashboard();
+            caricaArchivioSandbox();
+        });
+    } else {
+        // Se è modifica
+        db.ref('commesse/Prova 1/' + currentCommessaId).update(datiCommessaGlobal).then(() => {
+            alert("Aggiornata!");
+            chiudiDashboard();
+            caricaArchivioSandbox();
+        });
+    }
+}
+
+// 5. Elimina un disegno dalla lista (in memoria)
+function eliminaDisegno(id) {
+    if(confirm("Eliminare questo disegno?")) {
+        delete datiCommessaGlobal.disegni[id];
+        cambiaVista('main');
+    }
+}
+
+
+// --- FUNZIONE PER AGGIUNGERE UNA RIGA VUOTA ---
+function aggiungiRigaManuale() {
+    const tbody = document.getElementById('tb-materiali-body');
+    // Se c'è la riga "Nessun materiale", la togliamo
+    if(tbody.innerHTML.includes('Nessun materiale')) tbody.innerHTML = "";
+
+    const nuovaRiga = `
+        <tr class="riga-dati" style="border-bottom:1px solid #222; background:rgba(255,255,255,0.05);">
+            <td style="padding:0;"><input type="text" placeholder="Fornitore..." style="width:100%; background:transparent; border:none; color:#00d26a; padding:8px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" placeholder="Descrizione..." style="width:100%; background:transparent; border:none; color:#ddd; padding:8px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" placeholder="Qta" style="width:100%; background:transparent; border:none; color:#fff; padding:8px; outline:none; font-weight:bold;"></td>
+            <td style="text-align:center; color:red; cursor:pointer; font-weight:bold;" onclick="this.parentElement.remove()">×</td>
+        </tr>
+    `;
+    tbody.insertAdjacentHTML('beforeend', nuovaRiga);
+}
+
+// =========================================================
+// MOTORE GESTIONE IMMAGINI (COMPRESSIONE + PASTE + DROP)
+// =========================================================
+
+function gestisciIncolla(e) {
+    // Gestisce il CTRL+V
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (const item of items) {
+        if (item.type.indexOf("image") === 0) {
+            const blob = item.getAsFile();
+            comprimiEVisualizza(blob);
+        }
+    }
+}
+
+function gestisciDrop(e) {
+    // Gestisce il trascinamento file
+    e.preventDefault();
+    document.getElementById('drop-area').style.borderColor = '#555';
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    gestisciFile(files);
+}
+
+function gestisciFile(files) {
+    if(files.length > 0) {
+        comprimiEVisualizza(files[0]);
+    }
+}
+
+// Funzione che processa l'immagine e la salva NELLA MEMORIA GIUSTA
+function comprimiEVisualizza(file) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = event => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+            const elem = document.createElement('canvas');
+            const scaleFactor = 800 / Math.max(img.width, img.height);
+            const finalScale = scaleFactor < 1 ? scaleFactor : 1;
+            
+            elem.width = img.width * finalScale;
+            elem.height = img.height * finalScale;
+            
+            const ctx = elem.getContext('2d');
+            ctx.drawImage(img, 0, 0, elem.width, elem.height);
+            
+            const dataUrl = elem.toDataURL('image/jpeg', 0.7);
+            
+            // 1. Aggiorno l'anteprima a video
+            const imgTag = document.getElementById('anteprima-img');
+            const placeTag = document.getElementById('placeholder-text');
+            if(imgTag) { imgTag.src = dataUrl; imgTag.style.display = 'block'; }
+            if(placeTag) { placeTag.style.display = 'none'; }
+            
+            // 2. SALVO NEL POSTO GIUSTO IN MEMORIA (Main o Disegno)
+            if (currentDisegnoId === 'main') {
+                datiCommessaGlobal.immagine = dataUrl; // Salvo nell'assieme
+            } else if (datiCommessaGlobal.disegni[currentDisegnoId]) {
+                datiCommessaGlobal.disegni[currentDisegnoId].immagine = dataUrl; // Salvo nel disegno specifico
+            }
+        }
+    }
+}
+
+// =========================================================
+// FUNZIONE SALVATAGGIO (Aggiornata per leggere la tabella)
+// =========================================================
+// =========================================================
+// FUNZIONE SALVATAGGIO UNIFICATA (CREA + MODIFICA)
+// =========================================================
+function salvaModificheSandbox(id) {
+    // 1. Raccogliamo i dati della tabella
+    let materialiSalvabili = [];
+    const righe = document.querySelectorAll('#tb-materiali-body tr');
+    
+    righe.forEach(riga => {
+        const inputs = riga.querySelectorAll('input');
+        if(inputs.length >= 3 && inputs[0].value) { // Salvo solo se c'è almeno il fornitore
+            materialiSalvabili.push({
+                fornitore: inputs[0].value,
+                descrizione: inputs[1].value,
+                qta: inputs[2].value
+            });
+        }
+    });
+
+    // 2. Prepariamo il pacchetto
+    const datiForm = {
+        nomeOrdine: document.getElementById('edit-nome').value,
+        qtaTotale: document.getElementById('edit-qta').value,
+        disegno: document.getElementById('edit-disegno').value,
+        peso: document.getElementById('edit-peso').value,
+        descrizione: document.getElementById('edit-desc').value,
+        note: document.getElementById('edit-note').value,
+        data: document.getElementById('edit-data').value || new Date().toISOString().split('T')[0],
+        immagine: currentImageBase64,
+        materiali: materialiSalvabili,
+        layout: 'sandbox' // Importante per filtrarlo
+    };
+
+    if (id && id !== "null" && id !== "") {
+        // --- MODIFICA ESISTENTE ---
+        db.ref('commesse/Prova 1/' + id).update(datiForm)
+        .then(() => {
+            alert("Commessa aggiornata!");
+            chiudiDashboard();
+            caricaArchivioSandbox(); 
+        });
+    } else {
+        // --- CREA NUOVA ---
+        // Se è nuova, aggiungo lo stato di default
+        datiForm.statoSandbox = "UFFICIO"; 
+        
+        db.ref('commesse/Prova 1').push(datiForm)
+        .then(() => {
+            alert("Nuova commessa creata!");
+            chiudiDashboard();
+            caricaArchivioSandbox(); 
+        });
+    }
+}
+//FINE - Sistemiamo il Layout (Griglia 2 Colonne x 3 Righe) e implementiamo il "Super Box Immagini" (Incolla col tasto destro, Ctrl+V e Trascina). (10/02/2026)
+//FINE - Sistemiamo il Layout (Griglia 2 Colonne x 3 Righe) e implementiamo il "Super Box Immagini" (Incolla col tasto destro, Ctrl+V e Trascina). (10/02/2026)
+//FINE - Sistemiamo il Layout (Griglia 2 Colonne x 3 Righe) e implementiamo il "Super Box Immagini" (Incolla col tasto destro, Ctrl+V e Trascina). (10/02/2026)
+
+
+
+
+
+
+// INIZIO - La funzione modificaSandbox crea la finestra con i bottoni, e filtraTabella gestisce quei bottoni. È buona norma tenere il codice che "disegna" vicino al codice che "fa funzionare". (10/02/2026) 19:32
+// INIZIO - La funzione modificaSandbox crea la finestra con i bottoni, e filtraTabella gestisce quei bottoni. È buona norma tenere il codice che "disegna" vicino al codice che "fa funzionare". (10/02/2026) 19:32
+// INIZIO - La funzione modificaSandbox crea la finestra con i bottoni, e filtraTabella gestisce quei bottoni. È buona norma tenere il codice che "disegna" vicino al codice che "fa funzionare". (10/02/2026) 19:32
+// --- FUNZIONE FILTRO TABELLA (LOGICA BOTTONI VERDI) ---
+function filtraTabella(filtro, btn) {
+    // 1. GESTIONE GRAFICA: Accendi il bottone cliccato, spegni gli altri
+    // Cerco tutti i bottoni filtro dentro la modale attiva
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    // Aggiungo la classe 'active' (verde) solo a quello cliccato
+    btn.classList.add('active');
+
+    // 2. GESTIONE RIGHE: Mostra/Nascondi in base al fornitore
+    const righe = document.querySelectorAll('.riga-materiale'); // Prendo tutte le righe della tabella materiali
+
+    righe.forEach(riga => {
+        // Leggo il fornitore salvato nell'attributo data-fornitore della riga
+        const fornitoreRiga = riga.getAttribute('data-fornitore');
+
+        // Se il filtro è 'TUTTI' oppure il fornitore corrisponde -> MOSTRA
+        if (filtro === 'TUTTI' || fornitoreRiga === filtro) {
+            riga.style.display = 'table-row';
+        } else {
+            // Altrimenti -> NASCONDI
+            riga.style.display = 'none';
+        }
+    });
+}
+// FINE - La funzione modificaSandbox crea la finestra con i bottoni, e filtraTabella gestisce quei bottoni. È buona norma tenere il codice che "disegna" vicino al codice che "fa funzionare". (10/02/2026) 19:32
+// FINE - La funzione modificaSandbox crea la finestra con i bottoni, e filtraTabella gestisce quei bottoni. È buona norma tenere il codice che "disegna" vicino al codice che "fa funzionare". (10/02/2026) 19:32
+// FINE - La funzione modificaSandbox crea la finestra con i bottoni, e filtraTabella gestisce quei bottoni. È buona norma tenere il codice che "disegna" vicino al codice che "fa funzionare". (10/02/2026) 19:32
+
+
+
+
+
+
+
+
+
+
+
+// --- FUNZIONE PRODUCI: Sposta in Kanban ---
+function produciSandbox(id) {
+    if(confirm("Vuoi lanciare questa commessa in produzione?")) {
+        // 1. Aggiorno lo stato a "UFFICIO" (o quello che preferisci come partenza)
+        db.ref('commesse/Prova 1/' + id).update({ statoSandbox: 'UFFICIO' });
+        
+        // 2. Porto l'utente alla schermata "LAVORI"
+        switchSandboxTab('lavori');
+        
+        // 3. Avviso (Per ora, nel prossimo step collegheremo la Kanban vera!)
+        alert("Commessa lanciata! (Nel prossimo passaggio collegheremo la Kanban per vederla apparire nelle colonne)");
+    }
+}
+
+// FINE JAVASCRIPT --- IL JAVASCRIPT PER FAR FUNZIONAREIL BOX ARCHIVIO //
+// FINE JAVASCRIPT --- IL JAVASCRIPT PER FAR FUNZIONAREIL BOX ARCHIVIO //
+// FINE JAVASCRIPT --- IL JAVASCRIPT PER FAR FUNZIONAREIL BOX ARCHIVIO //
+
+
+
+// --- FUNZIONE MANCANTE PER CHIUDERE LA FINESTRA ---
+function chiudiDashboard() {
+    document.getElementById('modal-dashboard-overlay').style.display = 'none';
+}
+
+// --- Genera l'HTML delle righe (VERSIONE 12 COLONNE) ---
+function getTabellaMaterialiHTML(materiali) {
+    if (!materiali || materiali.length === 0) return '';
+    return materiali.map(m => `
+        <tr class="riga-materiale-dinamica" style="border-bottom:1px solid #222;">
+            <td style="padding:0;"><input type="text" value="${m.fornitore || ''}" class="inp-fornitore" style="width:100%; background:transparent; border:none; color:#00d26a; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.pos || ''}" class="inp-pos" style="width:100%; background:transparent; border:none; color:#aaa; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.tipologia || ''}" class="inp-tipologia" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.dim || ''}" class="inp-dim" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.spessore || ''}" class="inp-spessore" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.lunghezza || ''}" class="inp-lunghezza" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.qta || ''}" class="inp-qta" style="width:100%; background:transparent; border:none; color:#fff; font-weight:bold; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.materiale || ''}" class="inp-materiale" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.kg || ''}" class="inp-kg" style="width:100%; background:transparent; border:none; color:#888; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.tipoScant || ''}" class="inp-tipoScant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.scant || ''}" class="inp-scant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.fori || ''}" class="inp-fori" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="text-align:center; color:red; cursor:pointer;" onclick="this.parentElement.remove()">×</td>
+        </tr>
+    `).join('');
+}
+
+// --- Aggiunge una riga vuota (VERSIONE 12 COLONNE) ---
+function aggiungiRigaMateriale() {
+    const tbody = document.getElementById('tb-disegno-body');
+    const nuovaRiga = `
+        <tr class="riga-materiale-dinamica" style="border-bottom:1px solid #222; background:rgba(255,255,255,0.05);">
+            <td style="padding:0;"><input type="text" placeholder="Forn..." class="inp-fornitore" style="width:100%; background:transparent; border:none; color:#00d26a; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-pos" style="width:100%; background:transparent; border:none; color:#aaa; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" placeholder="Tipologia" class="inp-tipologia" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-dim" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-spessore" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-lunghezza" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" placeholder="1" class="inp-qta" style="width:100%; background:transparent; border:none; color:#fff; font-weight:bold; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-materiale" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-kg" style="width:100%; background:transparent; border:none; color:#888; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-tipoScant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-scant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" class="inp-fori" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="text-align:center; color:red; cursor:pointer;" onclick="this.parentElement.remove()">×</td>
+        </tr>
+    `;
+    tbody.insertAdjacentHTML('beforeend', nuovaRiga);
+}
+
+// --- SALVATAGGIO TEMPORANEO (Mentre navighi) ---
+function salvaDatiVistaCorrente() {
+    if(!currentDisegnoId || currentDisegnoId === 'main') return;
+
+    const righe = document.querySelectorAll('.riga-materiale-dinamica');
+    let nuoviMateriali = [];
+
+    righe.forEach(r => {
+        // Leggo TUTTI i campi nuovi
+        let obj = {
+            fornitore: r.querySelector('.inp-fornitore').value,
+            pos: r.querySelector('.inp-pos').value,
+            tipologia: r.querySelector('.inp-tipologia').value,
+            dim: r.querySelector('.inp-dim').value,
+            spessore: r.querySelector('.inp-spessore').value,
+            lunghezza: r.querySelector('.inp-lunghezza').value,
+            qta: r.querySelector('.inp-qta').value,
+            materiale: r.querySelector('.inp-materiale').value,
+            kg: r.querySelector('.inp-kg').value,
+            tipoScant: r.querySelector('.inp-tipoScant').value,
+            scant: r.querySelector('.inp-scant').value,
+            fori: r.querySelector('.inp-fori').value
+        };
+
+        // Salvo solo se c'è almeno la tipologia o il fornitore
+        if(obj.tipologia || obj.fornitore) {
+            nuoviMateriali.push(obj);
+        }
+    });
+
+    if(datiCommessaGlobal.disegni[currentDisegnoId]) {
+        datiCommessaGlobal.disegni[currentDisegnoId].materiali = nuoviMateriali;
+    }
+}
+
+// --- SALVATAGGIO ANCHE NELLA FUNZIONE "salvaModificheSandbox" (Se la usi ancora) ---
+// Nota: Se stai usando la nuova "apriDashboardSandbox", questa parte è gestita da "salvaTutto" che 
+// chiama internamente "salvaDatiVistaCorrente", quindi sei già a posto!
+
+
+
+
+
+
+// ====================================================================================
+// PASSO 3: SEGUGIO 2.0 (IMPORTAZIONE FILE TECNICO CON FORNITORE)
+// ====================================================================================
+
+function leggiExcel(input) {
+    if (!input.files || input.files.length === 0) return;
+    if (currentDisegnoId === 'main' || currentDisegnoId === 'riepilogo') {
+        alert("Seleziona prima un disegno specifico (es. Scudo) dalla colonna sinistra per importare la sua distinta.");
+        input.value = ""; 
+        return;
+    }
+
+    const file = input.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // Prendo il primo foglio
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        // Converto in matrice (array di array) con header:1 per avere le righe grezze
+        const righeExcel = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+        elaboraDatiExcel(righeExcel);
+        input.value = ""; // Reset
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+
+
+function elaboraDatiExcel(righe) {
+    // 1. CERCO L'INTESTAZIONE
+    let rigaHeader = -1;
+    for (let i = 0; i < Math.min(righe.length, 30); i++) {
+        const rigaStr = righe[i].map(x => String(x).toLowerCase().trim());
+        if (rigaStr[0] === "fornitore" || (rigaStr.includes("tipologia") && rigaStr.includes("quantita"))) {
+            rigaHeader = i;
+            break;
+        }
+    }
+
+    if (rigaHeader === -1) {
+        alert("ERRORE: Non trovo la riga di intestazione 'Fornitore'. Usa il file Master corretto.");
+        return;
+    }
+
+    // 2. ESTRAZIONE DATI
+    let nuoviMateriali = [];
+    
+    for (let i = rigaHeader + 1; i < righe.length; i++) {
+        const r = righe[i];
+        if (!r || r.length < 5) continue; // Salta righe troppo corte
+
+        // MAPPATURA ESATTA DEL TUO MASTER FILE:
+        // A=0: Fornitore, B=1: #, C=2: Tipologia, D=3: Dim, E=4: Spessore(Label) -> F=5: Spessore(Val)
+        // I=8: Lunghezza(Label) -> J=9: Lunghezza(Val), K=10: N°, L=11: Qta
+        // M=12: Materiale, N=13: Kg, O=14: Tipo Scant, Q=16: Scant, R=17: Fori
+        
+        let qta = r[11]; // Colonna L
+        if(!qta && r[10] && !isNaN(r[10])) qta = r[10]; // Fallback se spostato
+        
+        // Se non c'è la tipologia, probabilmente è una riga vuota o spuria
+        if(!r[2]) continue;
+
+        nuoviMateriali.push({
+            fornitore: r[0],
+            pos: r[1],
+            tipologia: r[2],
+            dim: r[3],
+            spessore: r[5],  // Prendo il valore (col F), saltando "x Sp."
+            lunghezza: r[9], // Prendo il valore (col J), saltando "x L="
+            qta: qta,
+            materiale: r[12],
+            kg: r[13],
+            tipoScant: r[14],
+            scant: r[16],
+            fori: r[17]
+        });
+    }
+
+    // 3. AGGIUNGO AI DATI ESISTENTI
+    if (!datiCommessaGlobal.disegni[currentDisegnoId].materiali) {
+        datiCommessaGlobal.disegni[currentDisegnoId].materiali = [];
+    }
+    
+    datiCommessaGlobal.disegni[currentDisegnoId].materiali = [
+        ...datiCommessaGlobal.disegni[currentDisegnoId].materiali, 
+        ...nuoviMateriali
+    ];
+
+    cambiaVista(currentDisegnoId);
+    alert(`Importate ${nuoviMateriali.length} righe!`);
+}
+
+
+
+// =========================================================
+// FUNZIONI RIEPILOGO E FILTRI
+// =========================================================
+
+// 1. Genera HTML Tabella Riepilogo (CON INDICATORE "ORDINATO")
+function generareRigheRiepilogo(listaMateriali) {
+    if(!listaMateriali || listaMateriali.length === 0) return '<tr><td colspan="13" style="padding:20px; text-align:center; color:#555;">Nessun materiale inserito nei disegni.</td></tr>';
+    
+    return listaMateriali.map(m => {
+        // Controllo se è già stato ordinato
+        const isOrdinato = m.statoOrdine === 'ORDINATO';
+        const bgStyle = isOrdinato ? 'background:rgba(39, 174, 96, 0.15); border-left: 3px solid #27ae60;' : 'border-bottom:1px solid #333;';
+        const checkIcon = isOrdinato ? '✅' : '';
+
+        return `
+        <tr class="riga-riepilogo" data-fornitore="${(m.fornitore||'').toUpperCase().trim()}" style="${bgStyle} color:#ccc;">
+            <td style="padding:8px; color:#9b59b6; font-weight:bold;">${m.disegnoRif}</td>
+            <td style="padding:8px; color:${isOrdinato ? '#27ae60' : '#00d26a'}; font-weight:bold;">${m.fornitore || '-'} ${checkIcon}</td>
+            <td style="padding:8px;">${m.pos || ''}</td>
+            <td style="padding:8px;">${m.tipologia || ''}</td>
+            <td style="padding:8px;">${m.dim || ''}</td>
+            <td style="padding:8px;">${m.spessore || ''}</td>
+            <td style="padding:8px;">${m.lunghezza || ''}</td>
+            <td style="padding:8px; color:white; font-weight:bold;">${m.qta || ''}</td>
+            <td style="padding:8px;">${m.materiale || ''}</td>
+            <td style="padding:8px;">${m.kg || ''}</td>
+            <td style="padding:8px;">${m.tipoScant || ''}</td>
+            <td style="padding:8px;">${m.scant || ''}</td>
+            <td style="padding:8px;">${m.fori || ''}</td>
+        </tr>
+        `;
+    }).join('');
+}
+
+// 2. Filtra la tabella Riepilogo
+function filtraRiepilogo(filtro, btn) {
+    // Gestione Grafica Bottoni
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+
+    // Gestione Visibilità Righe
+    const righe = document.querySelectorAll('.riga-riepilogo');
+    righe.forEach(r => {
+        const fornitoreRiga = r.getAttribute('data-fornitore');
+        if (filtro === 'TUTTI' || fornitoreRiga === filtro) {
+            r.style.display = 'table-row';
+        } else {
+            r.style.display = 'none';
+        }
+    });
+}
+
+// 3. GENERA ORDINE FORNITORE (PDF + SALVATAGGIO STATO)
+function stampaPDF() {
+    // 1. Controllo: Devo aver selezionato un fornitore specifico!
+    const btnAttivo = document.querySelector('.filter-btn.active');
+    const fornitoreSelezionato = btnAttivo ? btnAttivo.innerText : 'TUTTI';
+
+    if (fornitoreSelezionato === 'TUTTI') {
+        alert("⚠️ ATTENZIONE: Seleziona un Fornitore specifico (es. TOMATIS) prima di stampare l'ordine.");
+        return;
+    }
+
+    if (!confirm(`Vuoi generare l'ordine PDF per ${fornitoreSelezionato} e segnare i materiali come ORDINATI?`)) {
+        return;
+    }
+
+    // 2. Preparo l'area di stampa (Aggiungo un'intestazione al volo)
+    const elemento = document.getElementById('print-area');
+    const originaleHTML = elemento.innerHTML; // Salvo com'è adesso
+
+    // Aggiungo un'intestazione per il PDF
+    const dataOggi = new Date().toLocaleDateString();
+    const headerPDF = `
+        <div style="padding:20px; background:white; color:black; margin-bottom:10px;">
+            <h1 style="margin:0;">ORDINE MATERIALE: ${fornitoreSelezionato}</h1>
+            <h3 style="margin:5px 0 0 0;">Commessa: ${datiCommessaGlobal.nomeOrdine} - Data: ${dataOggi}</h3>
+            <p>Si prega di confermare ricezione e data di consegna.</p>
+        </div>
+    `;
+    
+    // Inietto temporaneamente l'intestazione bianca (brutto trucco ma funziona)
+    // Nota: html2pdf userà lo sfondo che trova.
+    
+    const opt = {
+        margin:       5,
+        filename:     `Ordine_${fornitoreSelezionato}_${datiCommessaGlobal.nomeOrdine}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, backgroundColor: "#ffffff" }, // Sfondo bianco per risparmiare inchiostro
+        jsPDF:        { unit: 'mm', format: 'a3', orientation: 'landscape' }
+    };
+
+    // 3. Genero il PDF
+    html2pdf().set(opt).from(elemento).save().then(() => {
+        // 4. QUANDO HA FINITO DI SCARICARE -> SALVO "ORDINATO" NEL DB
+        marcaComeOrdinato(fornitoreSelezionato);
+    });
+}
+
+// Funzione ausiliaria che segna i pezzi come ordinati nel database
+function marcaComeOrdinato(fornitoreTarget) {
+    let modificheFatte = false;
+
+    // Giro su tutti i disegni
+    Object.keys(datiCommessaGlobal.disegni).forEach(disKey => {
+        let disegno = datiCommessaGlobal.disegni[disKey];
+        if(disegno.materiali) {
+            disegno.materiali.forEach(m => {
+                // Se il materiale è di questo fornitore (e non è già ordinato)
+                if (m.fornitore && m.fornitore.toUpperCase().trim() === fornitoreTarget) {
+                    m.statoOrdine = 'ORDINATO'; // <--- ECCO LA MODIFICA
+                    modificheFatte = true;
+                }
+            });
+        }
+    });
+
+    if (modificheFatte) {
+        // Salvo su Firebase senza chiudere la dashboard
+        db.ref('commesse/Prova 1/' + currentCommessaId).update(datiCommessaGlobal).then(() => {
+            // Ricarico la vista Riepilogo per vedere le righe verdi
+            cambiaVista('riepilogo');
+            // Rimetto il filtro sul fornitore giusto
+            setTimeout(() => {
+                const btn = Array.from(document.querySelectorAll('.filter-btn')).find(b => b.innerText === fornitoreTarget);
+                if(btn) filtraRiepilogo(fornitoreTarget, btn);
+            }, 500);
+            
+            alert(`✅ Ordine inviato! I materiali di ${fornitoreTarget} sono ora segnati in VERDE.`);
+        });
+    } else {
+        alert("Non c'erano materiali nuovi da ordinare per questo fornitore.");
+    }
+}
+
+
+
+
+// =========================================================
+// MOTORE KANBAN SANDBOX (CON FRECCE DI NAVIGAZIONE)
+// =========================================================
+
+function caricaKanbanSandbox() {
+    // 1. Definisco l'ordine esatto delle colonne
+    const statiSequenza = ["UFFICIO", "MAGAZZINO", "IN PRODUZIONE", "PRONTI", "VERNICIATURA", "FINITI", "ARCHIVIO"];
+
+    // 2. Pulisco le colonne
+    for(let i=0; i<7; i++) {
+        const col = document.getElementById(`sb-col-${i}`);
+        if(col) col.innerHTML = "";
+    }
+
+    // 3. Leggo i dati
+    db.ref('commesse/Prova 1').once('value', snap => {
+        const data = snap.val();
+        if(!data) return;
+
+        Object.keys(data).forEach(id => {
+            const c = data[id];
+            
+            // Trovo l'indice numerico dello stato attuale (es. "IN PRODUZIONE" = 2)
+            // Se lo stato non esiste (es. errore battitura), lo metto in UFFICIO (0)
+            let colIndex = statiSequenza.indexOf(c.statoSandbox);
+            if(colIndex === -1) colIndex = 0;
+
+            // --- CALCOLO BARRA % (Codice di prima) ---
+            let totRighe = 0;
+            let totOrdinati = 0;
+            if(c.disegni) {
+                Object.values(c.disegni).forEach(dis => {
+                    if(dis.materiali) {
+                        dis.materiali.forEach(m => {
+                            totRighe++;
+                            if(m.statoOrdine === 'ORDINATO') totOrdinati++;
+                        });
+                    }
+                });
+            }
+            let perc = totRighe > 0 ? Math.round((totOrdinati / totRighe) * 100) : 0;
+            let coloreBarra = perc === 100 ? '#00ff88' : '#f1c40f'; 
+
+            // --- COSTRUZIONE BOTTONI FRECCIA ---
+            // Mostra freccia SINISTRA solo se index > 0
+            let btnPrev = colIndex > 0 
+                ? `<button onclick="spostaCardSandbox('${id}', ${colIndex - 1}, event)" style="cursor:pointer; background:none; border:1px solid #555; color:#888; border-radius:4px; padding:2px 8px;">◀</button>` 
+                : `<div style="width:25px;"></div>`; // Spazio vuoto per allineare
+
+            // Mostra freccia DESTRA solo se index < ultimo (6)
+            let btnNext = colIndex < 6 
+                ? `<button onclick="spostaCardSandbox('${id}', ${colIndex + 1}, event)" style="cursor:pointer; background:none; border:1px solid #555; color:#00ff88; border-radius:4px; padding:2px 8px;">▶</button>` 
+                : `<div style="width:25px;"></div>`;
+
+            // 4. DISEGNO LA CARD
+            const card = document.createElement('div');
+            card.className = 'sandbox-card';
+            // Click sulla card apre la dashboard
+            card.onclick = () => apriDashboardProduzione(id); 
+
+            card.innerHTML = `
+                <div class="sb-card-head">
+                    <span class="sb-card-title" style="font-size:14px;">${c.nomeOrdine}</span>
+                    <span class="sb-card-badge" style="border:1px solid ${coloreBarra}; color:${coloreBarra}; font-weight:bold; font-size:10px;">
+                        ${perc}%
+                    </span>
+                </div>
+                
+                <div class="sb-card-body" style="font-size:11px; color:#aaa; display:flex; flex-direction:column; gap:5px; flex:1;">
+                    <div><strong style="color:#ddd;">CLI:</strong> ${c.clienteFinale || '-'}</div>
+                    <div style="width:100%; height:4px; background:#333; border-radius:2px; margin-top:5px; overflow:hidden;">
+                        <div style="width:${perc}%; height:100%; background:${coloreBarra}; transition:width 0.5s;"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid #333;">
+                    ${btnPrev}
+                    <span style="font-size:10px; color:#555;">SPOSTA</span>
+                    ${btnNext}
+                </div>
+            `;
+
+            const colonnaDestinazione = document.getElementById(`sb-col-${colIndex}`);
+            if(colonnaDestinazione) colonnaDestinazione.appendChild(card);
+        });
+    });
+}
+
+
+
+
+
+// =========================================================
+// DASHBOARD DI PRODUZIONE (DETTAGLIATA CON CHECK MATERIALI)
+// =========================================================
+function apriDashboardProduzione(id) {
+    db.ref('commesse/Prova 1/' + id).once('value', snap => {
+        const c = snap.val();
+        
+        // Genero la lista dei disegni
+        let htmlDisegni = "";
+        
+        if(c.disegni) {
+            Object.keys(c.disegni).forEach(k => {
+                let d = c.disegni[k];
+                
+                // Checkbox Fasi Produzione (Recupero stato)
+                let p = (c.produzione && c.produzione[k]) ? c.produzione[k] : {};
+                
+                // Genero la tabella materiali per questo disegno
+                let tabellaMaterialiHTML = generaTabellaProduzione(d.materiali || [], id, k);
+
+                htmlDisegni += `
+                    <div style="background:#222; border:1px solid #333; border-radius:8px; margin-bottom:20px; overflow:hidden;">
+                        
+                        <div style="padding:15px; background:#2a2a2a; border-bottom:1px solid #444; display:flex; justify-content:space-between; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                ${d.immagine ? `<img src="${d.immagine}" style="width:50px; height:50px; object-fit:contain; background:black; border:1px solid #555; border-radius:4px;">` : ''}
+                                <div>
+                                    <div style="color:#00e5ff; font-weight:bold; font-size:16px;">${d.nome}</div>
+                                    <div style="color:#aaa; font-size:12px;">${d.descrizione || ''}</div>
+                                </div>
+                            </div>
+                            
+                            <div style="display:flex; gap:20px; align-items:center;">
+                                <label style="color:#ccc; font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer; background:#111; padding:5px 10px; border-radius:4px; border:1px solid #444;">
+                                    <input type="checkbox" ${p.taglio ? 'checked' : ''} onchange="aggiornaFase('${id}', '${k}', 'taglio', this.checked)"> TAGLIO
+                                </label>
+                                <label style="color:#ccc; font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer; background:#111; padding:5px 10px; border-radius:4px; border:1px solid #444;">
+                                    <input type="checkbox" ${p.saldatura ? 'checked' : ''} onchange="aggiornaFase('${id}', '${k}', 'saldatura', this.checked)"> SALD.
+                                </label>
+                                <label style="color:#ccc; font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer; background:#111; padding:5px 10px; border-radius:4px; border:1px solid #444;">
+                                    <input type="checkbox" ${p.verniciatura ? 'checked' : ''} onchange="aggiornaFase('${id}', '${k}', 'verniciatura', this.checked)"> VERN.
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="overflow-x:auto; padding:0;">
+                            ${tabellaMaterialiHTML}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        let modalContent = `
+            <div style="padding:20px; color:white; font-family:'Segoe UI'; height:100%; display:flex; flex-direction:column;">
+                <div style="border-bottom:1px solid #444; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 style="margin:0; color:#00ff88;">GESTIONE MATERIALI & PRODUZIONE</h2>
+                        <span style="color:#888; font-size:14px;">Commessa: <b style="color:white;">${c.nomeOrdine}</b></span>
+                    </div>
+                    <button onclick="chiudiDashboard()" style="background:none; border:1px solid #555; color:#ccc; padding:5px 15px; border-radius:4px; cursor:pointer;">CHIUDI</button>
+                </div>
+
+                <div style="flex:1; overflow-y:auto; padding-right:5px;">
+                    ${htmlDisegni || '<div style="text-align:center; padding:30px; color:#555;">Nessun disegno presente.</div>'}
+                </div>
+            </div>
+        `;
+
+        const container = document.getElementById('modal-dashboard-container');
+        if(container) {
+            container.innerHTML = modalContent; 
+            document.getElementById('modal-dashboard-overlay').style.display = 'flex'; 
+        }
+    });
+}
+
+// Funzione per salvare le spunte (Taglio/Saldatura/Verniciatura) su Firebase
+function aggiornaFase(commessaId, disegnoId, fase, valore) {
+    db.ref(`commesse/Prova 1/${commessaId}/produzione/${disegnoId}/${fase}`).set(valore);
+}
+
+// Funzione per spostare la card tra le colonne della Kanban
+function spostaStato(id, nuovoStato) {
+    db.ref('commesse/Prova 1/' + id).update({ statoSandbox: nuovoStato });
+    chiudiDashboard();
+    // Aggiorno la vista Kanban per vedere la card spostarsi
+    setTimeout(caricaKanbanSandbox, 300); 
+}
+
+
+
+
+// Funzione che disegna la tabella materiali (SOLO LETTURA + CHECK ARRIVO)
+function generaTabellaProduzione(materiali, commessaId, disegnoId) {
+    if (!materiali || materiali.length === 0) return '<div style="padding:15px; color:#666; font-size:12px; font-style:italic;">Nessun materiale in distinta.</div>';
+
+    let righe = materiali.map((m, index) => {
+        // Controllo se è arrivato (spunta)
+        let isArrivato = m.arrivato === true ? 'checked' : '';
+        // Se è arrivato, coloro la riga di verde scuro
+        let bgRow = m.arrivato === true ? 'background:rgba(39, 174, 96, 0.1);' : '';
+        // Colore del fornitore: se ordinato è verde acceso, altrimenti grigio
+        let colorFornitore = m.statoOrdine === 'ORDINATO' ? '#00ff88' : '#aaa';
+
+        return `
+            <tr style="border-bottom:1px solid #333; font-size:12px; ${bgRow}">
+                <td style="padding:8px; text-align:center; border-right:1px solid #333; width:40px;">
+                    <input type="checkbox" style="transform:scale(1.2); cursor:pointer;" ${isArrivato} 
+                           onchange="toggleArrivoMateriale('${commessaId}', '${disegnoId}', ${index}, this.checked)">
+                </td>
+                
+                <td style="padding:8px; color:${colorFornitore}; font-weight:bold;">${m.fornitore || '-'}</td>
+                <td style="padding:8px; color:#888;">${m.pos || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.tipologia || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.dim || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.spessore || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.lunghezza || ''}</td>
+                <td style="padding:8px; color:white; font-weight:bold; font-size:13px;">${m.qta || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.materiale || ''}</td>
+                <td style="padding:8px; color:#888;">${m.kg || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.tipoScant || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.scant || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.fori || ''}</td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <table style="width:100%; text-align:left; border-collapse:collapse; min-width:1200px;">
+            <thead style="background:#1a1a1a; color:#888; font-size:11px; text-transform:uppercase;">
+                <tr>
+                    <th style="padding:8px; text-align:center;">ARR.</th> <th style="padding:8px;">Fornitore</th>
+                    <th style="padding:8px;">#</th>
+                    <th style="padding:8px;">Tipologia</th>
+                    <th style="padding:8px;">Dim.</th>
+                    <th style="padding:8px;">Spess.</th>
+                    <th style="padding:8px;">Lungh.</th>
+                    <th style="padding:8px;">Qta</th>
+                    <th style="padding:8px;">Materiale</th>
+                    <th style="padding:8px;">Kg</th>
+                    <th style="padding:8px;">Tipo Scant.</th>
+                    <th style="padding:8px;">Scant.</th>
+                    <th style="padding:8px;">Fori</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${righe}
+            </tbody>
+        </table>
+    `;
+}
+
+
+
+// Funzione per segnare che il materiale è arrivato fisicamente
+function toggleArrivoMateriale(commessaId, disegnoId, index, isChecked) {
+    // Aggiorno il campo "arrivato" (true/false) per quella specifica riga
+    db.ref(`commesse/Prova 1/${commessaId}/disegni/${disegnoId}/materiali/${index}/arrivato`).set(isChecked);
+    
+    // NOTA: Non serve ricaricare la pagina perché la checkbox visiva è già cambiata.
+    // Se vuoi puoi aggiungere un effetto sonoro o visivo qui.
+}
+
+
+
+
+// --- FUNZIONE PER SPOSTARE LA CARD CON LE FRECCE ---
+function spostaCardSandbox(id, nuovoIndex, event) {
+    // 1. Fermo la propagazione (altrimenti si apre la dashboard quando clicco la freccia)
+    event.stopPropagation(); 
+
+    // 2. Definisco la mappa degli stati (DEVE ESSERE UGUALE A QUELLA SOPRA)
+    const statiSequenza = ["UFFICIO", "MAGAZZINO", "IN PRODUZIONE", "PRONTI", "VERNICIATURA", "FINITI", "ARCHIVIO"];
+    
+    // 3. Controllo limiti (sicurezza)
+    if(nuovoIndex < 0 || nuovoIndex >= statiSequenza.length) return;
+
+    // 4. Recupero il nome stringa dello stato (es. "IN PRODUZIONE")
+    const nuovoStatoStringa = statiSequenza[nuovoIndex];
+
+    // 5. Aggiorno Firebase
+    db.ref('commesse/Prova 1/' + id).update({ statoSandbox: nuovoStatoStringa })
+    .then(() => {
+        // Ricarico la Kanban per vedere la card saltare nella nuova colonna
+        caricaKanbanSandbox();
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </script>
 </body>
