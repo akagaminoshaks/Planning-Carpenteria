@@ -567,6 +567,168 @@
     }
     function setPausaPranzo() { inserisciPausaConTaglio(); }
 
+
+
+
+
+    // --- FUNZIONI MANCANTI PER APRIRE IL MODALE ---
+
+function apriEditorVuoto(dip, oraInizio) {
+    // Imposta variabili globali per il salvataggio
+    editDip = dip;
+    editOriginalStart = ""; // Segnala che è un nuovo inserimento
+    editOriginalEnd = "";
+
+    // Titolo del modale
+    document.getElementById('edit-dip-title').innerText = "NUOVO INSERIMENTO: " + dip;
+    document.getElementById('edit-dip-title').style.borderBottomColor = dipColors[dip] || "#fff";
+
+    // Resetta i campi input
+    document.getElementById('edit-cliente').value = "";
+    document.getElementById('edit-commessa').value = "";
+    document.getElementById('edit-note').value = "";
+    document.getElementById('edit-qta').value = "";
+    document.getElementById('edit-voto').value = "";
+
+    // Imposta orari (Default: Inizio = ora cliccata, Fine = +1 ora)
+    document.getElementById('edit-start').value = oraInizio;
+    
+    // Calcolo automatico ora fine (+1 ora)
+    let [h, m] = oraInizio.split(':').map(Number);
+    let endMins = (h * 60 + m) + 60;
+    let he = Math.floor(endMins / 60);
+    let me = endMins % 60;
+    // Formatta HH:MM
+    let oraFine = (he < 10 ? '0' : '') + he + ':' + (me === 0 ? '00' : me);
+    
+    // Se supera le 22:15, tappa al massimo orario disponibile
+    if (he >= 22 && me > 0) oraFine = "22:15";
+    
+    // Se il valore calcolato esiste nella select, lo imposta, altrimenti mette il valore più vicino
+    let selectEnd = document.getElementById('edit-end');
+    if (selectEnd.querySelector(`option[value="${oraFine}"]`)) {
+        selectEnd.value = oraFine;
+    } else {
+        selectEnd.value = "22:15"; 
+    }
+
+    // Mostra il modale
+    document.getElementById('modal-edit').style.display = 'flex';
+}
+
+function apriEditorPieno(dip, start, end, comm, note) {
+    // Imposta variabili globali per permettere la modifica/cancellazione
+    editDip = dip;
+    editOriginalStart = start;
+    editOriginalEnd = end;
+
+    // Recupera dati aggiuntivi dalla memoria locale (dailyData)
+    let baseKey = `${start}-${dip}`;
+    let cliente = dailyData[baseKey + '-cliente'] || "";
+    let qta = dailyData[baseKey + '-qta'] || "";
+    let voto = dailyData[baseKey + '-voto'] || "";
+
+    // Popola i campi del modale
+    document.getElementById('edit-dip-title').innerText = "MODIFICA: " + dip;
+    document.getElementById('edit-dip-title').style.borderBottomColor = dipColors[dip] || "#fff";
+    
+    document.getElementById('edit-start').value = start;
+    document.getElementById('edit-end').value = end;
+    
+    document.getElementById('edit-cliente').value = cliente;
+    // Se è "COMMESSA X" (placeholder) o "PAUSA", pulisci il campo per permettere modifica rapida
+    document.getElementById('edit-commessa').value = (comm === "COMMESSA X" || comm === "PAUSA") ? "" : comm;
+    document.getElementById('edit-note').value = note || "";
+    document.getElementById('edit-qta').value = qta;
+    document.getElementById('edit-voto').value = voto;
+
+    // Mostra il modale
+    document.getElementById('modal-edit').style.display = 'flex';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function salvaTaskAvanzato() {
         let s=document.getElementById('edit-start').value, e=document.getElementById('edit-end').value, cl=document.getElementById('edit-cliente').value, c=document.getElementById('edit-commessa').value, n=document.getElementById('edit-note').value;
         let sm=toMins(s), em=toMins(e); if(em<=sm) return alert("Orari errati!");
@@ -576,7 +738,224 @@
         db.ref().update(u, ()=>{ document.getElementById('modal-edit').style.display='none'; loadData(currentDate); });
     }
     function eliminaTask() { if(!editOriginalStart) return; if(!confirm("Eliminare?")) return; let u={}, os=toMins(editOriginalStart), oe=toMins(editOriginalEnd); for(let m=os; m<oe; m+=15) { let t=toTimeStr(m), b=`turni/${currentDate}/${t}-${editDip}`; u[b+'-commessa']=null; u[b+'-cliente']=null; u[b+'-note']=null; } db.ref().update(u, ()=>{ document.getElementById('modal-edit').style.display='none'; loadData(currentDate); }); }
-    function showDipDetail(name, btn) { /* Detail view */ }
+    
+
+
+
+
+
+
+
+    
+    // --- FUNZIONE PER LA VISTA DIPENDENTI (LISTA) ---
+function showDipDetail(nome, btn) {
+    // 1. Gestione estetica bottone selezionato
+    document.querySelectorAll('.btn-dip').forEach(b => b.classList.remove('selected'));
+    if(btn) {
+        btn.classList.add('selected');
+    } else {
+        // Se la funzione è chiamata senza btn, cercalo
+        let found = Array.from(document.querySelectorAll('.btn-dip')).find(b => b.innerText === nome);
+        if(found) found.classList.add('selected');
+    }
+
+    const container = document.getElementById('dip-detail-container');
+    container.innerHTML = ""; // Pulisce la schermata precedente
+
+    let color = dipColors[nome] || "#777";
+    let totalOre = 0;
+    
+    // Creiamo il contenitore principale (Card)
+    let cardWrapper = document.createElement('div');
+    cardWrapper.className = 'dip-card-wrapper';
+    cardWrapper.style.borderTop = `5px solid ${color}`;
+    cardWrapper.style.width = "95%";
+    cardWrapper.style.maxWidth = "600px";
+    cardWrapper.style.marginTop = "20px";
+
+    // Intestazione con Nome e Totale Ore
+    let headerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+            <h2 style="margin:0; color:${color}; text-transform:uppercase; letter-spacing:1px;">${nome}</h2>
+            <div id="total-hours-display" style="font-size:20px; font-weight:bold; color:white;">0h</div>
+        </div>
+        <div id="dip-timeline-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+    `;
+    cardWrapper.innerHTML = headerHTML;
+    container.appendChild(cardWrapper);
+
+    const listContainer = cardWrapper.querySelector('#dip-timeline-list');
+    
+    // 2. Algoritmo per raggruppare i task (simile alla tabella ma verticale)
+    let currentBlock = null;
+
+    for(let h=6; h<=22; h++) {
+        for(let m=0; m<60; m+=15) {
+            if(h===22 && m>0) break;
+            
+            let tStr = (h<10?'0':'')+h+':'+(m===0?'00':m);
+            let key = `${tStr}-${nome}`;
+            
+            let rawComm = dailyData[key+'-commessa'];
+            let comm = rawComm; // Valore grezzo
+            let note = dailyData[key+'-note'] || "";
+            let cliente = dailyData[key+'-cliente'] || "";
+
+            // Normalizza i dati
+            if (!comm && (note !== "" || cliente !== "")) { comm = "COMMESSA X"; }
+
+            // Calcolo Ore (escludendo la pausa)
+            if (comm && comm !== "PAUSA") totalOre += 0.25;
+
+            // Logica di raggruppamento blocchi
+            if (comm) {
+                if (!currentBlock) {
+                    // Inizio nuovo blocco
+                    currentBlock = { start: tStr, end: tStr, comm: comm, note: note, cliente: cliente, raw: rawComm };
+                } else {
+                    // Controlla se è lo stesso task del blocco precedente
+                    if (currentBlock.comm === comm && currentBlock.note === note && currentBlock.cliente === cliente) {
+                        // Estende il blocco
+                        currentBlock.end = tStr; 
+                    } else {
+                        // Il task è cambiato: chiudi il precedente e aprine uno nuovo
+                        renderDipBlock(listContainer, currentBlock, nome, color);
+                        currentBlock = { start: tStr, end: tStr, comm: comm, note: note, cliente: cliente, raw: rawComm };
+                    }
+                }
+            } else {
+                // Slot vuoto: se c'era un blocco aperto, chiudilo
+                if (currentBlock) {
+                    renderDipBlock(listContainer, currentBlock, nome, color);
+                    currentBlock = null;
+                }
+            }
+        }
+    }
+    // Chiudi eventuale blocco rimasto aperto alla fine della giornata
+    if (currentBlock) {
+        renderDipBlock(listContainer, currentBlock, nome, color);
+    }
+
+    // Aggiorna il testo delle ore totali
+    cardWrapper.querySelector('#total-hours-display').innerText = totalOre + "h";
+}
+
+// Funzione ausiliaria per disegnare il singolo blocco nella lista
+function renderDipBlock(container, block, nome, color) {
+    // Calcola l'orario di fine reale (l'ultimo slot dura 15 min, quindi aggiungiamo 15 min all'orario di fine)
+    let [h, m] = block.end.split(':').map(Number);
+    let endMins = h * 60 + m + 15;
+    let he = Math.floor(endMins / 60);
+    let me = endMins % 60;
+    let finalEnd = (he < 10 ? '0' : '') + he + ':' + (me === 0 ? '00' : me);
+
+    let isPausa = block.comm === "PAUSA";
+    
+    // Stile dinamico
+    let bg = isPausa ? 
+        "repeating-linear-gradient(45deg, #222, #222 10px, #2a2a2a 10px, #2a2a2a 20px)" : 
+        `rgba(30, 30, 30, 0.8)`; // Sfondo scuro pulito
+    
+    let borderColor = isPausa ? "#555" : color;
+    let textColor = isPausa ? "#777" : "white";
+
+    let item = document.createElement('div');
+    item.style.cssText = `
+        background: ${bg}; 
+        border-left: 5px solid ${borderColor}; 
+        border-radius: 6px; 
+        padding: 12px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        cursor: pointer;
+        transition: transform 0.1s;
+    `;
+    
+    // Aggiungi effetto click
+    item.onmouseover = () => item.style.transform = "scale(1.01)";
+    item.onmouseout = () => item.style.transform = "scale(1)";
+    
+    // CLICK: Apre il modale di modifica (usa le funzioni che ti ho dato nella risposta precedente)
+    item.onclick = () => apriEditorPieno(nome, block.start, finalEnd, block.raw, block.note);
+
+    let html = `
+        <div style="display:flex; justify-content:space-between; font-size:13px; color:#888; margin-bottom:5px;">
+            <span style="font-family:monospace; font-size:14px;">🕒 ${block.start} - ${finalEnd}</span>
+            <span style="font-style:italic;">${block.cliente}</span>
+        </div>
+        <div style="font-size:16px; font-weight:bold; color:${isPausa ? '#aaa' : color}; margin-bottom:2px;">
+            ${block.comm}
+        </div>
+    `;
+    
+    if(block.note) {
+        html += `<div style="font-size:13px; color:#ccc; border-top:1px solid #333; margin-top:5px; padding-top:5px;">${block.note}</div>`;
+    }
+
+    item.innerHTML = html;
+    container.appendChild(item);
+}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     function apriWA() { document.getElementById('modal-wa').style.display='flex'; document.getElementById('wa-date').value=currentDate; }
     function analizzaWA() { 
         let txt = document.getElementById('wa-input').value; let dateRef = document.getElementById('wa-date').value; let dArr = dateRef.split('-'); let visualDate = `${dArr[2]}/${dArr[1]}/${dArr[0]}`; let tbody = document.getElementById('wa-tbody'); tbody.innerHTML = ""; let lines = txt.split('\n').map(l=>l.trim()).filter(l=>l!==''); let curDip = null; let buffer = []; waBlocks = []; 

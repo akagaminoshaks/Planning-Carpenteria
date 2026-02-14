@@ -293,24 +293,45 @@
         <div style="width: 60px;"></div>
     </div>
 
+
+
+
+
+    <!--inizio - bottoni del codice html,x creare i bottoni sul browser lorenzo - 13/02/2026 - 19:06-->
+    <!--inizio - bottoni del codice html,x creare i bottoni sul browser lorenzo - 13/02/2026 - 19:06-->
+    <!--inizio - bottoni del codice html,x creare i bottoni sul browser lorenzo - 13/02/2026 - 19:06-->
     <div class="tools-grid">
         <div class="tool-btn" onclick="TB.UI.open('modal-peso')">
             <div class="tool-icon" style="color:#00e5ff;">⚖️</div>
             <div class="tool-name">Peso Materiale</div>
         </div>
+        
         <div class="tool-btn" onclick="TB.UI.open('modal-piega')">
             <div class="tool-icon" style="color:#e74c3c;">📐</div>
             <div class="tool-name">Piegatura CNC</div>
         </div>
+        
         <div class="tool-btn" onclick="TB.UI.open('modal-chiocciola')">
             <div class="tool-icon" style="color:#00e5ff;">🐌</div>
             <div class="tool-name">Chiocciole</div>
         </div>
+        
         <div class="tool-btn" onclick="TB.UI.open('modal-foratura')">
             <div class="tool-icon" style="color:#9b59b6;">🔩</div>
             <div class="tool-name">Foratura</div>
         </div>
+
+        <div class="tool-btn" onclick="TB.UI.open('modal-saldatura')">
+            <div class="tool-icon" style="color:#ff9f43;">🔥</div>
+            <div class="tool-name">Saldatura</div>
+        </div>
     </div>
+    <!--inizio - bottoni del codice html,x creare i bottoni sul browser lorenzo - 13/02/2026 - 19:06-->
+    <!--inizio - bottoni del codice html,x creare i bottoni sul browser lorenzo - 13/02/2026 - 19:06-->
+    <!--inizio - bottoni del codice html,x creare i bottoni sul browser lorenzo - 13/02/2026 - 19:06-->
+
+
+
 
     <div id="modal-peso" class="modal-overlay">
         <div class="calculator-box">
@@ -460,14 +481,163 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+    
+    <div id="modal-saldatura" class="modal-overlay">
+    <div class="calculator-box">
+        <div class="calc-head">
+            <div class="calc-title" style="color:#ff9f43;">CALCOLATORE SALDATURA</div>
+            <button class="btn-close" onclick="TB.UI.close()">×</button>
+        </div>
+        <div class="calc-body">
+            <div class="input-section">
+                <div class="inputs-grid">
+                    <div class="input-wrapper">
+                        <span class="inp-label">MATERIALE</span>
+                        <select id="weld-mat" class="styled-inp" onchange="TB.Tools.Saldatura.calc()">
+                            <option value="fe">Ferro (Acciaio al Carbonio)</option>
+                            <option value="ss">Acciaio INOX (304/316)</option>
+                            <option value="alu">Alluminio</option>
+                        </select>
+                    </div>
+                    <div class="input-wrapper">
+                        <span class="inp-label">PROCESSO</span>
+                        <select id="weld-proc" class="styled-inp" onchange="TB.Tools.Saldatura.updatePresets()">
+                            <option value="mag">MIG/MAG (Filo Pieno)</option>
+                            <option value="anim">MAG (Filo Animato)</option>
+                            <option value="tig">TIG</option>
+                            <option value="mma">Elettrodo (MMA)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-wrapper" style="width:100%; flex: 0 0 100%; margin-top:15px;">
+                    <span class="inp-label" style="color:#ff9f43;">TIPO DI GIUNTO</span>
+                    <div class="chiocciola-mode-switch">
+                        <button class="ch-mode-btn active" id="btn-weld-fillet" onclick="TB.Tools.Saldatura.setType('F')">D'ANGOLO (FILLET)</button>
+                        <button class="ch-mode-btn" id="btn-weld-butt" onclick="TB.Tools.Saldatura.setType('B')">TESTA A TESTA (BUTT)</button>
+                    </div>
+                </div>
+
+                <div class="inputs-grid">
+                    <div class="input-wrapper">
+                        <span class="inp-label" id="lbl-weld-size">LATO 'Z' (mm)</span>
+                        <div class="styled-inp-box">
+                            <input type="number" id="weld-size" class="styled-inp" value="6" step="0.5" oninput="TB.Tools.Saldatura.calc()">
+                        </div>
+                    </div>
+                    <div class="input-wrapper">
+                        <span class="inp-label">LUNGHEZZA TOTALE (metri)</span>
+                        <div class="styled-inp-box">
+                            <input type="number" id="weld-len" class="styled-inp" value="10" oninput="TB.Tools.Saldatura.calc()">
+                            <div class="inp-unit">m</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="svg-preview" id="weld-svg" style="height:120px; margin-top:20px; background:transparent; border:none;"></div>
+
+                <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
+                    <div class="inp-label" style="color:#888; margin-bottom:10px;">PARAMETRI TECNICI ( modificabili )</div>
+                    <div class="inputs-grid">
+                        <div class="input-wrapper">
+                            <span class="inp-label">DEPOSITO (kg/h)</span>
+                            <div class="styled-inp-box"><input type="number" id="weld-dep" class="styled-inp" value="2.5" step="0.1" oninput="TB.Tools.Saldatura.calc()"></div>
+                        </div>
+                        <div class="input-wrapper">
+                            <span class="inp-label">GAS (L/min)</span>
+                            <div class="styled-inp-box"><input type="number" id="weld-flow" class="styled-inp" value="12" oninput="TB.Tools.Saldatura.calc()"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="live-data-col">
+                <div class="live-card" style="border-color:#ff9f43;">
+                    <span class="live-lbl" style="color:#ff9f43;">PESO FILO NECESSARIO</span>
+                    <div>
+                        <span class="live-val" id="res-weld-kg">0.00</span>
+                        <span class="live-unit">kg</span>
+                    </div>
+                </div>
+                
+                <div class="live-card">
+                    <span class="live-lbl">GAS STIMATO</span>
+                    <div>
+                        <span class="live-val" id="res-weld-gas">0</span>
+                        <span class="live-unit">Litri</span>
+                    </div>
+                </div>
+
+                <div class="live-card" style="border-color:#fff;">
+                    <span class="live-lbl">TEMPO ARCO ACCESO</span>
+                    <div>
+                        <span class="live-val" id="res-weld-time">0h 00m</span>
+                    </div>
+                </div>
+
+                <div style="background:#1a1a1a; padding:15px; border-radius:6px; margin-top:auto; font-size:11px; color:#888;">
+                    <div style="margin-bottom:5px;">ℹ️ <b>NOTE DI CALCOLO:</b></div>
+                    • Include sovrametallo: +10%<br>
+                    • Efficienza deposito: 85% (Mag), 65% (Elettrodo)<br>
+                    • Densità Ferro: 7.85 kg/dm³
+                </div>
+                
+                    <button class="btn-export btn-pdf" style="width:100%; margin-top:10px;" onclick="window.print()">🖨️ STAMPA SCHEDA</button>
+            </div>
+         </div>
+    </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
 const TB = {
     State: { Peso: { mat: 7.85, shape: 'lamiera', list: [] }, Piega: { mat: 42, thk: 2, rows: [], expandedRow: -1 }, Chiocciola: { mode: 'N', inputType: 'D' } },
     Beams: { 'IPE': { '80':6.0, '100':8.1, '120':10.4 }, 'HEA': { '100':16.7, '120':19.9 }, 'UPN': { '80':8.6, '100':10.6 } },
     UI: {
-        open: function(id) { document.getElementById(id).style.display = 'flex'; setTimeout(()=>document.getElementById(id).classList.add('active'),10); if(id==='modal-peso') TB.Tools.Peso.init(); if(id==='modal-piega') TB.Tools.Piega.init(); if(id==='modal-chiocciola') TB.Tools.Chiocciola.init(); if(id==='modal-foratura') TB.Tools.Foratura.init(); },
+        open: function(id) { 
+            document.getElementById(id).style.display = 'flex'; 
+            setTimeout(()=>document.getElementById(id).classList.add('active'),10); 
+            if(id==='modal-peso') TB.Tools.Peso.init(); 
+            if(id==='modal-piega') TB.Tools.Piega.init(); 
+            if(id==='modal-chiocciola') TB.Tools.Chiocciola.init(); 
+            if(id==='modal-foratura') TB.Tools.Foratura.init();
+            if(id==='modal-saldatura') TB.Tools.Saldatura.init(); // <--- RIGA AGGIUNTA
+        },
         close: function() { let m=document.querySelector('.modal-overlay.active'); if(m){ m.classList.remove('active'); setTimeout(()=>m.style.display='none',200); } }
     },
+
     Tools: {
         Peso: {
             init: function() { this.renderInputs(); this.renderList(); },
@@ -701,6 +871,8 @@ const TB = {
                 document.getElementById('btn-cb').className = t==='CB'?'ch-mode-btn active':'ch-mode-btn';
                 this.calcSeat();
             },
+            
+
             calcSeat: function() {
                 let sz = parseInt(document.getElementById('st-size').value); let type = this.State.seatType; let d = this.Data.Seats[sz]; let isCSK = type === 'CSK';
                 document.getElementById('st-d1').innerText = "Ø " + d.hole; document.getElementById('st-d2').innerText = "Ø " + (isCSK ? d.csk : d.cb);
@@ -710,9 +882,92 @@ const TB = {
                 else { svg = `<path d="M10 10 V40 H30 V100 M90 10 V40 H70 V100" fill="none" stroke="${col}" stroke-width="2"/><rect x="30" y="40" width="40" height="60" fill="none" stroke="#333" stroke-dasharray="4"/>`; }
                 box.innerHTML = `<svg viewBox="0 0 100 100" style="overflow:visible">${svg}</svg>`;
             }
-        }
-    }
-};
+        }, // <--- AGGIUNGI QUESTA VIRGOLA QUI!
+
+        // --- INIZIO NUOVO CODICE SALDATURA ---
+        Saldatura: {
+            State: { type: 'F' },
+            Data: {
+                Density: { fe: 7.85, ss: 7.9, alu: 2.7 },
+                Presets: {
+                    mag: { dep: 3.5, flow: 15, eff: 0.85 },
+                    anim: { dep: 4.5, flow: 0, eff: 0.80 },
+                    tig: { dep: 1.0, flow: 10, eff: 0.95 },
+                    mma: { dep: 1.5, flow: 0, eff: 0.65 }
+                }
+            },
+            init: function() { this.updatePresets(); this.calc(); },
+            setType: function(t) {
+                this.State.type = t;
+                document.getElementById('btn-weld-fillet').className = t==='F'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('btn-weld-butt').className = t==='B'?'ch-mode-btn active':'ch-mode-btn';
+                document.getElementById('lbl-weld-size').innerText = t==='F'?'LATO Z (mm)':'SPESSORE (mm)';
+                this.calc();
+            },
+            updatePresets: function() {
+                let p = document.getElementById('weld-proc').value;
+                let data = this.Data.Presets[p];
+                document.getElementById('weld-dep').value = data.dep;
+                document.getElementById('weld-flow').value = data.flow;
+                if(data.flow === 0 && p !== 'anim') { 
+                     document.getElementById('weld-flow').value = 0;
+                     document.getElementById('weld-flow').disabled = true;
+                } else {
+                     document.getElementById('weld-flow').disabled = false;
+                }
+                this.calc();
+            },
+            calc: function() {
+                let mat = document.getElementById('weld-mat').value;
+                let proc = document.getElementById('weld-proc').value;
+                let size = v('weld-size');
+                let lenM = v('weld-len');
+                let depRate = v('weld-dep');
+                let flowRate = v('weld-flow');
+                
+                let dens = this.Data.Density[mat];
+                let eff = this.Data.Presets[proc].eff;
+                let area = 0;
+                
+                if(this.State.type === 'F') { area = (size * size) / 2 * 1.1; } 
+                else { area = (size * size) * 1.1; }
+
+                let vol_cm3 = (area * (lenM * 1000)) / 1000;
+                let weight_net = (vol_cm3 * dens) / 1000;
+                let weight_gross = weight_net / eff;
+
+                let time_hours = weight_gross / depRate;
+                if(depRate <= 0) time_hours = 0;
+                let time_mins = time_hours * 60;
+                let gas_total = time_mins * flowRate;
+
+                document.getElementById('res-weld-kg').innerText = weight_gross.toFixed(2);
+                document.getElementById('res-weld-gas').innerText = Math.ceil(gas_total);
+                
+                let h = Math.floor(time_mins / 60);
+                let m = Math.round(time_mins % 60);
+                document.getElementById('res-weld-time').innerText = h + "h " + m + "m";
+
+                this.draw();
+            },
+            draw: function() {
+                let box = document.getElementById('weld-svg');
+                let type = this.State.type;
+                let col = "#ff9f43";
+                let svg = "";
+                
+                if(type === 'F') {
+                    svg = `<rect x="20" y="60" width="80" height="10" fill="#333" stroke="none"/><rect x="50" y="10" width="10" height="50" fill="#333" stroke="none"/><path d="M50 60 L65 60 L50 45 Z" fill="${col}" stroke="none"/><line x1="68" y1="60" x2="68" y2="45" stroke="#666" stroke-width="1"/><text x="70" y="55" fill="#aaa" font-size="10" font-family="sans-serif">Z</text>`;
+                } else {
+                    svg = `<rect x="10" y="40" width="40" height="20" fill="#333" stroke="none"/><rect x="55" y="40" width="40" height="20" fill="#333" stroke="none"/><path d="M50 40 L50 60 L55 60 L55 40 Z" fill="${col}" opacity="0.5"/><path d="M50 40 L45 40 L52.5 60 L57.5 40 L60 40" fill="${col}" stroke="none"/><line x1="5" y1="40" x2="5" y2="60" stroke="#666" stroke-width="1"/><text x="10" y="55" fill="#aaa" font-size="10" font-family="sans-serif">S</text>`;
+                }
+                box.innerHTML = `<svg viewBox="0 0 100 80">${svg}</svg>`;
+            }
+        } // Fine Saldatura
+    } // Fine Tools
+}; // Fine TB
+
+// Funzione helper fuori dall'oggetto TB
 function v(id){ return parseFloat(document.getElementById(id)?.value) || 0; }
 </script>
 </body>
