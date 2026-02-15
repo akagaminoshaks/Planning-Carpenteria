@@ -2,480 +2,263 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>WeldManager Pro V2.7</title>
+    <title>WPS Generator V16.0 (Final Fix)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
-        :root { --primary: #ff9f43; --secondary: #00e5ff; --system: #e74c3c; --bg-dark: #050505; --bg-panel: #1e1e1e; --text-main: #e0e0e0; --border: 1px solid rgba(255, 255, 255, 0.1); }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; overflow-x: hidden; }
+        :root { --primary: #ff9f43; --secondary: #00e5ff; --success: #2ecc71; --danger: #e74c3c; --bg-dark: #050505; --bg-panel: #1e1e1e; --text-main: #e0e0e0; --border: 1px solid rgba(255, 255, 255, 0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
         header { background: #000; border-bottom: 2px solid var(--primary); padding: 15px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-        .header-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: var(--primary); font-size: 20px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* DASHBOARD */
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; max-width: 800px; margin: 0 auto; }
-        .big-btn { aspect-ratio: 1/1; background: linear-gradient(145deg, #252525, #1a1a1a); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; position: relative; overflow: hidden; }
-        .big-btn:active { transform: scale(0.95); } .big-btn .icon { font-size: 32px; } .big-btn span { font-size: 11px; font-weight: bold; text-transform: uppercase; text-align: center; }
-
-        /* CALCOLATORE - SPLIT LAYOUT */
-        .calc-split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; }
-        @media (max-width: 900px) { .calc-split-layout { grid-template-columns: 1fr; } }
-
-        /* Left Box: Input + Results */
-        .calc-box-left { background: var(--bg-panel); border: 1px solid #333; border-radius: 12px; padding: 20px; height: fit-content; display: flex; flex-direction: column; gap: 15px; }
-        
-        /* Right Box: Visuals + Technical */
-        .calc-box-right { background: #0a0a0a; border: 2px solid var(--secondary); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0, 229, 255, 0.1); height: fit-content; }
-
-        /* SVG Container */
-        .weld-svg-container { background: #000; border-radius: 8px; width: 100%; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; border: 1px solid #222; margin-bottom: 20px; overflow: hidden; position: relative; }
-        .weld-svg-container svg { width: 100%; height: 100%; display: block; }
-
-        /* Results Box Styles */
-        .res-grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .res-box-item { background: #111; padding: 15px 10px; border-radius: 8px; border: 1px solid #333; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .res-box-item.primary { border-color: var(--secondary); background: rgba(0, 229, 255, 0.05); }
-        .res-val-big { font-size: 28px; font-weight: bold; color: white; line-height: 1; }
-        .res-val-primary { color: var(--secondary); text-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
-        .res-label-small { font-size: 9px; color: #888; text-transform: uppercase; margin-top: 5px; letter-spacing: 1px; }
-        
-        /* WPS */
-        .wps-box { margin-top: 15px; padding: 12px; background: rgba(255, 159, 67, 0.05); border: 1px solid var(--primary); border-radius: 8px; }
-        .wps-title { color: var(--primary); font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(255, 159, 67, 0.2); padding-bottom: 5px; }
-        .wps-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .wps-label-row { font-size: 10px; color: #fff; width: 80px; }
-        .wps-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; flex: 1; }
-        .wps-display { background: #000; border: 1px solid #333; padding: 5px; border-radius: 4px; text-align: center; }
-        .wps-val { display: block; font-size: 14px; font-weight: bold; color: var(--primary); }
-        .wps-lbl { font-size: 7px; color: #666; text-transform: uppercase; }
-
-        .pass-detail { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: #000; border: 1px solid #222; border-radius: 4px; margin-bottom: 5px; font-size: 11px; }
-        .pass-tag { padding: 2px 6px; border-radius: 3px; font-weight: bold; text-transform: uppercase; font-size: 9px; }
-        .tag-root { background: #e67e22; color: #000; } .tag-fill { background: #3498db; color: #fff; } .tag-cap { background: #2ecc71; color: #000; }
-
-        .switch-container { display: flex; background: #000; border-radius: 6px; padding: 3px; border: 1px solid #333; margin-bottom: 10px; }
-        .switch-btn { flex: 1; background: transparent; border: none; color: #666; padding: 12px; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .switch-btn.active { background: #222; color: var(--secondary); border: 1px solid var(--secondary); }
-        .holo-field { background: #121212; border: 1px solid #333; border-left: 2px solid #444; padding: 10px; border-radius: 4px; margin-bottom: 0; }
-        .holo-label { font-size: 10px; color: #888; text-transform: uppercase; display: block; margin-bottom: 4px; }
-        .holo-input { width: 100%; background: transparent; border: none; color: #fff; font-family: monospace; font-size: 16px; font-weight: 600; outline: none; }
-        .holo-section { margin-top: 5px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; color: #888; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* PARCO MACCHINE & MODALE */
-        .machine-list-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 80px; }
-        .machine-item { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; justify-content: center; align-items: end; }
-        .modal-overlay.open { display: flex; }
-        .modal-content { background: #090909; width: 100%; max-width: 900px; height: 95vh; border-radius: 20px 20px 0 0; padding: 20px; display: flex; flex-direction: column; border-top: 4px solid var(--system); overflow-y: auto; }
-        .tech-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 700px) { .tech-columns { grid-template-columns: 1fr; } }
-        
-        .photo-container { position: relative; width: 100%; background-color: #111; border: 2px dashed #333; border-radius: 8px; cursor: pointer; background-size: contain; background-repeat: no-repeat; background-position: center; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: 0.2s; }
-        .box-selected { border-color: var(--secondary) !important; box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); }
-        .btn-clear-img { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 10; }
-        .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .brand-card { background: #151515; border: 1px solid #333; border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; }
+        .logo { font-size: 20px; font-weight: 900; text-transform: uppercase; color: #fff; }
+        .logo span { color: var(--primary); }
+        .container { padding: 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: start; }
+        @media(max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+        .panel { background: var(--bg-panel); border: var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .control-group { margin-bottom: 15px; }
+        .control-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        input[type="number"], select { width: 100%; box-sizing: border-box; background: #000; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; transition: 0.3s; }
+        input[type="number"]:focus { border-color: var(--primary); outline: none; }
+        .wps-card { border: 2px solid var(--success); background: rgba(46, 204, 113, 0.05); }
+        .wps-value { font-size: 24px; color: #fff; font-weight: 900; }
+        .dual-input { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .technical-drawing { width: 100%; height: auto; max-width: 300px; display: block; margin: 0 auto; background: #222; border-radius: 8px; border: 1px solid #444; }
+        .tech-dim { stroke: var(--primary); stroke-width: 2; }
+        .tech-text { fill: var(--primary); font-size: 14px; font-family: monospace; font-weight: bold; }
+        .multipass-box { padding: 10px; border-radius: 8px; border: 1px dashed #444; opacity: 0.5; transition: 0.3s; }
+        .multipass-active { border: 2px solid #e74c3c !important; background: rgba(231, 76, 60, 0.1) !important; opacity: 1 !important; }
+        .cost-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 10px; }
+        .cost-table th { text-align: left; border-bottom: 1px solid #444; padding: 5px; color: #888; font-size: 11px; text-transform: uppercase; }
+        .cost-table td { padding: 8px 5px; border-bottom: 1px solid #222; }
+        .res-cost { color: #2ecc71; font-size: 20px; font-weight: bold; }
+        .btn-upload { background: #2ecc71; color: #000; font-weight: bold; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="display:flex; align-items:center;">
-            <button id="nav-btn" class="header-btn" onclick="Navigation.handleBack()">⬅</button>
-            <h1 style="margin-left:15px;">WeldManager <span style="color:white;">Pro</span></h1>
+        <div class="logo">WPS<span>GENERATOR</span> 16.0</div>
+        <div style="display:flex; gap:10px;">
+            <input type="file" id="inp-listino" accept=".xlsx" style="display:none;" onchange="ListinoManager.load(this)">
+            <button class="btn-upload" onclick="document.getElementById('inp-listino').click()">📂 Importa Listino Excel</button>
+            <button style="background:var(--primary); border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;" onclick="window.history.back()">Indietro</button>
         </div>
     </header>
 
-    <div id="screen-home" class="screen active">
-        <div class="menu-grid">
-            <div class="big-btn" onclick="Navigation.go('screen-parco')"><div class="icon">🚜</div><span>Impianti</span></div>
-            <div class="big-btn" onclick="Navigation.go('screen-calc')"><div class="icon">📐</div><span>Calcolatore</span></div>
-            <div class="big-btn"><div class="icon">🏗️</div><span>Portata</span></div>
-            <div class="big-btn danger"><div class="icon">🔥</div><span>Calore</span></div>
-            <div class="big-btn"><div class="icon">📦</div><span>Magazzino</span></div>
-            <div class="big-btn"><div class="icon">⚙️</div><span>Settings</span></div>
-        </div>
-    </div>
-
-    <div id="screen-parco" class="screen">
-        <h2 style="color:var(--primary);">Elenco Impianti</h2>
-        <div id="machine-list"></div>
-        <button class="fab" onclick="Editor.open()">+</button>
-    </div>
-
-    <div id="screen-calc" class="screen">
-        <div class="calc-split-layout">
-            
-            <div class="calc-box-left">
-                <div class="holo-section">Configurazione Giunto</div>
-                <div class="switch-container">
-                    <button id="btn-fillet" class="switch-btn active" onclick="WeldCalc.setType('F')">D'ANGOLO (FILLET)</button>
-                    <button id="btn-butt" class="switch-btn" onclick="WeldCalc.setType('B')">TESTA/TESTA (BUTT)</button>
-                </div>
-
-                <div class="holo-section">Spessori Piatti (mm)</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div class="holo-field" style="border-left-color:var(--primary);"><span class="holo-label">PIATTO 1</span><input type="number" id="weld-t1" class="holo-input" value="15" oninput="WeldCalc.calc()"></div>
-                    <div class="holo-field" style="border-left-color:var(--primary);"><span class="holo-label">PIATTO 2</span><input type="number" id="weld-t2" class="holo-input" value="15" oninput="WeldCalc.calc()"></div>
-                </div>
-
-                <div class="holo-section">Parametri Saldatura</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
-                    <div class="holo-field"><span class="holo-label" id="lbl-size">LATO Z</span><input type="number" id="weld-size" class="holo-input" value="12" step="0.5" oninput="WeldCalc.calc()"></div>
-                    <div class="holo-field"><span class="holo-label">FILO Ø</span><input type="number" id="weld-diam" class="holo-input" value="1.2" step="0.2" oninput="WeldCalc.calc()"></div>
-                    <div class="holo-field"><span class="holo-label">LUNGH. mm</span><input type="number" id="weld-len" class="holo-input" value="1000" oninput="WeldCalc.calc()"></div>
-                </div>
-
-                <div class="holo-field">
-                    <span class="holo-label">Materiale / Processo</span>
-                    <div style="display:flex; gap:10px;">
-                        <select id="weld-mat" class="holo-input" onchange="WeldCalc.calc()"><option value="fe">Ferro</option><option value="ss">Inox</option><option value="alu">Alluminio</option></select>
-                        <select id="weld-proc" class="holo-input" onchange="WeldCalc.updatePresets()"><option value="mag">MIG/MAG</option><option value="tig">TIG</option><option value="mma">MMA</option></select>
-                    </div>
-                </div>
-
-                <div class="holo-section" style="color:var(--secondary); border:none; margin-top:10px;">Risultati Calcolo</div>
-                
-                <div class="res-grid-4">
-                    <div class="res-box-item primary">
-                        <span id="res-kg" class="res-val-big res-val-primary">0.00</span>
-                        <span class="res-label-small">KG FILO</span>
-                    </div>
-                    <div class="res-box-item">
-                        <span id="res-len-wire" class="res-val-big">0</span>
-                        <span class="res-label-small">METRI FILO</span>
-                    </div>
-                    <div class="res-box-item">
-                        <span id="res-gas" class="res-val-big">0</span>
-                        <span class="res-label-small">LITRI GAS</span>
-                    </div>
-                    <div class="res-box-item">
-                        <span id="res-time" class="res-val-big">00:00</span>
-                        <span class="res-label-small">TEMPO ARCO</span>
-                    </div>
-                </div>
+    <div class="container">
+        <div>
+            <div class="panel" style="text-align: center;">
+                <h3>📐 Schema Saldatura</h3>
+                <svg viewBox="0 0 250 200" class="technical-drawing" id="main-svg">
+                    <defs><marker id="arrow" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#ff9f43" /></marker></defs>
+                    <rect x="20" y="20" width="40" height="130" fill="#333" stroke="#666" />
+                    <rect x="20" y="150" width="180" height="30" fill="#333" stroke="#666" />
+                    <g id="weld-group"></g>
+                    <line x1="15" y1="100" x2="15" y2="150" class="tech-dim" id="line-zv" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                    <text x="5" y="125" class="tech-text" style="writing-mode: tb;">z</text>
+                    <line x1="60" y1="165" x2="110" y2="165" class="tech-dim" id="line-zh" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                    <text x="85" y="180" class="tech-text">z</text>
+                </svg>
             </div>
-
-            <div class="calc-box-right">
-                <div class="holo-section" style="color:var(--secondary); border:none; margin-top:0;">Anteprima Tecnica</div>
-                <div id="weld-svg-box" class="weld-svg-container"></div>
-
-                <div class="wps-box">
-                    <div class="wps-title">⚡ Parametri WPS</div>
-                    <div class="wps-row">
-                        <div class="wps-label-row" style="color:var(--secondary);">MACCHINA</div>
-                        <div class="wps-grid">
-                            <div class="wps-display"><span class="wps-val" id="wps-single-amp">--</span><span class="wps-lbl">Ampere</span></div>
-                            <div class="wps-display"><span class="wps-val" id="wps-single-volt">--</span><span class="wps-lbl">Volt</span></div>
-                            <div class="wps-display"><span class="wps-val" id="wps-single-speed">--</span><span class="wps-lbl">m/min</span></div>
-                        </div>
+            <div class="panel">
+                <h3>1. Configurazione</h3>
+                <div class="control-group">
+                    <label>Filo</label>
+                    <select id="inp-mat" onchange="ListinoManager.selectWire()">
+                        <option value="fe_1.2_std">Standard ISO - Fe 1.2mm</option>
+                    </select>
+                </div>
+                <div class="dual-input">
+                    <div class="control-group">
+                        <label>Lato (z) mm</label>
+                        <input type="number" id="inp-z" value="6" step="0.5" oninput="WPS.findWPS()">
                     </div>
-                    <div class="wps-row" style="opacity:0.6; margin-bottom:0;">
-                        <div class="wps-label-row">TOTALE</div>
-                        <div class="wps-grid">
-                            <div class="wps-display"><span class="wps-val" id="wps-tot-amp">--</span><span class="wps-lbl">Amp Tot</span></div>
-                            <div class="wps-display"><span class="wps-val" id="wps-tot-volt">--</span><span class="wps-lbl">Volt Avg</span></div>
-                            <div class="wps-display"><span class="wps-val" id="wps-tot-speed">--</span><span class="wps-lbl">Wire Tot</span></div>
-                        </div>
+                    <div class="control-group">
+                        <label>Gola (a) mm</label>
+                        <input type="number" id="inp-a" value="4.2" step="0.1" oninput="WPS.syncAtoZ()">
                     </div>
                 </div>
-
-                <div class="wps-box" style="border-color: var(--secondary); background: rgba(0, 229, 255, 0.05); margin-top:10px;">
-                    <div class="wps-title" style="color: var(--secondary);">🔄 Strategia Passate</div>
-                    <div id="multipass-container"></div>
+                <div class="control-group">
+                    <label>Lunghezza Saldatura (mm)</label>
+                    <input type="number" id="inp-len" value="1000" oninput="WPS.findWPS()">
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="modal-machine" class="modal-overlay">
-        <div class="modal-content">
-            <div class="datasheet-header">
-                <div><div class="datasheet-subtitle">Scheda Tecnica Sistema</div><div class="datasheet-title" id="modal-title">Nuovo Impianto</div></div>
-                <button onclick="Editor.close()" style="background:none; border:none; color:#666; font-size:24px;">✕</button>
+        <div>
+            <div class="panel wps-card">
+                <h3>2. Parametri Macchina</h3>
+                <div id="arc-mode-badge" style="padding:5px; text-align:center; border-radius:4px; font-weight:bold; margin-bottom:10px; background:#e67e22;">GLOB ARC</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div><label>m/min</label><div class="wps-value" id="out-wfs">8.5</div></div>
+                    <div><label>Ampere</label><div class="wps-value" id="out-amp">230</div></div>
+                    <div><label>Volt</label><div class="wps-value" id="out-volt">23.5</div></div>
+                    <div><label>Speed (cm/min)</label><input type="number" id="out-speed" style="background:transparent; border:1px solid #2ecc71; color:#2ecc71; font-size:20px;" readonly></div>
+                </div>
             </div>
-            <div id="editor-body">
-                <div id="step-catalog"><div id="catalog-grid" class="brand-grid"></div><button onclick="Editor.goToForm()" style="width:100%; margin-top:20px; padding:15px; background:none; border:1px solid #333; color:#666; border-radius:8px;">Inserimento Manuale</button></div>
-                <div id="step-form" style="display:none;">
-                    <div id="photo-drop" class="photo-container" style="height:180px; margin-bottom:15px;"><button class="btn-clear-img" onclick="Editor.clearImage(event, 'photo-drop')">X</button><input type="file" id="file-input-main" hidden accept="image/*" onchange="Editor.handleFile(this, 'photo-drop')"><span style="font-size:24px;">📷</span><span style="font-size:10px; color:#666;">FOTO IMPIANTO</span></div>
-                    <div class="holo-field" style="border-left-color: #fff;"><span class="holo-label">Nome Impianto</span><input type="text" id="edit-nome" class="holo-input"></div>
-                    <div class="tech-columns">
-                        <div class="col-gen">
-                            <div style="color:var(--primary); font-size:11px; font-weight:bold; margin-bottom:10px;">GENERATORE</div>
-                            <div class="holo-field field-gen"><span class="holo-label">Modello</span><input type="text" id="gen-model" class="holo-input"></div>
-                            <div class="holo-field field-gen"><span class="holo-label">Alimentazione</span><input type="text" id="gen-power" class="holo-input"></div>
-                            <div class="holo-field field-gen"><span class="holo-label">Gamma</span><input type="text" id="gen-range" class="holo-input"></div>
-                            <div class="holo-field field-gen"><span class="holo-label">Ciclo Lavoro</span><input type="text" id="gen-duty" class="holo-input"></div>
-                            <div class="holo-field field-gen"><span class="holo-label">Processi</span><input type="text" id="gen-proc" class="holo-input"></div>
-                            <div class="holo-field field-gen"><span class="holo-label">Peso</span><input type="text" id="gen-weight" class="holo-input"></div>
-                            <div id="gen-plate" class="photo-container" style="height:100px;"><button class="btn-clear-img" onclick="Editor.clearImage(event, 'gen-plate')">X</button><input type="file" id="file-input-gen" hidden accept="image/*" onchange="Editor.handleFile(this, 'gen-plate')"><span>📄 Targhetta Gen.</span></div>
-                        </div>
-                        <div class="col-feed">
-                            <div style="color:var(--secondary); font-size:11px; font-weight:bold; margin-bottom:10px;">TRAINAFILO</div>
-                            <div class="holo-field field-feed"><span class="holo-label">Modello</span><input type="text" id="feed-model" class="holo-input"></div>
-                            <div class="holo-field field-feed"><span class="holo-label">Display</span><input type="text" id="feed-display" class="holo-input"></div>
-                            <div class="holo-field field-feed"><span class="holo-label">Rulli</span><input type="text" id="feed-mech" class="holo-input"></div>
-                            <div class="holo-field field-feed"><span class="holo-label">Velocità</span><input type="text" id="feed-speed" class="holo-input"></div>
-                            <div class="holo-field field-feed"><span class="holo-label">Diametri</span><input type="text" id="feed-dia" class="holo-input"></div>
-                            <div class="holo-field field-feed"><span class="holo-label">Peso</span><input type="text" id="feed-weight" class="holo-input"></div>
-                            <div id="feed-plate" class="photo-container" style="height:100px;"><button class="btn-clear-img" onclick="Editor.clearImage(event, 'feed-plate')">X</button><input type="file" id="file-input-feed" hidden accept="image/*" onchange="Editor.handleFile(this, 'feed-plate')"><span>📄 Targhetta Traino</span></div>
-                        </div>
-                    </div>
-                    <div style="margin-top:20px; display:flex; gap:10px;"><div class="holo-field" style="flex:1;"><span class="holo-label">Peso Sistema</span><input type="text" id="sys-weight" class="holo-input"></div><div class="holo-field" style="flex:1;"><span class="holo-label">Matricola S/N</span><input type="text" id="sys-sn" class="holo-input"></div></div>
-                    <button onclick="Editor.save()" style="width:100%; background:var(--primary); color:#000; padding:15px; font-weight:bold; border-radius:8px; margin-top:10px; border:none;">SALVA IMPIANTO</button>
+            <div class="panel">
+                <h3>Strategia Passate</h3>
+                <div id="multipass-box" class="multipass-box">
+                    <label>Z Singola Passata (mm)</label>
+                    <input type="number" id="inp-single-z" value="6" oninput="WPS.findWPS()">
+                    <label style="margin-top:10px;">Passate Totali</label>
+                    <input type="number" id="inp-passes" value="1" readonly style="font-size:24px; text-align:center;">
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="panel" style="border-color: #2ecc71;">
+                <h3>💰 Preventivo Commessa</h3>
+                <table class="cost-table">
+                    <thead><tr><th>Risorsa</th><th style="text-align:right;">Q.tà Tot</th><th style="text-align:right;">€ Tot</th></tr></thead>
+                    <tbody id="preventivo-body">
+                        <tr><td>Filo</td><td id="out-qty-wire" style="text-align:right;">0.00 kg</td><td id="out-cost-wire" style="text-align:right;">€ 0.00</td></tr>
+                        <tr><td>Gas</td><td id="out-qty-gas" style="text-align:right;">0 L</td><td id="out-cost-gas" style="text-align:right;">€ 0.00</td></tr>
+                        <tr><td>Energia</td><td id="out-qty-energy" style="text-align:right;">0.0 kWh</td><td id="out-cost-energy" style="text-align:right;">€ 0.00</td></tr>
+                    </tbody>
+                </table>
+                <div style="border-top:1px solid #444; padding-top:10px; text-align:right;">
+                    <div style="font-size:12px; color:#888;">TOTALE COMMESSA</div>
+                    <div class="res-cost" id="out-total-final">€ 0.00</div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="control-group">
+                    <label>Costo Filo (€/kg)</label>
+                    <input type="number" id="cost-wire" value="2.50" oninput="Calculator.update()">
+                </div>
+                <div class="control-group">
+                    <label>Costo Gas (€/L)</label>
+                    <input type="number" id="cost-gas" value="0.08" oninput="Calculator.update()">
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const Navigation = {
-            currentScreen: 'screen-home',
-            go: function(id) {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById(id).classList.add('active');
-                this.currentScreen = id;
-                if(id === 'screen-calc') WeldCalc.init();
-            },
-            handleBack: function() {
-                if (this.currentScreen === 'screen-home') window.location.href = 'index.html';
-                else this.go('screen-home');
-            }
-        };
+        const ISO_PHYSICS = { "1.2": [{ z_min: 0, z_max: 3.5, wfs: 4.5, amp: 130, volt: 17.5, mode: "Short" }, { z_min: 3.6, z_max: 4.5, wfs: 5.5, amp: 160, volt: 18.5, mode: "Short" }, { z_min: 4.6, z_max: 5.5, wfs: 7.0, amp: 200, volt: 21.0, mode: "Glob" }, { z_min: 5.6, z_max: 6.5, wfs: 8.5, amp: 230, volt: 23.5, mode: "Glob" }, { z_min: 6.6, z_max: 7.5, wfs: 10.0, amp: 260, volt: 26.0, mode: "Spray" }, { z_min: 7.6, z_max: 99, wfs: 11.5, amp: 290, volt: 28.5, mode: "Spray" }] };
+        let WIRES_DB = []; let CURRENT_WIRE = { diameter: "1.2", efficiency: 0.96 };
 
-        const WeldCalc = {
-            state: { type: 'F' },
-            init: function() { this.updatePresets(); },
-            
-            setType: function(t) {
-                this.state.type = t;
-                document.getElementById('btn-fillet').classList.toggle('active', t==='F');
-                document.getElementById('btn-butt').classList.toggle('active', t==='B');
-                document.getElementById('lbl-size').innerText = t==='F' ? 'LATO Z (mm)' : 'SPESSORE S (mm)';
-                this.calc();
-            },
-
-            updatePresets: function() {
-                const proc = document.getElementById('weld-proc').value;
-                const presets = { mag: { wire: 1.2 }, tig: { wire: 2.4 }, mma: { wire: 3.2 } };
-                if(presets[proc]) document.getElementById('weld-diam').value = presets[proc].wire;
-                this.calc();
-            },
-
-            calc: function() {
-                const size = parseFloat(document.getElementById('weld-size').value) || 0;
-                const lenMm = parseFloat(document.getElementById('weld-len').value) || 0;
-                const wireD = parseFloat(document.getElementById('weld-diam').value) || 1.2;
-                const mat = document.getElementById('weld-mat').value;
-                const proc = document.getElementById('weld-proc').value;
-                const t1 = parseFloat(document.getElementById('weld-t1').value) || 10;
-                const t2 = parseFloat(document.getElementById('weld-t2').value) || 10;
-                
-                const density = { fe: 7.85, ss: 7.98, alu: 2.7 }[mat];
-                const eff = { mag: 0.95, tig: 0.99, mma: 0.70 }[proc];
-                
-                let area = (this.state.type === 'F') ? (size * size / 2) * 1.1 : (size * size) * 1.1;
-                let weightKg = ((area * lenMm) * (density / 1000)) / 1000 / eff;
-                const wireArea = Math.PI * Math.pow((wireD / 2), 2);
-                const wireLenMm = (weightKg * 1000 * 1000) / (wireArea * density);
-
-                const depRate = { mag: 3.5, tig: 0.8, mma: 1.5 }[proc];
-                const timeSec = (weightKg / depRate) * 3600;
-                const flowRate = { mag: 14, tig: 10, mma: 0 }[proc];
-
-                document.getElementById('res-kg').innerText = weightKg.toFixed(2);
-                document.getElementById('res-len-wire').innerText = Math.round(wireLenMm).toLocaleString();
-                document.getElementById('res-gas').innerText = Math.ceil((timeSec / 60) * flowRate);
-                
-                const mins = Math.floor(timeSec / 60);
-                const secs = Math.round(timeSec % 60);
-                document.getElementById('res-time').innerText = mins.toString().padStart(2,'0') + ":" + secs.toString().padStart(2,'0');
-
-                // WPS Logic
-                let totalAmp = size * 35; if(mat==='ss') totalAmp*=0.9;
-                let singleZ = Math.min(size, 7); 
-                let singleAmp = singleZ * 35; if(mat==='ss') singleAmp*=0.9;
-                
-                if (proc === 'mag' && size > 0) {
-                    document.getElementById('wps-single-amp').innerText = Math.round(singleAmp);
-                    document.getElementById('wps-single-volt').innerText = (14 + (singleAmp * 0.05)).toFixed(1);
-                    document.getElementById('wps-single-speed').innerText = (singleAmp / (wireD * 15)).toFixed(1);
-                    document.getElementById('wps-tot-amp').innerText = Math.round(totalAmp);
-                    document.getElementById('wps-tot-volt').innerText = (14 + (totalAmp * 0.05)).toFixed(1);
-                    document.getElementById('wps-tot-speed').innerText = (totalAmp / (wireD * 15)).toFixed(1);
-                } else {
-                    ['single','tot'].forEach(p => ['amp','volt','speed'].forEach(k => document.getElementById(`wps-${p}-${k}`).innerText = "--"));
-                }
-
-                // Multi-pass Logic
-                const passBox = document.getElementById('multipass-container');
-                let passHTML = "";
-                let totalPasses = 1;
-                
-                if(size <= 7) {
-                    passHTML = `<div class="pass-detail"><span>Passata Unica</span> <span class="pass-tag tag-root">Radice</span></div>`;
-                } else {
-                    let singleArea = (7*7)/2; let totalArea = (size*size)/2;
-                    totalPasses = Math.ceil(totalArea / singleArea);
-                    passHTML = `<div class="pass-detail"><span>Passata 1</span> <span class="pass-tag tag-root">Radice</span></div>`;
-                    if(totalPasses > 1) passHTML += `<div class="pass-detail"><span>Passate 2 - ${Math.ceil(totalPasses*0.4)}</span> <span class="pass-tag tag-fill">Riempimento</span></div>`;
-                    if(totalPasses > Math.ceil(totalPasses*0.4)) passHTML += `<div class="pass-detail"><span>Passate ${Math.ceil(totalPasses*0.4)+1} - ${totalPasses}</span> <span class="pass-tag tag-cap">Finitura</span></div>`;
-                    passHTML += `<div style="text-align:right; font-size:10px; color:var(--secondary); font-weight:bold; margin-top:5px;">TOTALE: ${totalPasses} PASSATE</div>`;
-                }
-                passBox.innerHTML = passHTML;
-
-                this.drawSVG(size, t1, t2, totalPasses);
-            },
-
-            drawSVG: function(size, t1, t2, nPasses) {
-                const box = document.getElementById('weld-svg-box');
-                const cx = 100; const cy = 300; 
-                const scale = 4;
-                const color = "#ff9f43";
-                const secondary = "var(--secondary)";
-                let svg = "";
-                
-                if (this.state.type === 'F') {
-                    // FILLET - ORDERED STACKING FROM CORNER
-                    const hW = (size + 30) * scale; const hH = t1 * scale;
-                    const vW = t2 * scale; const vH = (size + 30) * scale;
-                    
-                    const hPlate = `<rect x="${cx}" y="${cy}" width="${hW}" height="${hH}" fill="#333" stroke="#555"/>`;
-                    const vPlate = `<rect x="${cx-vW}" y="${cy-vH}" width="${vW}" height="${vH}" fill="#333" stroke="#555"/>`;
-                    
-                    let beads = "";
-                    let beadR = (7 * scale) / 2; 
-                    let currentPass = 0;
-                    
-                    // Logic: i is layer index (1, 2, 3...)
-                    let layersNeeded = 0;
-                    while ((layersNeeded*(layersNeeded+1))/2 < nPasses) layersNeeded++;
-                    
-                    for(let L=1; L<=layersNeeded; L++) {
-                        for(let k=0; k<L; k++) {
-                            currentPass++;
-                            if(currentPass > nPasses) break;
-                            
-                            let x_idx = (L-1) - k;
-                            let y_idx = k;
-                            
-                            let bx = cx + beadR + (x_idx * beadR * 1.75); 
-                            let by = cy - beadR - (y_idx * beadR * 1.75);
-                            
-                            let f = (L===1)?"#e67e22":(currentPass === nPasses)?"#2ecc71":"#3498db"; 
-                            if(L === layersNeeded) f = "#2ecc71"; 
-                            
-                            beads += `<circle cx="${bx}" cy="${by}" r="${beadR}" fill="${f}" stroke="black" stroke-width="1"/>`;
-                            beads += `<text x="${bx}" y="${by+2}" font-size="8" fill="black" text-anchor="middle" font-family="Arial" font-weight="bold">${currentPass}</text>`;
-                        }
-                    }
-                    
-                    let throat = (size * 0.707).toFixed(1);
-                    let dim = `<line x1="${cx + (size*scale)}" y1="${cy}" x2="${cx + (size*scale)}" y2="${cy - (size*scale)}" stroke="#00e5ff" stroke-dasharray="4"/><text x="${cx + (size*scale) + 5}" y="${cy - (size*scale)/2}" fill="#00e5ff" font-size="12">Z=${size}</text><text x="${cx+5}" y="${cy-5}" fill="#fff" font-size="10">a=${throat}</text>`;
-
-                    svg = `<svg viewBox="0 0 400 400" style="width:100%; height:100%; background:#000;">${hPlate} ${vPlate} ${beads} ${dim}</svg>`;
-                } else {
-                    // BUTT
-                    const pH = t1 * scale; const pW = 100 * scale; const gap = 4 * scale;
-                    const cX = 200; const cY = 200;
-                    const lPlate = `<rect x="${cX - gap/2 - pW}" y="${cY - pH/2}" width="${pW}" height="${pH}" fill="#333" stroke="#555"/>`;
-                    const rPlate = `<rect x="${cX + gap/2}" y="${cY - pH/2}" width="${pW}" height="${pH}" fill="#333" stroke="#555"/>`;
-                    let beads = `<path d="M${cX - gap/2} ${cY - pH/2} L${cX + gap/2} ${cY - pH/2} L${cX + gap/2} ${cY + pH/2} L${cX - gap/2} ${cY + pH/2} Z" fill="#ff9f43"/>`;
-                    svg = `<svg viewBox="0 0 400 400" style="width:100%; height:100%; background:#000;">${lPlate} ${rPlate} ${beads} <text x="${cX}" y="${cY + pH/2 + 20}" fill="#00e5ff" text-anchor="middle">S=${size}</text></svg>`;
-                }
-                box.innerHTML = svg;
-            }
-        };
-
-        const Editor = {
-            activeBoxId: null,
-            init: function() {
-                ['photo-drop', 'gen-plate', 'feed-plate'].forEach(id => {
-                    const box = document.getElementById(id);
-                    box.addEventListener('click', (e) => { e.stopPropagation(); if(!e.target.classList.contains('btn-clear-img')) this.selectBox(id); });
-                    box.addEventListener('dblclick', () => { const inp = box.querySelector('input[type="file"]'); if(inp) inp.click(); });
-                });
-                window.addEventListener('paste', (e) => {
-                    if(!this.activeBoxId) return;
-                    const items = e.clipboardData.items;
-                    for (let i=0; i<items.length; i++) if(items[i].type.indexOf("image") !== -1) this.previewFile(items[i].getAsFile(), this.activeBoxId);
-                });
-            },
-            selectBox: function(id) { document.querySelectorAll('.photo-container').forEach(b => b.classList.remove('box-selected')); this.activeBoxId = id; document.getElementById(id).classList.add('box-selected'); },
-            previewFile: function(file, boxId) {
+        const ListinoManager = {
+            load: function(input) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const box = document.getElementById(boxId); box.style.backgroundImage = `url(${e.target.result})`;
-                    box.querySelector('.btn-clear-img').style.display = 'flex';
-                    Array.from(box.children).forEach(c => { if(c.tagName !== 'INPUT' && !c.classList.contains('btn-clear-img')) c.style.opacity = 0; });
-                };
-                reader.readAsDataURL(file);
+                    try {
+                        const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+                        WIRES_DB = XLSX.utils.sheet_to_json(workbook.Sheets["FILI"]);
+                        const sel = document.getElementById('inp-mat'); sel.innerHTML = "";
+                        WIRES_DB.forEach((w, i) => sel.add(new Option(`${w.Marca} ${w["Nome Prodotto"]} (Ø${w["Diametro (mm)"]})`, i)));
+                        this.selectWire();
+                    } catch(err) { alert("❌ Errore caricamento file."); }
+                }; reader.readAsArrayBuffer(input.files[0]);
             },
-            handleFile: function(input, id) { if(input.files[0]) this.previewFile(input.files[0], id); },
-            clearImage: function(e, id) {
-                e.stopPropagation(); const box = document.getElementById(id); box.style.backgroundImage = 'none'; box.querySelector('.btn-clear-img').style.display = 'none';
-                Array.from(box.children).forEach(c => { if(c.tagName !== 'INPUT' && !c.classList.contains('btn-clear-img')) c.style.opacity = 1; });
-            },
-            open: function(id = null) {
-                this.currentId = id; document.getElementById('modal-machine').classList.add('open');
-                if(id) { this.fillForm(ParcoMacchine.lista.find(x => x.id === id)); this.goToForm(); }
-                else { this.showCatalog(); Catalog.render(); }
-            },
-            close: function() { document.getElementById('modal-machine').classList.remove('open'); this.activeBoxId = null; },
-            showCatalog: function() { document.getElementById('step-catalog').style.display = 'block'; document.getElementById('step-form').style.display = 'none'; },
-            goToForm: function() { document.getElementById('step-catalog').style.display = 'none'; document.getElementById('step-form').style.display = 'block'; },
-            loadSystem: function(s) {
-                document.getElementById('edit-nome').value = s.name;
-                document.getElementById('gen-model').value = s.gen_model; document.getElementById('gen-power').value = s.gen_power;
-                document.getElementById('gen-range').value = s.gen_range; document.getElementById('gen-duty').value = s.gen_duty;
-                document.getElementById('gen-proc').value = s.gen_proc; document.getElementById('gen-weight').value = s.gen_weight;
-                document.getElementById('gen-prot').value = s.gen_prot;
-                document.getElementById('feed-model').value = s.feed_model; document.getElementById('feed-display').value = s.feed_display;
-                document.getElementById('feed-mech').value = s.feed_mech; document.getElementById('feed-speed').value = s.feed_speed;
-                document.getElementById('feed-dia').value = s.feed_dia; document.getElementById('feed-weight').value = s.feed_weight;
-                document.getElementById('feed-conn').value = s.feed_conn;
-                document.getElementById('sys-weight').value = s.sys_weight; this.resetImages(); this.goToForm();
-            },
-            fillForm: function(m) {
-                document.getElementById('edit-nome').value = m.nome; document.getElementById('gen-model').value = m.gen_model || "";
-                document.getElementById('feed-model').value = m.feed_model || ""; document.getElementById('sys-sn').value = m.sn || "";
-                this.setImage('photo-drop', m.foto); this.setImage('gen-plate', m.foto_gen); this.setImage('feed-plate', m.foto_feed);
-            },
-            save: function() {
-                const data = { nome: document.getElementById('edit-nome').value, gen_model: document.getElementById('gen-model').value, feed_model: document.getElementById('feed-model').value, sn: document.getElementById('sys-sn').value, foto: this.getImg('photo-drop'), foto_gen: this.getImg('gen-plate'), foto_feed: this.getImg('feed-plate'), id: this.currentId || Date.now() };
-                if(this.currentId) { const idx = ParcoMacchine.lista.findIndex(x => x.id === this.currentId); ParcoMacchine.lista[idx] = data; }
-                else ParcoMacchine.lista.push(data);
-                ParcoMacchine.render(); this.close();
-            },
-            resetImages: function() { ['photo-drop', 'gen-plate', 'feed-plate'].forEach(id => this.setImage(id, null)); },
-            getImg: function(id) { const bg = document.getElementById(id).style.backgroundImage; return (bg && bg !== 'none') ? bg.slice(5, -2) : ""; },
-            setImage: function(id, url) {
-                const box = document.getElementById(id); if(url) { box.style.backgroundImage = `url(${url})`; box.querySelector('.btn-clear-img').style.display = 'flex'; Array.from(box.children).forEach(c => { if(c.tagName !== 'INPUT' && !c.classList.contains('btn-clear-img')) c.style.opacity = 0; }); }
-                else { box.style.backgroundImage = 'none'; box.querySelector('.btn-clear-img').style.display = 'none'; Array.from(box.children).forEach(c => { if(c.tagName !== 'INPUT' && !c.classList.contains('btn-clear-img')) c.style.opacity = 1; }); }
+            selectWire: function() {
+                const w = WIRES_DB[document.getElementById('inp-mat').value];
+                if(w) { 
+                    CURRENT_WIRE = { diameter: String(w["Diametro (mm)"]), efficiency: parseFloat(w["Efficienza (0-1)"]) || 0.96 };
+                    document.getElementById('cost-wire').value = w["Prezzo (€/kg)"] || 2.5;
+                }
+                WPS.findWPS();
             }
         };
 
-        const ParcoMacchine = {
-            lista: [
-                { id: 101, nome: "Lincoln Speedtec 400SP #1", gen_model: "Speedtec 400SP", feed_model: "LF-56D", sn: "SN-001", foto: "" },
-                { id: 102, nome: "Lincoln Speedtec 400SP #2", gen_model: "Speedtec 400SP", feed_model: "LF-56D", sn: "SN-002", foto: "" },
-                { id: 103, nome: "Lincoln Speedtec 400SP #3", gen_model: "Speedtec 400SP", feed_model: "LF-56D", sn: "SN-003", foto: "" }
-            ],
-            render: function() {
-                const box = document.getElementById('machine-list'); box.innerHTML = "";
-                this.lista.forEach(m => {
-                    const card = document.createElement('div'); card.className = "machine-item";
-                    const img = m.foto ? `background:url(${m.foto}) center/cover;` : 'background:#333;';
-                    card.innerHTML = `<div style="display:flex; align-items:center;"><div style="width:50px; height:50px; border-radius:50%; margin-right:15px; border:2px solid #444; ${img}">${m.foto?'':'🚜'}</div><div><div style="font-weight:bold;">${m.nome}</div><div class="sys-tag">GEN: ${m.gen_model}</div><div class="sys-tag" style="color:var(--secondary); border-color:var(--secondary);">FEED: ${m.feed_model}</div></div></div><div><button class="sq-btn btn-edit" onclick="Editor.open(${m.id})">✏️</button><button class="sq-btn btn-del" onclick="ParcoMacchine.delete(${m.id})">🗑️</button></div>`;
-                    box.appendChild(card);
-                });
+        const WPS = {
+            init: function() { this.findWPS(); },
+            syncAtoZ: function() {
+                let a = parseFloat(document.getElementById('inp-a').value) || 0;
+                document.getElementById('inp-z').value = (a * 1.414).toFixed(1);
+                this.findWPS();
             },
-            delete: function(id) { if(confirm("Eliminare?")) { this.lista = this.lista.filter(x => x.id !== id); this.render(); } }
+            findWPS: function() {
+                let z = parseFloat(document.getElementById('inp-z').value) || 0;
+                document.getElementById('inp-a').value = (z * 0.707).toFixed(1); // Aggiorna 'a' da 'z'
+                
+                let curve = ISO_PHYSICS[CURRENT_WIRE.diameter] || ISO_PHYSICS["1.2"];
+                let s = curve.find(w => z >= w.z_min && z <= w.z_max) || curve[curve.length-1];
+                
+                document.getElementById('out-wfs').innerText = s.wfs.toFixed(1);
+                document.getElementById('out-amp').innerText = s.amp;
+                document.getElementById('out-volt').innerText = s.volt;
+                
+                let badge = document.getElementById('arc-mode-badge');
+                badge.innerText = s.mode.toUpperCase() + " ARC";
+                badge.style.background = s.mode === "Short" ? "#f1c40f" : s.mode === "Spray" ? "#9b59b6" : "#e67e22";
+
+                let singleZ = parseFloat(document.getElementById('inp-single-z').value) || 6;
+                let passes = z > singleZ ? Math.ceil((z*z)/(singleZ*singleZ)) : 1;
+                document.getElementById('inp-passes').value = passes;
+                document.getElementById('multipass-box').className = passes > 1 ? "multipass-box multipass-active" : "multipass-box";
+
+                let areaPass = (((z*z)/2)*1.1) / passes;
+                let wireVolMin = (Math.PI * Math.pow(parseFloat(CURRENT_WIRE.diameter)/2, 2)) * (s.wfs * 1000);
+                let speedCmMin = (wireVolMin / areaPass) / 10;
+                document.getElementById('out-speed').value = speedCmMin.toFixed(0);
+
+                this.updateSVG(z, passes);
+                Calculator.update(s.wfs, s.amp, s.volt, speedCmMin, passes);
+            },
+            updateSVG: function(z, passes) {
+                const group = document.getElementById('weld-group'); group.innerHTML = "";
+                const xS = 60, yS = 150; let scale = z > 15 ? 100/z : 6;
+                let z_px = z * scale;
+                if (passes === 1) {
+                    let p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    p.setAttribute("d", `M${xS},${yS} L${xS},${yS-z_px} L${xS+z_px},${yS} Z`);
+                    p.setAttribute("class", "bead-circle"); p.style.fill="rgba(255,159,67,0.4)"; group.appendChild(p);
+                } else {
+                    const colors = ['#ff3b30', '#ff9500', '#ffcc00', '#4cd964', '#007aff'];
+                    let cp = 0, r = (z_px / Math.sqrt(passes)) * 0.45;
+                    for(let l=1; cp < passes; l++) {
+                        for(let k=0; k<l && cp < passes; k++) {
+                            let cx = xS + (k*2*r) + r + k*2, cy = yS - ((l-1-k)*2*r) - r - (l-1-k)*2;
+                            let c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                            c.setAttribute("cx", cx); c.setAttribute("cy", cy); c.setAttribute("r", r);
+                            c.style.fill = colors[(l-1)%5]; c.setAttribute("class", "bead-circle"); group.appendChild(c);
+                            let t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                            t.setAttribute("x", cx); t.setAttribute("y", cy); t.setAttribute("class", "bead-text");
+                            t.style.fontSize = r + "px"; t.textContent = cp+1; group.appendChild(t); cp++;
+                        }
+                    }
+                }
+                document.getElementById('line-zv').setAttribute('y1', yS-z_px);
+                document.getElementById('line-zh').setAttribute('x2', xS+z_px);
+            }
         };
 
-        window.onload = () => { ParcoMacchine.render(); Editor.init(); Navigation.updateHeaderBtn(); };
+        const Calculator = {
+            update: function(wfs, amp, volt, speed, passes) {
+                if(!wfs) {
+                    wfs = parseFloat(document.getElementById('out-wfs').innerText) || 8.5;
+                    amp = parseFloat(document.getElementById('out-amp').innerText) || 230;
+                    volt = parseFloat(document.getElementById('out-volt').innerText) || 23.5;
+                    speed = parseFloat(document.getElementById('out-speed').value) || 35;
+                    passes = parseInt(document.getElementById('inp-passes').value) || 1;
+                }
+                let lenM = (parseFloat(document.getElementById('inp-len').value) || 0) / 1000;
+                let cW = parseFloat(document.getElementById('cost-wire').value) || 0;
+                let cG = parseFloat(document.getElementById('cost-gas').value) || 0;
+                
+                let dep = Math.PI * Math.pow(parseFloat(CURRENT_WIRE.diameter)/2, 2) * (wfs * 60000) * 0.00000785 * CURRENT_WIRE.efficiency;
+                let timeH = (1 / (speed * 0.6)) * passes * lenM;
+                
+                let qW = (dep * timeH / CURRENT_WIRE.efficiency);
+                let qG = (15 * (timeH * 60));
+                let qE = ((amp * volt / 1000) * timeH);
+
+                document.getElementById('out-qty-wire').innerText = qW.toFixed(2) + " kg";
+                document.getElementById('out-qty-gas').innerText = qG.toFixed(0) + " L";
+                document.getElementById('out-qty-energy').innerText = qE.toFixed(1) + " kWh";
+
+                let costW = qW * cW, costG = qG * cG, costE = qE * 0.3;
+                document.getElementById('out-cost-wire').innerText = "€ " + costW.toFixed(2);
+                document.getElementById('out-cost-gas').innerText = "€ " + costG.toFixed(2);
+                document.getElementById('out-cost-energy').innerText = "€ " + costE.toFixed(2);
+                document.getElementById('out-total-final').innerText = "€ " + (costW + costG + costE).toFixed(2);
+            }
+        };
+        window.onload = () => WPS.init();
     </script>
 </body>
 </html>

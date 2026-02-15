@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Export Master Excel (Formule Attive)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #222; color: #fff; padding: 40px; text-align: center; }
+        .card { background: #333; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h1 { margin-top: 0; color: #eee; }
+        p { color: #aaa; margin-bottom: 20px; }
+        
+        .date-group { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        input[type="date"] { padding: 10px; font-size: 16px; border: 1px solid #555; background: #444; color: white; border-radius: 5px; }
+        label { display: block; text-align: left; font-size: 12px; margin-bottom: 5px; color: #ccc; }
+
+        button {
+            background-color: #28a745; color: white; border: none; padding: 12px 25px;
+            font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 10px; width: 100%;
+            transition: background 0.3s; font-weight: bold;
+        }
+        button:hover { background-color: #218838; }
+        button:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
+
+        .log-area { margin-top: 20px; font-size: 13px; color: #ccc; text-align: left; background: #111; padding: 15px; border-radius: 5px; max-height: 250px; overflow-y: auto; border: 1px solid #444; display:none;}
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Export Master (Formule)</h1>
+        <p>Seleziona il periodo. Il file avrà formule attive.</p>
+        
+        <div class="date-group">
+            <div>
+                <label>Dal giorno:</label>
+                <input type="date" id="dateStart">
+            </div>
+            <div>
+                <label>Al giorno (incluso):</label>
+                <input type="date" id="dateEnd">
+            </div>
+        </div>
+
+        <button onclick="generaExcelMulti()" id="btnExport">Scarica Excel con Formule</button>
+        
+        <div id="log" class="log-area"></div>
+    </div>
+
+    <script>
+        // ======================================================
+        // 1. CONFIGURAZIONE FIREBASE (INCOLLA LA TUA QUI SOTTO!)
+        // ======================================================
+        
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+            // ... INCOLLA QUI LA TUA CONFIG (apiKey, authDomain, ecc) ..
+
+        if (!firebase.apps.length && firebaseConfig.databaseURL) {
+            firebase.initializeApp(firebaseConfig);
+        } else if (!firebaseConfig.databaseURL) {
+            alert("⚠️ Manca la configurazione Firebase nel codice!");
+        }
+
+        const db = firebase.database();
+
+        // LISTA DIPENDENTI (Esatta come nel Planning)
+        const DIPENDENTI = ["Lanny", "Roberto", "Ibra", "Miki", "Mario", "Luca"]; 
+
+        // ======================================================
+        // 2. FUNZIONE EXPORT MULTI-GIORNO
+        // ======================================================
+        async function generaExcelMulti() {
+            const dStart = document.getElementById('dateStart').value;
+            const dEnd = document.getElementById('dateEnd').value;
+
+            if (!dStart || !dEnd) return alert("Seleziona entrambe le date!");
+            if (dStart > dEnd) return alert("La data di fine deve essere dopo quella di inizio.");
+
+            const btn = document.getElementById('btnExport');
+            const logDiv = document.getElementById('log');
+            btn.disabled = true; 
+            btn.innerText = "Elaborazione...";
+            logDiv.style.display = 'block';
+            logDiv.innerHTML = "Avvio procedura...<br>";
+
+            try {
+                // Intestazioni
+                let excelRows = [[
+                    "", "Giorno", "Data", "Inizio", "Fine", "Ore", "Minuti", 
+                    "Persone", "Tot Ore", "Operatore", "Cliente", "Commessa", 
+                    "N° Pezzi", "Mansione", "Voto"
+                ]];
+
+                // Ciclo sulle date
+                let currentDate = new Date(dStart);
+                const endDate = new Date(dEnd);
+                let totaleGiorni = 0;
+
+                while (currentDate <= endDate) {
+                    let dateStr = currentDate.toISOString().split('T')[0];
+                    logDiv.innerHTML += `> Analisi giorno: ${dateStr}... `;
+                    
+                    const snapshot = await db.ref('turni/' + dateStr).once('value');
+                    const data = snapshot.val();
+
+                    if (data) {
+                        logDiv.innerHTML += `<span style="color:#4caf50">OK.</span><br>`;
+                        elaboraGiorno(dateStr, data, excelRows);
+                        totaleGiorni++;
+                    } else {
+                        logDiv.innerHTML += `<span style="color:#ff9800">Vuoto.</span><br>`;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+
+                if (totaleGiorni === 0) throw new Error("Nessun dato trovato.");
+
+                logDiv.innerHTML += `<br><b>Applicazione Formule...</b><br>`;
+
+                // CREAZIONE FOGLIO E INIEZIONE FORMULE
+                let ws = XLSX.utils.aoa_to_sheet(excelRows);
+                
+                // Iteriamo su tutte le righe (partendo dalla 2, indice 1) per mettere le formule
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                
+                for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+                    let rowNum = R + 1; // Numero riga Excel (es. 2, 3, 4...)
+                    
+                    // Colonna D (Inizio) e E (Fine): Impostiamo formato Orario hh:mm
+                    let cellD = ws[XLSX.utils.encode_cell({r: R, c: 3})]; // 3 = D
+                    let cellE = ws[XLSX.utils.encode_cell({r: R, c: 4})]; // 4 = E
+                    if(cellD) cellD.z = "hh:mm";
+                    if(cellE) cellE.z = "hh:mm";
+
+                    // --- COLONNA F: Formula Durata con Pausa ---
+                    // =(E2-D2) - SE(E(E2>13/24; D2<12/24); 1/24; 0)
+                    // In Inglese: =(E2-D2) - IF(AND(E2>13/24, D2<12/24), 1/24, 0)
+                    let cellRefF = XLSX.utils.encode_cell({r: R, c: 5}); // Colonna F
+                    ws[cellRefF] = { 
+                        t: 'n', 
+                        f: `(E${rowNum}-D${rowNum}) - IF(AND(E${rowNum}>13/24, D${rowNum}<12/24), 1/24, 0)`,
+                        z: "[h]:mm" // Formato durata [h]:mm
+                    };
+
+                    // --- COLONNA G: Totale Minuti ---
+                    // =F2*1440
+                    let cellRefG = XLSX.utils.encode_cell({r: R, c: 6}); // Colonna G
+                    ws[cellRefG] = { t: 'n', f: `F${rowNum}*1440` };
+
+                    // --- COLONNA I: Tot Ore Decimale ---
+                    // =(G2*H2)/60
+                    let cellRefI = XLSX.utils.encode_cell({r: R, c: 8}); // Colonna I
+                    ws[cellRefI] = { t: 'n', f: `(G${rowNum}*H${rowNum})/60`, z: "0.00" };
+                }
+
+                // Genera File
+                let wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Master");
+                let filename = `Master_Formule_${dStart}_${dEnd}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                logDiv.innerHTML += `<br><b style="color:#4caf50; font-size:16px;">✅ FILE SCARICATO!</b>`;
+
+            } catch (err) {
+                console.error(err);
+                alert("Errore: " + err.message);
+                logDiv.innerHTML += `<br><span style="color:red">ERRORE: ${err.message}</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Scarica Excel con Formule";
+            }
+        }
+
+        // ======================================================
+        // 3. LOGICA (Modificata per passare numeri puri)
+        // ======================================================
+        function elaboraGiorno(dateStr, data, rows) {
+            DIPENDENTI.forEach(dip => {
+                let currentBlock = null;
+
+                for (let h = 6; h < 22; h++) {
+                    for (let m = 0; m < 60; m += 15) {
+                        let timeStr = String(h).padStart(2, '0') + ":" + String(m).padStart(2, '0');
+                        let keyBase = `${timeStr}-${dip}`;
+                        
+                        let commessa = data[keyBase + '-commessa'];
+                        let cliente  = data[keyBase + '-cliente'] || "";
+                        let note     = data[keyBase + '-note'] || "";
+                        let quantita = data[keyBase + '-quantita'] || data[keyBase + '-pezzi'] || "";
+                        let voto     = data[keyBase + '-voto'] || "";
+
+                        if (commessa) {
+                            if (currentBlock) {
+                                if (currentBlock.commessa === commessa && 
+                                    currentBlock.cliente === cliente && 
+                                    currentBlock.note === note) {
+                                    currentBlock.endTime = aggiungi15Minuti(timeStr);
+                                    continue; 
+                                } else {
+                                    chiudiBlocco(currentBlock, rows, dateStr, dip);
+                                    currentBlock = apriNuovoBlocco(timeStr, commessa, cliente, note, quantita, voto);
+                                }
+                            } else {
+                                currentBlock = apriNuovoBlocco(timeStr, commessa, cliente, note, quantita, voto);
+                            }
+                        } else {
+                            if (currentBlock) {
+                                chiudiBlocco(currentBlock, rows, dateStr, dip);
+                                currentBlock = null;
+                            }
+                        }
+                    }
+                }
+                if (currentBlock) chiudiBlocco(currentBlock, rows, dateStr, dip);
+            });
+        }
+
+        function apriNuovoBlocco(timeStr, c, cl, n, q, v) {
+            return { startTime: timeStr, endTime: aggiungi15Minuti(timeStr), commessa: c, cliente: cl, note: n, quantita: q, voto: v };
+        }
+
+        function chiudiBlocco(block, rows, dateStr, dip) {
+            // Conversione date per visualizzazione
+            let dateObj = new Date(dateStr);
+            let giornoSettimana = new Intl.DateTimeFormat('it-IT', { weekday: 'long' }).format(dateObj);
+            giornoSettimana = giornoSettimana.charAt(0).toUpperCase() + giornoSettimana.slice(1);
+
+            // Conversione Orari in Numeri Excel (Frazioni di giorno)
+            // Es: 08:00 -> 8/24 -> 0.333333
+            let startNum = timeToExcelFrac(block.startTime);
+            let endNum = timeToExcelFrac(block.endTime);
+
+            rows.push([
+                "",                     // A
+                giornoSettimana,        // B
+                dateStr,                // C
+                startNum,               // D (Ora passiamo il NUMERO, non la stringa)
+                endNum,                 // E (Ora passiamo il NUMERO)
+                null,                   // F (Sarà sovrascritto dalla formula)
+                null,                   // G (Formula)
+                1,                      // H (Fisso)
+                null,                   // I (Formula)
+                dip,                    // J
+                block.cliente,          // K
+                block.commessa,         // L
+                block.quantita,         // M
+                block.note,             // N
+                block.voto              // O
+            ]);
+        }
+
+        function timeToMinutes(t) { let [h, m] = t.split(':').map(Number); return h * 60 + m; }
+        
+        function timeToExcelFrac(t) {
+            let [h, m] = t.split(':').map(Number);
+            return (h + m/60) / 24; // Converte in frazione di giorno
+        }
+
+        function aggiungi15Minuti(t) { 
+            let mins = timeToMinutes(t) + 15; 
+            let h = Math.floor(mins / 60); 
+            let m = mins % 60; 
+            return String(h).padStart(2,'0') + ":" + String(m).padStart(2,'0'); 
+        }
+
+    </script>
+</body>
+</html>
