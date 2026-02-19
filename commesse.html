@@ -4735,64 +4735,72 @@ function stampaSoloQR() {
 
 
 // =========================================================
-//  MOTORE LETTORE QR CODE INTERNO (FOTOCAMERA)
+//  MOTORE LETTORE QR CODE INTERNO (FOTOCAMERA DIRETTA)
 // =========================================================
 
-let html5QrcodeScanner;
+let scannerLive;
 
 function apriScanner() {
     document.getElementById('modal-scanner').style.display = 'flex';
 
-    // Se esiste già, lo pulisco
-    if(html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
-    }
+    // Inizializzo il lettore crudo, senza bottoni extra
+    scannerLive = new Html5Qrcode("qr-reader");
 
-    // Avvio il motore della fotocamera
-    html5QrcodeScanner = new Html5QrcodeScanner(
-        "qr-reader",
-        { fps: 10, qrbox: {width: 250, height: 250} },
-        /* verbose= */ false
-    );
+    // Configuro la scansione veloce
+    const config = { fps: 15, qrbox: { width: 250, height: 250 } };
 
-    html5QrcodeScanner.render(letturaRiuscita, letturaFallita);
+    // FORZO l'uso della fotocamera posteriore (environment) in modalità VIDEO
+    scannerLive.start(
+        { facingMode: "environment" }, 
+        config,
+        letturaRiuscita,
+        letturaFallita
+    ).catch(errore => {
+        // Se non va, avviso l'utente
+        alert("⚠️ Impossibile avviare la fotocamera. Assicurati di aver dato i consensi al browser quando te lo ha chiesto!");
+        console.error(errore);
+    });
 }
 
-function letturaRiuscita(testoLetto, decodedResult) {
-    // 1. Appena leggo un QR, spengo subito la fotocamera!
-    html5QrcodeScanner.clear().then(() => {
+function letturaRiuscita(testoLetto) {
+    // 1. Spengo il video e la lucina della fotocamera
+    scannerLive.stop().then(() => {
         document.getElementById('modal-scanner').style.display = 'none';
 
-        // 2. Il testo letto sarà tipo: "http://192.168.../?qr=-Nxyz123"
-        // Estraggo chirurgicamente SOLO l'ID dopo "?qr="
+        // 2. Estraggo l'ID dal link
         let idCommessa = testoLetto;
         if(testoLetto.includes("?qr=")) {
             idCommessa = testoLetto.split("?qr=")[1];
         }
 
-        console.log("QR Letto con successo! ID: ", idCommessa);
+        console.log("🎯 QR Letto in diretta! ID: ", idCommessa);
         
-        // 3. Preparo l'ambiente
+        // 3. Lancio la commessa
         document.getElementById('placeholder').style.display = 'none';
         currentClient = "Prova 1";
-
-        // 4. Lanco la schermata di produzione!
         apriDashboardProduzione(idCommessa);
 
-    }).catch(error => {
-        console.error("Errore chiusura scanner", error);
+    }).catch(err => {
+        console.error("Errore nello spegnimento fotocamera", err);
     });
 }
 
 function letturaFallita(errore) {
-    // Ignoriamo questo errore, scatta ogni millisecondo in cui non c'è un QR davanti alla camera
+    // Il sistema scansiona 15 volte al secondo. 
+    // Ignoriamo gli errori di "QR non trovato" altrimenti si impalla.
 }
 
 function chiudiScanner() {
-    if(html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
+    // Se l'utente clicca Annulla, fermo il video e chiudo la finestra
+    if(scannerLive) {
+        scannerLive.stop().then(() => {
+            document.getElementById('modal-scanner').style.display = 'none';
+        }).catch(() => {
+            document.getElementById('modal-scanner').style.display = 'none';
+        });
+    } else {
+        document.getElementById('modal-scanner').style.display = 'none';
     }
-    document.getElementById('modal-scanner').style.display = 'none';
 }
 
 
