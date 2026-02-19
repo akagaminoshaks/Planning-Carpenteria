@@ -1640,7 +1640,30 @@ SANDBOX STYLE FINE X PENSO FILE CSS
 
     window.onload = function() {
         if(localStorage.getItem('auth_token') !== 'logged_in') window.location.href='index.html';
+        
+        // Disegno la barra dei clienti in alto
         renderClientsBar();
+
+        // =========================================================
+        // 🐕 IL CANE DA GUARDIA DEL QR CODE
+        // =========================================================
+        // Controllo l'indirizzo web per vedere se c'è "?qr="
+        const parametriUrl = new URLSearchParams(window.location.search);
+        const idDalQR = parametriUrl.get('qr');
+
+        if (idDalQR) {
+            // BINGO! Siamo stati aperti dal tablet in officina
+            console.log("Aperto da QR Code per la commessa: " + idDalQR);
+            
+            // 1. Nascondo il "Seleziona cliente"
+            document.getElementById('placeholder').style.display = 'none';
+            
+            // 2. Imposto il cliente fisso (visto che stiamo usando la Sandbox Prova 1)
+            currentClient = "Prova 1";
+            
+            // 3. Apro DIRETTAMENTE la mega-finestra di produzione saltando il resto!
+            apriDashboardProduzione(idDalQR);
+        }
     };
 
     function renderClientsBar() {
@@ -4653,21 +4676,20 @@ function apriModalQR() {
 }
 
 function stampaSoloQR() {
-    // Prendo solo il contenuto del QR e il titolo
     let contenutoQR = document.getElementById('box-qrcode').innerHTML;
     let nomeCommessa = document.getElementById('qr-titolo-commessa').innerText;
     
-    // Apro una finta finestra invisibile solo per mandare i dati alla stampante
     let finestraStampa = window.open('', '', 'height=500,width=500');
     finestraStampa.document.write('<html><head><title>Stampa Etichetta</title>');
     finestraStampa.document.write('<style>body { font-family: sans-serif; text-align: center; margin-top: 30px; }</style>');
     finestraStampa.document.write('</head><body>');
     finestraStampa.document.write('<h2 style="margin-bottom:10px;">' + nomeCommessa + '</h2>');
     finestraStampa.document.write(contenutoQR);
-    finestraStampa.document.write('</body></html>');
+    
+    // TRUCCO ANTI-BUG: Separo le parole per non far impazzire l'editor di testo!
+    finestraStampa.document.write('</' + 'body></' + 'html>');
     finestraStampa.document.close();
     
-    // Do il tempo all'immagine di rendersi e chiamo la stampa
     setTimeout(() => {
         finestraStampa.print();
         finestraStampa.close();
