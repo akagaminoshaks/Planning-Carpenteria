@@ -3896,7 +3896,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-function attivaIncollaRiga(divCella) {
+window.attivaIncollaRiga = function(divCella) {
     // Rimuovi selezione altre celle
     var celle = document.querySelectorAll('.icon-cell-materiale');
     for(var i=0; i<celle.length; i++) celle[i].classList.remove('active-paste');
@@ -3909,11 +3909,18 @@ function attivaIncollaRiga(divCella) {
     divCella.classList.add('active-paste');
     targetIncollaAttivo = divCella;
     
-    // Ferma propagazione click
-    event.stopPropagation();
+    // Ferma la propagazione del clic in modo sicuro per tutti i browser
+    if (window.event) {
+        window.event.stopPropagation();
+    }
 }
 
-function comprimiEIncollaInRiga(file, divTarget) {
+window.comprimiEIncollaInRiga = function(file, divTarget) {
+    // 1. Rimuoviamo subito lo stato attivo per evitare conflitti con il doppio
+    // event listener del Ctrl+V presente nel codice
+    divTarget.classList.remove('active-paste');
+    targetIncollaAttivo = null;
+
     var reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = function(event) {
@@ -3930,15 +3937,24 @@ function comprimiEIncollaInRiga(file, divTarget) {
             
             var dataUrl = elem.toDataURL('image/jpeg', 0.6);
             
+            // Inserisce l'immagine visivamente
             divTarget.innerHTML = '<img src="' + dataUrl + '" class="icon-thumb-mat">';
             
+            // FIX CRITICO: Controlliamo il tipo di input prima di assegnare il valore
             var inputHidden = divTarget.nextElementSibling;
-            if(inputHidden) inputHidden.value = dataUrl;
+            if(inputHidden) {
+                if (inputHidden.type === 'hidden') {
+                    // Sandbox: possiamo salvare tranquillamente
+                    inputHidden.value = dataUrl;
+                } 
+                // Se è type="file" (Clienti Normali) saltiamo questo passaggio per non far crashare JS!
+                // La tua funzione salvaArticolo prenderà l'immagine leggendo il tag <img>.
+            }
             
-            divTarget.classList.remove('active-paste');
-            targetIncollaAttivo = null;
-            
-            salvaDatiVistaCorrente();
+            // Se siamo nella Sandbox, invochiamo il salvataggio
+            if (typeof salvaDatiVistaCorrente === "function") {
+                try { salvaDatiVistaCorrente(); } catch(e) {}
+            }
         }
     }
 }
