@@ -2190,13 +2190,24 @@ function switchSandboxTab(tabName) {
     window.aggiungiRigaComp = function(data) {
         let tbody = document.getElementById('comp-body');
         let idx = tbody.children.length + 1;
-        let imgHtml = (data && (data.iconaBase64 || data.iconaBase)) ? `<img src="${data.iconaBase64 || data.iconaBase}" style="width:30px;height:30px;">` : '📷';
+        
+        // Uso la stessa classe delle icone della sandbox
+        let imgHtml = (data && (data.iconaBase64 || data.iconaBase)) 
+            ? `<img src="${data.iconaBase64 || data.iconaBase}" class="icon-thumb-mat">` 
+            : '<span style="font-size:16px; color:#555;">📷</span>';
         
         let row = `<tr>
             <td>${idx}</td>
-            <td onclick="this.querySelector('input').click()" style="cursor:pointer; text-align:center;">
-                ${imgHtml}
-                <input type="file" style="display:none" onchange="previewCompImg(this)">
+            <td style="padding:5px; text-align:center;">
+                <div class="icon-cell-materiale"
+                     onclick="attivaIncollaRiga(this)"
+                     ondblclick="this.nextElementSibling.click()"
+                     ondragover="event.preventDefault(); this.style.borderColor='#00ff88';"
+                     ondragleave="this.style.borderColor='#555';"
+                     ondrop="gestisciDropStandardRiga(event, this)">
+                    ${imgHtml}
+                </div>
+                <input type="file" style="display:none" accept="image/*" onchange="previewCompImg(this)">
             </td>
             <td><input type="text" value="${data?data.fornitore:''}"></td>
             <td><input type="text" value="${data?data.matricola:''}"></td>
@@ -2204,7 +2215,7 @@ function switchSandboxTab(tabName) {
             <td><input type="number" value="${data?data.qta:''}"></td>
             <td><input type="text" value="${data?data.denominazione:''}"></td>
             <td><input type="text" value="${data?data.materiale:''}"></td>
-            <td onclick="this.parentElement.remove()" style="color:red;cursor:pointer;">x</td>
+            <td onclick="this.parentElement.remove()" style="color:red; cursor:pointer; text-align:center; font-weight:bold;">x</td>
         </tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
     }
@@ -2212,11 +2223,24 @@ function switchSandboxTab(tabName) {
     window.previewCompImg = function(inp) {
         let f = inp.files[0];
         if(!f) return;
-        let r = new FileReader();
-        r.onload = e => { 
-            inp.parentElement.innerHTML = `<img src="${e.target.result}" style="width:30px;height:30px;"><input type="file" style="display:none" onchange="previewCompImg(this)">`;
-        };
-        r.readAsDataURL(f);
+        
+        // Invece di distruggere l'HTML, usiamo la funzione avanzata della Sandbox
+        // che comprime l'immagine e la inserisce correttamente
+        let divTarget = inp.previousElementSibling; 
+        comprimiEIncollaInRiga(f, divTarget);
+        
+        inp.value = ""; // Resetta l'input per permettere di ricaricare la stessa foto se serve
+    }
+
+    // NUOVA FUNZIONE: Gestisce il trascinamento dell'immagine (Drag & Drop) nella tabella standard
+    window.gestisciDropStandardRiga = function(e, divTarget) {
+        e.preventDefault();
+        divTarget.style.borderColor = '#555'; // Resetta il colore del bordo
+        const dt = e.dataTransfer;
+        if (dt.files && dt.files.length > 0) {
+            // Ricicliamo il motore di compressione della Sandbox!
+            comprimiEIncollaInRiga(dt.files[0], divTarget);
+        }
     }
 
     // --- NUOVE FUNZIONI DI GESTIONE CLIENTI ---
