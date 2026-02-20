@@ -4776,13 +4776,17 @@ function apriModalQR() {
 
 function stampaSoloQR() {
     let contenutoQR = document.getElementById('box-qrcode').innerHTML;
-    let nomeCommessa = document.getElementById('qr-titolo-commessa').innerText;
+    
+    // USO innerHTML invece di innerText per mantenere l'a capo e la grafica!
+    let nomeCommessaHTML = document.getElementById('qr-titolo-commessa').innerHTML;
     
     let finestraStampa = window.open('', '', 'height=500,width=500');
     finestraStampa.document.write('<html><head><title>Stampa Etichetta</title>');
     finestraStampa.document.write('<style>body { font-family: sans-serif; text-align: center; margin-top: 30px; }</style>');
     finestraStampa.document.write('</head><body>');
-    finestraStampa.document.write('<h2 style="margin-bottom:10px;">' + nomeCommessa + '</h2>');
+    
+    // Stampo il titolo + sottotitolo stringendo un po' le righe (line-height)
+    finestraStampa.document.write('<h2 style="margin-bottom:10px; line-height:1.2;">' + nomeCommessaHTML + '</h2>');
     finestraStampa.document.write(contenutoQR);
     
     // TRUCCO ANTI-BUG: Separo le parole per non far impazzire l'editor di testo!
@@ -4794,7 +4798,6 @@ function stampaSoloQR() {
         finestraStampa.close();
     }, 250);
 }
-
 
 
 
@@ -4893,8 +4896,40 @@ function chiudiScanner() {
 function apriModalQRStandard() {
     if (!currentStandardCommessaId || !currentClient) return;
 
-    // 1. Preparo la finestrella: mostro Nome Cliente - Nome Ordine
-    document.getElementById('qr-titolo-commessa').innerText = currentClient + " - " + currentStandardCommessaNome;
+    // Recupero Matricola e Quantità direttamente dalla schermata in alto a sinistra!
+    let matricolaAttuale = document.getElementById('m-matr').innerText;
+    let qtaAttuale = document.getElementById('m-qta').innerText;
+
+
+
+
+
+
+    // 1. Preparo la finestrella: mostro Nome Cliente, Ordine e sotto Matricola e Qta
+    // questa modifico la seconda linea il sottotilo dei clienti come tre emme scotta tomatis ecc..
+    document.getElementById('qr-titolo-commessa').innerHTML = 
+        currentClient + " - " + currentStandardCommessaNome + 
+        "<br><span style='font-size:20px; color: #ffffff; font-weight:bold;'>Matr: " + matricolaAttuale + " | Q.tà: " + qtaAttuale + "</span>";
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     document.getElementById('modal-qr').style.display = 'flex';
 
     // 2. Pulisco il box da vecchi QR
@@ -4902,7 +4937,6 @@ function apriModalQRStandard() {
     boxQr.innerHTML = "";
 
     // 3. IL LINK MAGICO DOPPIO (qr = ID, cliente = Nome Cliente)
-    // Usiamo encodeURIComponent per gestire gli spazi nei nomi (es. "Tre Emme" diventa "Tre%20Emme")
     let urlCorrente = window.location.origin + window.location.pathname;
     let linkMagico = urlCorrente + "?qr=" + currentStandardCommessaId + "&cliente=" + encodeURIComponent(currentClient);
 
