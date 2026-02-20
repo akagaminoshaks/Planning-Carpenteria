@@ -901,10 +901,20 @@ SANDBOX STYLE FINE X PENSO FILE CSS
                         <span><span class="mh-label">Q.tà:</span> <span class="mh-val" id="m-qta">---</span></span>
                     </div>
                 </div>
+
+
+
                 <div class="mh-right">
                     <div class="mh-order-label" id="m-title">N° Ordine: ---</div>
+                    
+                    <button onclick="apriModalQRStandard()" style="background:#3498db; color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer; margin-left: 20px;">🔲 STAMPA QR</button>
+                    
                     <button onclick="document.getElementById('modal-overlay').style.display='none'" class="btn-close-modal">X</button>
                 </div>
+
+
+
+
             </div>
 
             <div class="modal-body">
@@ -1644,33 +1654,34 @@ SANDBOX STYLE FINE X PENSO FILE CSS
         stage2: { title: "IN PRODUZIONE", items: ["Assemblaggio", "Saldatura", "Lavorazioni Esterne", "Provati", "Numerati"] },
         stage3: { title: "PRONTO SPEDIZIONE", items: ["Finiti Grezzi", "Verniciati", "Pronti x Verniciatura"] }
     };
+
+
+
+
     let currentClient = null;
     let currentArtId = null;
     let currentArtImg = null;
+    // --- NUOVE VARIABILI PER IL QR STANDARD ---
+    let currentStandardCommessaId = null; 
+    let currentStandardCommessaNome = null;
+
+
+
+
+
     
     // --- VARIABILE AGGIUNTA PER MODIFICA SANDBOX ---
     let currentSbEditId = null; // Variabile per tracciare se stiamo modificando
 
     window.onload = function() {
         try {
-            // Controllo l'indirizzo web per vedere se c'è "?qr="
             const parametriUrl = new URLSearchParams(window.location.search);
             const idDalQR = parametriUrl.get('qr');
+            const clienteDalQR = parametriUrl.get('cliente'); // Legge anche il cliente!
 
             if (idDalQR) {
-                // 🚨 L'OFFICINA HA SCANSIONATO IL QR CODE
-                console.log("Aperto da QR: " + idDalQR);
-                
-                // MOSTRO UNA SCHERMATA DI CARICAMENTO VISIBILE!
-                const boxPlaceholder = document.getElementById('placeholder');
-                boxPlaceholder.style.display = 'block';
-                boxPlaceholder.innerHTML = "<h2 style='color:#00ff88; margin-top:100px;'>⏳ Caricamento Commessa in corso...</h2><p style='color:#ccc;'>Lettura dati dal database, attendere.</p>";
-                
-                currentClient = "Prova 1";
-                
-                // Apro la finestra passando l'ID
-                apriDashboardProduzione(idDalQR);
-                
+                // 🚨 ENTRATA DA QR CODE (Link diretto)
+                gestisciAccessoDaQR(idDalQR, clienteDalQR);
             } else {
                 // 🏢 ACCESSO NORMALE DALL'UFFICIO
                 if(localStorage.getItem('auth_token') !== 'logged_in') {
@@ -1680,10 +1691,50 @@ SANDBOX STYLE FINE X PENSO FILE CSS
                 renderClientsBar();
             }
         } catch (errore) {
-            // Se qualcosa si rompe sùbito, il telefono farà uscire un pop-up di errore!
             alert("ERRORE DI AVVIO: " + errore.message);
         }
     };
+
+    // =========================================================
+    // 🚦 IL VIGILE URBANO: SMISTA LE COMMESSE (SANDBOX VS STANDARD)
+    // =========================================================
+    function gestisciAccessoDaQR(id, cliente) {
+        // Mostro schermata di caricamento
+        const boxPlaceholder = document.getElementById('placeholder');
+        boxPlaceholder.style.display = 'block';
+        boxPlaceholder.innerHTML = "<h2 style='color:#00ff88; margin-top:100px;'>⏳ Caricamento Commessa in corso...</h2><p style='color:#ccc;'>Estrazione dati...</p>";
+
+        // BIVIO LOGICO
+        if (!cliente || cliente === "Prova 1") {
+            // STRADA A: È LA SANDBOX (La nuova mega-dashboard)
+            currentClient = "Prova 1";
+            apriDashboardProduzione(id);
+        } else {
+            // STRADA B: È UN CLIENTE STANDARD (Tre Emme, Scotta, ecc.)
+            currentClient = cliente;
+            
+            // Scarico i dati della commessa da Firebase
+            db.ref('commesse/' + cliente + '/' + id).once('value').then(snap => {
+                let datiCommessa = snap.val();
+                
+                if (datiCommessa) {
+                    // Prepara l'interfaccia standard (nascondo il nero, mostro l'ufficio)
+                    boxPlaceholder.style.display = 'none';
+                    document.getElementById('workspace').style.display = 'flex';
+                    document.getElementById('view-standard').style.display = 'block';
+                    document.getElementById('view-sandbox').style.display = 'none';
+
+                    // Teletrasporto: Apro direttamente la tua vecchia modale!
+                    openModal(id, datiCommessa);
+                } else {
+                    alert("❌ ERRORE: Commessa non trovata nel database del cliente " + cliente);
+                    boxPlaceholder.innerHTML = "<h2 style='color:red;'>Commessa non trovata!</h2>";
+                }
+            }).catch(error => {
+                alert("Errore di connessione: " + error.message);
+            });
+        }
+    }
 
     function renderClientsBar() {
         const bar = document.getElementById('clients-bar');
@@ -1906,7 +1957,22 @@ function switchSandboxTab(tabName) {
     function move(id, s, e) { e.stopPropagation(); if(s>=0 && s<stati.length) db.ref('commesse/'+currentClient+'/'+id).update({stato:s}); }
     function del(id, e) { e.stopPropagation(); if(confirm("Eliminare?")) db.ref('commesse/'+currentClient+'/'+id).remove(); }
 
+
+
+
+
     function openModal(id, d) {
+
+
+        // Salvo in memoria l'ID e il Nome per il QR Code
+        currentStandardCommessaId = id;
+        currentStandardCommessaNome = d.nomeOrdine;
+
+        document.getElementById('m-title').innerText = "N° Ordine: " + d.nomeOrdine;
+        // ... (il resto della funzione rimane identico, non toccare nulla!)
+
+
+
         document.getElementById('m-title').innerText = "N° Ordine: " + d.nomeOrdine;
         document.getElementById('m-matr').innerText = (d.matricola || '-');
         document.getElementById('m-dis').innerText = (d.disegno || '-');
@@ -1970,6 +2036,9 @@ function switchSandboxTab(tabName) {
         });
         document.getElementById('modal-overlay').style.display = 'flex';
     }
+
+
+
 
     window.updatePerc = function(input, qTot, percCell) {
         let val = parseInt(input.value) || 0;
@@ -4767,23 +4836,31 @@ function letturaRiuscita(testoLetto) {
     scannerLive.stop().then(() => {
         document.getElementById('modal-scanner').style.display = 'none';
 
-        // 2. Estraggo l'ID dal link
-        let idCommessa = testoLetto;
-        if(testoLetto.includes("?qr=")) {
-            idCommessa = testoLetto.split("?qr=")[1];
-        }
+        try {
+            // 2. Estraggo i parametri in modo intelligente (Non più col semplice split)
+            let urlObj = new URL(testoLetto);
+            let idCommessa = urlObj.searchParams.get("qr");
+            let nomeCliente = urlObj.searchParams.get("cliente");
 
-        console.log("🎯 QR Letto in diretta! ID: ", idCommessa);
-        
-        // 3. Lancio la commessa
-        document.getElementById('placeholder').style.display = 'none';
-        currentClient = "Prova 1";
-        apriDashboardProduzione(idCommessa);
+            if (!idCommessa) return; // Non è un nostro QR
+
+            console.log("🎯 QR Letto! ID:", idCommessa, "Cliente:", nomeCliente);
+            
+            // 3. Passo i dati al nuovo smistatore
+            gestisciAccessoDaQR(idCommessa, nomeCliente);
+
+        } catch(e) {
+            alert("Errore nella lettura del QR Code.");
+        }
 
     }).catch(err => {
         console.error("Errore nello spegnimento fotocamera", err);
     });
 }
+
+
+
+
 
 function letturaFallita(errore) {
     // Il sistema scansiona 15 volte al secondo. 
@@ -4809,7 +4886,36 @@ function chiudiScanner() {
 
 
 
+// =========================================================
+//  GENERATORE QR CODE PER CLIENTI STANDARD (Tre Emme, ecc.)
+// =========================================================
 
+function apriModalQRStandard() {
+    if (!currentStandardCommessaId || !currentClient) return;
+
+    // 1. Preparo la finestrella: mostro Nome Cliente - Nome Ordine
+    document.getElementById('qr-titolo-commessa').innerText = currentClient + " - " + currentStandardCommessaNome;
+    document.getElementById('modal-qr').style.display = 'flex';
+
+    // 2. Pulisco il box da vecchi QR
+    const boxQr = document.getElementById('box-qrcode');
+    boxQr.innerHTML = "";
+
+    // 3. IL LINK MAGICO DOPPIO (qr = ID, cliente = Nome Cliente)
+    // Usiamo encodeURIComponent per gestire gli spazi nei nomi (es. "Tre Emme" diventa "Tre%20Emme")
+    let urlCorrente = window.location.origin + window.location.pathname;
+    let linkMagico = urlCorrente + "?qr=" + currentStandardCommessaId + "&cliente=" + encodeURIComponent(currentClient);
+
+    // 4. Disegno il QR
+    new QRCode(boxQr, {
+        text: linkMagico,
+        width: 200,
+        height: 200,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+}
 
 
 

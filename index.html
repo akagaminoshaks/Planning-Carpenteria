@@ -7,6 +7,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
     <style>
         /* BASE & SFONDO */
@@ -205,6 +206,31 @@
                 <div class="card-desc">Gestione Commesse</div>
             </a>
 
+
+
+
+
+            <a href="#" onclick="apriScannerGlobale(); return false;" class="card" style="background: linear-gradient(135deg, rgba(241, 196, 15, 0.2), rgba(241, 196, 15, 0.05)); border-color: #f1c40f;">
+                <div class="card-icon" style="font-size: 50px;">📷</div>
+                <div class="card-title" style="color: #f1c40f;">SCANNER</div>
+                <div class="card-desc">Lettore QR Code Officina</div>
+            </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <a href="toolbox.html" class="card c-tool">
                 <div class="card-icon">🛠️</div>
                 <div class="card-title">Toolbox</div>
@@ -282,6 +308,52 @@
         <button id="btn-logout" class="logout-btn">Disconnetti</button>
     </div>
 
+
+    <div id="modal-scanner-globale" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 500px; background: #181818; border: 2px solid #f1c40f; display:flex; flex-direction:column; align-items:center; padding: 20px; border-radius: 10px; box-shadow: 0 0 50px rgba(241, 196, 15, 0.3);">
+            <h3 style="color:#f1c40f; margin-top:0; margin-bottom: 15px;">INQUADRA IL QR CODE</h3>
+            
+            <div id="qr-reader-globale" style="width: 100%; min-height:300px; background:black; border-radius:8px; overflow:hidden;"></div>
+            
+            <button onclick="chiudiScannerGlobale()" style="margin-top:20px; background:transparent; border:1px solid #555; color:#ccc; padding:15px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;">ANNULLA / CHIUDI FOTOCAMERA</button>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <script>
         // CONFIGURAZIONE FIREBASE
         const firebaseConfig = { 
@@ -345,6 +417,117 @@
         window.vaiA = function(pagina) {
             window.location.href = pagina;
         }
+
+
+
+
+
+
+
+
+
+        // =========================================================
+        //  MOTORE LETTORE QR CODE GLOBALE (INDEX)
+        // =========================================================
+        let scannerLive;
+
+        function apriScannerGlobale() {
+            document.getElementById('modal-scanner-globale').style.display = 'flex';
+            scannerLive = new Html5Qrcode("qr-reader-globale");
+            
+            const config = { fps: 15, qrbox: { width: 250, height: 250 } };
+            
+            scannerLive.start(
+                { facingMode: "environment" }, 
+                config,
+                (testoLetto) => {
+                    // BINGO! QR LETTO CON SUCCESSO
+                    scannerLive.stop().then(() => {
+                        document.getElementById('modal-scanner-globale').style.display = 'none';
+                        
+                        // Il QR che abbiamo generato è letteralmente un link web.
+                        // Quindi diciamo al browser: "Portami a quell'indirizzo esatto!"
+                        window.location.href = testoLetto;
+                    });
+                },
+                (errore) => { /* Scansione in corso... */ }
+            ).catch(err => {
+                alert("⚠️ Impossibile avviare la fotocamera. Assicurati di dare i consensi al browser.");
+            });
+        }
+
+        function chiudiScannerGlobale() {
+            if(scannerLive) {
+                scannerLive.stop().then(() => {
+                    document.getElementById('modal-scanner-globale').style.display = 'none';
+                }).catch(() => {
+                    document.getElementById('modal-scanner-globale').style.display = 'none';
+                });
+            } else {
+                document.getElementById('modal-scanner-globale').style.display = 'none';
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
 </body>
 </html>
