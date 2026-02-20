@@ -163,16 +163,21 @@
         const mesiMap = { "GENNAIO":"01","FEBBRAIO":"02","MARZO":"03","APRILE":"04","MAGGIO":"05","GIUGNO":"06","LUGLIO":"07","AGOSTO":"08","SETTEMBRE":"09","OTTOBRE":"10","NOVEMBRE":"11","DICEMBRE":"12" };
 
         window.onload = function() {
-            if(typeof XLSX === 'undefined') {
-                alert("ERRORE CRITICO: La libreria Excel non è stata caricata. Controlla la connessione.");
-                document.getElementById('status-msg').innerHTML = "<span style='color:red'>LIBRERIA MANCANTE!</span>";
+        // Controllo di sicurezza tramite Firebase Auth
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // Utente valido! Avviamo il planning
+                loadAnagrafica();
+                initDate();
+                const sStart = document.getElementById('edit-start'); const sEnd = document.getElementById('edit-end');
+                for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let t = (h<10?'0':'')+h+':'+(m===0?'00':m); sStart.innerHTML += `<option value="${t}">${t}</option>`; sEnd.innerHTML += `<option value="${t}">${t}</option>`; } }
+                sEnd.innerHTML += `<option value="22:15">22:15</option>`;
+            } else {
+                // Utente non loggato, cacciamolo
+                window.location.href = 'index.html';
             }
-            db.ref('anagrafica').once('value', snap => {
-                anagrafica = snap.val() || {};
-                let dbAttivi = Object.keys(anagrafica).filter(k => anagrafica[k].type === 'active');
-                if(dbAttivi.length > 0) dipendentiAttuali = dbAttivi.sort();
-            });
-        };
+        });
+    };
 
         const dropArea = document.getElementById('drop-area');
         const fileInput = document.getElementById('file-inp');

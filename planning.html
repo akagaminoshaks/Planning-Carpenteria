@@ -7,6 +7,15 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+
+
+
+
+
+
+
     
     <style>
         /* =========================================
@@ -360,12 +369,20 @@
     let currentEditName = ""; 
 
     window.onload = function() {
-        if(localStorage.getItem('auth_token') !== 'logged_in') window.location.href='index.html';
-        loadAnagrafica();
-        initDate();
-        const sStart = document.getElementById('edit-start'); const sEnd = document.getElementById('edit-end');
-        for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let t = (h<10?'0':'')+h+':'+(m===0?'00':m); sStart.innerHTML += `<option value="${t}">${t}</option>`; sEnd.innerHTML += `<option value="${t}">${t}</option>`; } }
-        sEnd.innerHTML += `<option value="22:15">22:15</option>`;
+        // Controllo di sicurezza tramite Firebase Auth
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // Utente valido! Avviamo il planning
+                loadAnagrafica();
+                initDate();
+                const sStart = document.getElementById('edit-start'); const sEnd = document.getElementById('edit-end');
+                for(let h=6; h<=22; h++) { for(let m=0; m<60; m+=15) { if(h===22 && m>0) break; let t = (h<10?'0':'')+h+':'+(m===0?'00':m); sStart.innerHTML += `<option value="${t}">${t}</option>`; sEnd.innerHTML += `<option value="${t}">${t}</option>`; } }
+                sEnd.innerHTML += `<option value="22:15">22:15</option>`;
+            } else {
+                // Utente non loggato, cacciamolo
+                window.location.href = 'index.html';
+            }
+        });
     };
 
     function loadAnagrafica() {

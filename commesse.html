@@ -7,6 +7,7 @@
     <title>Commesse - Gestionale V3.6 (Commented & Merged)</title>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -1627,10 +1628,76 @@ SANDBOX STYLE FINE X PENSO FILE CSS
 
 
     <script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // GESTIONE CLIENTI DINAMICA
     let allClients = JSON.parse(localStorage.getItem('my_clients')) || [
         { name: "Altro", active: true },
@@ -1674,25 +1741,30 @@ SANDBOX STYLE FINE X PENSO FILE CSS
     let currentSbEditId = null; // Variabile per tracciare se stiamo modificando
 
     window.onload = function() {
-        try {
-            const parametriUrl = new URLSearchParams(window.location.search);
-            const idDalQR = parametriUrl.get('qr');
-            const clienteDalQR = parametriUrl.get('cliente'); // Legge anche il cliente!
+        // 🔒 Chiediamo a Firebase di controllare le chiavi prima di fare qualsiasi cosa
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // ✅ L'UTENTE È AUTENTICATO! Avviamo l'app e scarichiamo i dati.
+                try {
+                    const parametriUrl = new URLSearchParams(window.location.search);
+                    const idDalQR = parametriUrl.get('qr');
+                    const clienteDalQR = parametriUrl.get('cliente'); 
 
-            if (idDalQR) {
-                // 🚨 ENTRATA DA QR CODE (Link diretto)
-                gestisciAccessoDaQR(idDalQR, clienteDalQR);
-            } else {
-                // 🏢 ACCESSO NORMALE DALL'UFFICIO
-                if(localStorage.getItem('auth_token') !== 'logged_in') {
-                    window.location.href = 'index.html';
-                    return; 
+                    if (idDalQR) {
+                        // 🚨 ENTRATA DA QR CODE (Link diretto)
+                        gestisciAccessoDaQR(idDalQR, clienteDalQR);
+                    } else {
+                        // 🏢 ACCESSO NORMALE DALL'UFFICIO
+                        renderClientsBar();
+                    }
+                } catch (errore) {
+                    alert("ERRORE DI AVVIO: " + errore.message);
                 }
-                renderClientsBar();
+            } else {
+                // ❌ L'utente non ha fatto il login o la sessione è scaduta -> Cacciato!
+                window.location.href = 'index.html';
             }
-        } catch (errore) {
-            alert("ERRORE DI AVVIO: " + errore.message);
-        }
+        });
     };
 
     // =========================================================
