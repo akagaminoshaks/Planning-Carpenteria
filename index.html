@@ -210,11 +210,11 @@
 
 
 
-            <a href="#" onclick="apriScannerGlobale(); return false;" class="card" style="background: linear-gradient(135deg, rgba(241, 196, 15, 0.2), rgba(241, 196, 15, 0.05)); border-color: #f1c40f;">
+            <div onclick="apriScannerGlobale()" class="card" style="background: linear-gradient(135deg, rgba(241, 196, 15, 0.2), rgba(241, 196, 15, 0.05)); border-color: #f1c40f; cursor:pointer;">
                 <div class="card-icon" style="font-size: 50px;">📷</div>
                 <div class="card-title" style="color: #f1c40f;">SCANNER</div>
                 <div class="card-desc">Lettore QR Code Officina</div>
-            </a>
+            </div>
 
 
 
@@ -441,16 +441,28 @@
                 { facingMode: "environment" }, 
                 config,
                 (testoLetto) => {
-                    // BINGO! QR LETTO CON SUCCESSO
+                    // 1. BINGO! QR LETTO. Ordino di spegnere la fotocamera
                     scannerLive.stop().then(() => {
                         document.getElementById('modal-scanner-globale').style.display = 'none';
                         
-                        // Il QR che abbiamo generato è letteralmente un link web.
-                        // Quindi diciamo al browser: "Portami a quell'indirizzo esatto!"
-                        window.location.href = testoLetto;
+                        // 2. Controllo di sicurezza: è davvero un nostro QR?
+                        if(testoLetto.includes("?qr=")) {
+                            // 3. IL RITARDO TATTICO: Aspetto 400 millisecondi per far riprendere il browser
+                            setTimeout(() => {
+                                window.location.assign(testoLetto); // Uso .assign che è più infallibile su mobile
+                            }, 400);
+                        } else {
+                            alert("⚠️ Questo QR code non appartiene a una commessa! Testo letto: " + testoLetto);
+                        }
+                        
+                    }).catch(err => {
+                        // Piano B: Se il telefono fa fatica a spegnere la fotocamera, forzo comunque il cambio pagina
+                        if(testoLetto.includes("?qr=")) {
+                            window.location.assign(testoLetto);
+                        }
                     });
                 },
-                (errore) => { /* Scansione in corso... */ }
+                (errore) => { /* Ignore: Scansione in corso... */ }
             ).catch(err => {
                 alert("⚠️ Impossibile avviare la fotocamera. Assicurati di dare i consensi al browser.");
             });
