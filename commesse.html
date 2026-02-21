@@ -132,16 +132,53 @@
         .btn-close-modal:hover { border-color: white; color: white; }
 
         .modal-body { display: flex; flex: 1; overflow: hidden; gap: 20px; padding: 20px; }
-        .col-distinta { flex: 3; display: flex; flex-direction: column; overflow: hidden; }
-        .col-fasi { flex: 1; border: none; padding: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; max-width: 350px; }
+        .col-distinta { flex: 4; display: flex; flex-direction: column; overflow: hidden; }
+        .col-fasi { flex: 1; border: none; padding: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; max-width: 280px; }
 
         .stage-box { background: rgba(9, 148, 230, 0.05); border: 1px solid #0994E6; border-radius: 8px; padding: 15px; box-shadow: 0 0 10px rgba(9, 148, 230, 0.1); }
         .stage-title { color: #0994E6; font-weight: 400; font-size: 14px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(9, 148, 230, 0.3); padding-bottom: 5px; display: flex; justify-content: space-between; }
 
         .distinta-list-container { width: 100%; height: 100%; overflow-y: auto; overflow-x: auto; border: 1px solid #333; border-radius: 8px; background: rgba(0,0,0,0.3); }
-        .distinta-grid-layout { display: grid; grid-template-columns: 40px 30px 50px 100px 100px 100px 50px 60px 70px 80px 50px 1fr 100px; gap: 5px; align-items: center; min-width: 1200px; }
+        
+
+
+
+
+         /* MODIFICA 1: Allarga le colonne nella riga di intestazione */
+        .distinta-grid-layout { 
+         display: grid; 
+         /* Ho cambiato 70px 80px in 100px 130px */
+         grid-template-columns: 35px 25px 70px 100px 100px 100px 40px 40px 40px 130px 50px 1fr 100px; 
+         gap: 5px; 
+         align-items: center; 
+         min-width: 1200px;
+       }            
+
+
+
+
+
         .distincta-header-row { font-size: 12px; font-weight: 400; color: #ccc; text-transform: uppercase; padding: 10px 5px; border-bottom: 1px solid #444; background: #1a1a1a; position: sticky; top: 0; z-index: 10; text-align: center; }
-        .distinta-row-item { display: grid; grid-template-columns: 40px 30px 50px 100px 100px 100px 50px 60px 70px 80px 50px 1fr 100px; gap: 5px; align-items: center; background: rgba(255,255,255,0.02); border-bottom: 1px solid #222; padding: 8px 5px; transition: 0.2s; min-width: 1200px; font-family: 'Segoe UI', sans-serif; font-size: 13px; color: #ddd; text-align: center; }
+        
+        /* MODIFICA 2: Allarga le colonne nelle righe dei dati */
+        .distinta-row-item { 
+            display: grid; 
+            /* Ho cambiato 70px 80px in 100px 130px */
+            grid-template-columns: 35px 25px 70px 100px 100px 100px 40px 40px 40px 130px 50px 1fr 100px; 
+            gap: 5px; 
+            align-items: center; 
+            background: rgba(255,255,255,0.02); 
+            border-bottom: 1px solid #222; 
+            padding: 8px 5px; 
+            transition: 0.2s; 
+            min-width: 1200px; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 13px; 
+            color: #ddd; 
+            text-align: center; 
+        }
+
+
         .distinta-row-item:hover { background: rgba(255,255,255,0.05); }
         .distinta-row-item.checked { border-left: 3px solid #27ae60; background: rgba(39, 174, 96, 0.05); }
 
@@ -155,8 +192,26 @@
         .part-icon-thumb { width: 35px; height: 35px; object-fit: contain; background: #fff; border-radius: 4px; margin: 0 auto; display: block; }
         .part-icon-placeholder { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: #333; border: 1px solid #555; border-radius: 4px; font-size: 18px; margin: 0 auto; color: #777; }
         
-        .inp-mini { width: 100%; background: transparent; border: 1px solid #444; color: white; text-align: center; padding: 4px; border-radius: 4px; font-family: inherit; }
+
+
+
+        /* MODIFICA 3: Impedisci agli input di strabordare dal loro contenitore */
+        .inp-mini { 
+            width: 100%; 
+            background: transparent; 
+            border: 1px solid #444; 
+            color: white; 
+            text-align: center; 
+            padding: 4px; 
+            border-radius: 4px; 
+            font-family: inherit; 
+            box-sizing: border-box; /* AGGIUNGI QUESTA RIGA */
+        }
         .inp-mini:focus { border-color: #0994E6; outline: none; }
+
+
+
+
 
         .chk-row { 
             display: grid; 
