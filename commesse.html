@@ -147,8 +147,8 @@
          /* MODIFICA 1: Allarga le colonne nella riga di intestazione */
         .distinta-grid-layout { 
          display: grid; 
-         /* Ho cambiato 70px 80px in 100px 130px */
-         grid-template-columns: 35px 25px 70px 100px 100px 100px 40px 40px 40px 130px 50px 1fr 100px; 
+         /* INTESTAZIONE COLONNE - STANDARD - LAVORI - APRI DISTINTA CHECK - QUA ALLARGO E STRINGO LE COLONNE DELL'INTESTAZIONE */
+         grid-template-columns: 35px 25px 70px 80px 80px 80px 40px 40px 40px 130px 50px 1fr 100px; 
          gap: 5px; 
          align-items: center; 
          min-width: 1200px;
@@ -163,8 +163,8 @@
         /* MODIFICA 2: Allarga le colonne nelle righe dei dati */
         .distinta-row-item { 
             display: grid; 
-            /* Ho cambiato 70px 80px in 100px 130px */
-            grid-template-columns: 35px 25px 70px 100px 100px 100px 40px 40px 40px 130px 50px 1fr 100px; 
+            /* DATI COLONNE - STANDARD - LAVORI - APRI DISTINTA CHECK - QUA ALLARGO E STRINGO LE COLONNE DEI DATI */
+            grid-template-columns: 35px 25px 70px 80px 80px 80px 40px 40px 40px 130px 50px 1fr 100px; 
             gap: 5px; 
             align-items: center; 
             background: rgba(255,255,255,0.02); 
@@ -189,8 +189,11 @@
         .checked .check-box { background: #27ae60; border-color: #27ae60; color: white; }
         .checked .check-box::after { content: '✓'; font-size: 12px; font-weight: bold; }
         
-        .part-icon-thumb { width: 35px; height: 35px; object-fit: contain; background: #fff; border-radius: 4px; margin: 0 auto; display: block; }
-        .part-icon-placeholder { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: #333; border: 1px solid #555; border-radius: 4px; font-size: 18px; margin: 0 auto; color: #777; }
+
+
+        /* modifico le icone!!! grandezza ecc... */
+        .part-icon-thumb { width: 65px; height: 65px; object-fit: contain; background: #fff; border-radius: 4px; margin: 0 auto; display: block; }
+        .part-icon-placeholder { width: 65px; height: 65px; display: flex; align-items: center; justify-content: center; background: #333; border: 1px solid #555; border-radius: 4px; font-size: 18px; margin: 0 auto; color: #777; }
         
 
 
