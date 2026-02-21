@@ -148,10 +148,10 @@
         .distinta-grid-layout { 
          display: grid; 
          /* INTESTAZIONE COLONNE - STANDARD - LAVORI - APRI DISTINTA CHECK - QUA ALLARGO E STRINGO LE COLONNE DELL'INTESTAZIONE */
-         grid-template-columns: 35px 25px 70px 80px 80px 80px 40px 40px 40px 130px 50px 1fr 100px; 
+         grid-template-columns: 35px 25px 70px 80px 80px 80px 40px 40px 40px 80px 50px 1fr 1fr 100px; 
          gap: 5px; 
          align-items: center; 
-         min-width: 1200px;
+         min-width: 1300px;
        }            
 
 
@@ -164,14 +164,14 @@
         .distinta-row-item { 
             display: grid; 
             /* DATI COLONNE - STANDARD - LAVORI - APRI DISTINTA CHECK - QUA ALLARGO E STRINGO LE COLONNE DEI DATI */
-            grid-template-columns: 35px 25px 70px 80px 80px 80px 40px 40px 40px 130px 50px 1fr 100px; 
+            grid-template-columns: 35px 25px 70px 80px 80px 80px 40px 40px 40px 80px 50px 1fr 1fr 100px; 
             gap: 5px; 
             align-items: center; 
             background: rgba(255,255,255,0.02); 
             border-bottom: 1px solid #222; 
             padding: 8px 5px; 
             transition: 0.2s; 
-            min-width: 1200px; 
+            min-width: 1300px; 
             font-family: 'Segoe UI', sans-serif; 
             font-size: 13px; 
             color: #ddd; 
@@ -980,9 +980,24 @@ SANDBOX STYLE FINE X PENSO FILE CSS
                 <div class="col-distinta">
                     <div style="padding:0 0 10px 5px; font-weight:400; color:#0994E6; font-size:16px; letter-spacing:1px; text-transform:uppercase;">DISTINTA BASE - CHECK MATERIALI</div>
                     <div class="distinta-list-container">
+                       
                         <div class="distinta-grid-layout distincta-header-row">
-                            <div>CHK</div><div>#</div><div>IMG</div><div>FORNITORI</div><div>MATRICOLA</div><div>DISEGNO</div><div>Q/M</div><div style="color:var(--neon-cyan)">Q.TOT</div><div style="color:var(--neon-green)">ARRIVATI</div><div style="color:var(--neon-green)">DDT</div><div>%</div><div>DESCRIZIONE</div><div>MATERIALE</div>
+                            <div>CHK</div>
+                            <div>#</div>
+                            <div>IMG</div>
+                            <div>FORNITORI</div>
+                            <div>MATRICOLA</div>
+                            <div>DISEGNO</div>
+                            <div>Q/M</div>
+                            <div style="color:var(--neon-cyan)">Q.TOT</div>
+                            <div style="color:var(--neon-green)">ARRIVATI</div>
+                            <div style="color:var(--neon-green)">DDT</div>
+                            <div>%</div>
+                            <div>DESCRIZIONE</div>
+                            <div>NOTE:</div>
+                            <div>MATERIALE</div>
                         </div>
+                       
                         <div id="distinta-container"></div>
                     </div>
                 </div>
@@ -2145,6 +2160,7 @@ function switchSandboxTab(tabName) {
                         let qTot = qUnit * (parseInt(d.qtaTotale)||1);
                         let saved = (d.checklist && d.checklist.distintaDati && d.checklist.distintaDati[cid]) || {};
                         let qArr = saved.qtaArr ? parseInt(saved.qtaArr) : 0;
+                        let noteVal = saved.note || ''; // <--- AGGIUNGI QUESTA RIGA PER RECUPERARE LE NOTE
                         let perc = qTot > 0 ? Math.min(100, Math.round((qArr / qTot) * 100)) : 0;
                         let colorPerc = perc === 100 ? '#00ff88' : (perc > 0 ? '#f1c40f' : '#666');
                         let imgSrc = c.iconaBase64 || c.iconaBase || c.immagine || "";
@@ -2182,8 +2198,17 @@ function switchSandboxTab(tabName) {
                             coloreFornitore = "#3498db"; // Blu/Azzurro
                         } else if (nomeFornitorePulito.includes("TOMATIS")) {
                             coloreFornitore = "#f1c40f"; // Giallo
+                        } else if (nomeFornitorePulito.includes("OFFICINA")) {
+                            coloreFornitore = "#bf1515"; // Rosso
+                        } else if (nomeFornitorePulito.includes("CIVALLERI")) {
+                            coloreFornitore = "#d49306"; // ARANCIONE
+                        } else if (nomeFornitorePulito.includes("BULLONERIA")) {
+                            coloreFornitore = "#c21f7e"; // VIOLETTO
                         }
 
+
+
+                        
                         // aggiungi qua gli altri fornitori con i colori!
                         // -------------------------------
                         let row = document.createElement('div'); row.className = `distinta-row-item ${checked?'checked':''}`;
@@ -2210,6 +2235,7 @@ function switchSandboxTab(tabName) {
                             <div class="d-cell"><input class="inp-mini" type="text" value="${saved.ddt||''}" onchange="saveDistData('${id}','${cid}','ddt',this.value)"></div>
                             <div class="d-cell" style="color:${colorPerc}; font-weight:bold;">${perc}%</div>
                             <div class="d-cell left">${c.denominazione}</div>
+                            <div class="d-cell"><input class="inp-mini" type="text" value="${noteVal}" placeholder="..." onchange="saveDistData('${id}','${cid}','note',this.value)" ondblclick="apriPopupTesto(this)"></div>
                             <div class="d-cell">${c.materiale}</div>
                         `;
                         dc.appendChild(row);
@@ -2874,13 +2900,17 @@ window.updatePerc = function(input, qTot, percCell, id, cid) {
     };
 
     window.salvaEditor = function() {
-        if(inputInModifica) {
-            // Ricopio il testo modificato dal popup alla cella
-            inputInModifica.value = document.getElementById('editor-textarea').value;
-            // Dico al browser "Ehi, il testo è cambiato!" (utile per i salvataggi automatici)
-            inputInModifica.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-        chiudiEditor();
+    if(inputInModifica) {
+        // Ricopio il testo modificato dal popup alla cella
+        inputInModifica.value = document.getElementById('editor-textarea').value;
+        
+        // Simulo la digitazione per aggiornare eventuali calcoli (es. la % delle quantità)
+        inputInModifica.dispatchEvent(new Event('input', { bubbles: true }));
+        
+        // FONDAMENTALE: Simulo il "cambio campo" per forzare il salvataggio su Firebase!
+        inputInModifica.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    chiudiEditor();
     };
 
 
