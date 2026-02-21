@@ -1717,7 +1717,6 @@ SANDBOX STYLE FINE X PENSO FILE CSS
 
     const stati = ["ANCORA DA ORDINARE", "In Attesa di Materiale", "In Produzione", "Pronto per la Spedizione", "Ordini Chiusi", "Archiviati"];
     const stages = {
-        stage1: { title: "IN ATTESA MATERIALE", items: ["Commerciale", "Sagomati", "Laser Tubo"] },
         stage2: { title: "IN PRODUZIONE", items: ["Assemblaggio", "Saldatura", "Lavorazioni Esterne", "Provati", "Numerati"] },
         stage3: { title: "PRONTO SPEDIZIONE", items: ["Finiti Grezzi", "Verniciati", "Pronti x Verniciatura"] }
     };
@@ -2060,7 +2059,11 @@ function switchSandboxTab(tabName) {
             let html = `<div class="stage-box"><div class="stage-title">${conf.title}</div>`;
             conf.items.forEach(i => {
                 let checked = d.checklist && d.checklist[k] && d.checklist[k][i];
-                html += `<div class="chk-row" onclick="toggleChk('${id}','${k}','${i}', this)"><div class="check-box ${checked?'checked':''}"></div> <div style="font-weight:500;">${i}</div></div>`;
+                // SPOSTATA LA CLASSE SULLA RIGA MADRE PER FIXARE IL BUG DEL CLICK
+                html += `<div class="chk-row ${checked?'checked':''}" onclick="toggleChk('${id}','${k}','${i}', this)">
+                            <div class="check-box"></div> 
+                            <div style="font-weight:500;">${i}</div>
+                         </div>`;
             });
             html += `</div>`;
             fc.innerHTML += html;
@@ -2073,6 +2076,10 @@ function switchSandboxTab(tabName) {
             if(arts) {
                 let art = Object.values(arts)[0];
                 if(art.componenti) {
+                    
+                    // IL CERVELLO DELLA FASE 1: Contenitore Statistiche Fornitori
+                    let fornitoriStats = {}; 
+
                     art.componenti.forEach((c, idx) => {
                         let cid = `comp_${idx}`;
                         let checked = d.checklist && d.checklist.distintaBase && d.checklist.distintaBase[cid];
@@ -2085,17 +2092,63 @@ function switchSandboxTab(tabName) {
                         let imgSrc = c.iconaBase64 || c.iconaBase || c.immagine || "";
                         let iconHtml = imgSrc ? `<img src="${imgSrc}" class="part-icon-thumb">` : `<div class="part-icon-placeholder">📷</div>`;
 
+                        // FASE 1 & 2: Raggruppamento per Fornitore
+                        let nomeFornitore = c.fornitore ? c.fornitore.trim().toUpperCase() : "NON ASSEGNATO";
+                        if(!fornitoriStats[nomeFornitore]) {
+                            fornitoriStats[nomeFornitore] = { total: 0, arrivati: 0 };
+                        }
+                        fornitoriStats[nomeFornitore].total++;
+                        // Se la riga è al 100% o ha la spunta, conta come "Arrivata"
+                        if (perc === 100 || checked) {
+                            fornitoriStats[nomeFornitore].arrivati++;
+                        }
+
+
+
+
+
+
+
+
+                        // qua dentro ci sono le colonne dentro la modale che si apre quando guardo una commessa della tre emme - standar
+                        // qua dentro ci sono le colonne dentro la modale che si apre quando guardo una commessa della tre emme - standar
+                        // qua dentro ci sono le colonne dentro la modale che si apre quando guardo una commessa della tre emme - standar
+                        // --- LOGICA COLORI FORNITORI ---
+                        let nomeFornitorePulito = c.fornitore ? c.fornitore.toUpperCase().trim() : "";
+                        let coloreFornitore = "white"; // Colore di default per tutti gli altri
+
+                        // Controllo il nome (uso "includes" così funziona anche se scrivi "Tomatis srl" o "Bg lamiere snc")
+                        if (nomeFornitorePulito.includes("C. LAVORO")) {
+                            coloreFornitore = "#00ff88"; // Verde
+                        } else if (nomeFornitorePulito.includes("BG LAMIERE")) {
+                            coloreFornitore = "#3498db"; // Blu/Azzurro
+                        } else if (nomeFornitorePulito.includes("TOMATIS")) {
+                            coloreFornitore = "#f1c40f"; // Giallo
+                        }
+
+                        // aggiungi qua gli altri fornitori con i colori!
+                        // -------------------------------
                         let row = document.createElement('div'); row.className = `distinta-row-item ${checked?'checked':''}`;
+                        row.setAttribute('data-forn-filter', nomeFornitore); // ETICHETTA AGGIUNTA PER IL FILTRO
                         row.innerHTML = `
                             <div class="d-cell"><div class="check-box ${checked?'checked':''}" onclick="toggleDist('${id}','${cid}',this)"></div></div>
                             <div class="d-cell">${idx+1}</div>
                             <div class="d-cell">${iconHtml}</div>
-                            <div class="d-cell">${c.fornitore}</div>
-                            <div class="d-cell" style="color:#E94560;">${c.matricola}</div>
+
+                            <div class="d-cell" style="color: ${coloreFornitore}; font-weight: bold;">${c.fornitore}</div>
+
+
+                            <div class="d-cell" style="color:white;">${c.matricola}</div>
+
+
                             <div class="d-cell">${c.disegno}</div>
+
+
                             <div class="d-cell">${qUnit}</div>
+
+
                             <div class="d-cell" style="color:#00ff88; font-weight:bold;">${qTot}</div>
-                            <div class="d-cell"><input class="inp-mini" type="number" value="${saved.qtaArr||''}" oninput="updatePerc(this, ${qTot}, this.parentElement.nextElementSibling.nextElementSibling)" onchange="saveDistData('${id}','${cid}','qtaArr',this.value)"></div>
+                            <div class="d-cell"><input class="inp-mini" type="number" value="${saved.qtaArr||''}" oninput="updatePerc(this, ${qTot}, this.parentElement.nextElementSibling.nextElementSibling, '${id}', '${cid}')" onchange="saveDistData('${id}','${cid}','qtaArr',this.value)"></div>
                             <div class="d-cell"><input class="inp-mini" type="text" value="${saved.ddt||''}" onchange="saveDistData('${id}','${cid}','ddt',this.value)"></div>
                             <div class="d-cell" style="color:${colorPerc}; font-weight:bold;">${perc}%</div>
                             <div class="d-cell left">${c.denominazione}</div>
@@ -2103,6 +2156,64 @@ function switchSandboxTab(tabName) {
                         `;
                         dc.appendChild(row);
                     });
+
+                    // DISEGNAMO IL BOX DINAMICO A SCHERMO
+                    window.activeFornitoreFilter = null; // Resetta la memoria del filtro all'apertura
+                    let boxMaterialiHTML = `
+                    <div id="box-stato-materiali-dinamico" class="stage-box" style="border-color: #0994E6; background: rgba(9, 148, 230, 0.05); margin-bottom: 15px;">
+                        <div class="stage-title" style="color: #0994E6; border-bottom-color: rgba(9, 148, 230, 0.3);">
+                            🚚 STATO MATERIALI
+                        </div>`;
+                                                
+                    for(let forn in fornitoriStats) {
+                        let stats = fornitoriStats[forn];
+                        let percentuale = Math.round((stats.arrivati / stats.total) * 100);
+                        
+                        // --- FASE 3: GESTIONE DATA SU FIREBASE ---
+                        let dataSalvata = (d.checklist && d.checklist.dateCompletamento && d.checklist.dateCompletamento[forn]) ? d.checklist.dateCompletamento[forn] : null;
+                        let testoData = "";
+
+                        if (percentuale === 100) {
+                            if (!dataSalvata) {
+                                // Raggiunto il 100% adesso! Creo la data e la salvo su Firebase
+                                let oggi = new Date();
+                                dataSalvata = String(oggi.getDate()).padStart(2, '0') + '/' + String(oggi.getMonth() + 1).padStart(2, '0');
+                                db.ref(`commesse/${currentClient}/${id}/checklist/dateCompletamento/${forn}`).set(dataSalvata);
+                            }
+                            // Mostro la data a video
+                            testoData = `<span style="font-weight:normal; margin-left:8px; color:#aaa; font-size:10px;">- ${dataSalvata}</span>`;
+                        } else if (dataSalvata) {
+                            // Se la percentuale scende (es. togli una spunta), cancello la data dal database!
+                            db.ref(`commesse/${currentClient}/${id}/checklist/dateCompletamento/${forn}`).remove();
+                        }
+
+                        // --- Calcolo Estetica ---
+                        let colore = percentuale === 100 ? "#00ff88" : (percentuale > 0 ? "#f1c40f" : "#888");
+                        let bgBarra = percentuale === 100 ? "#00ff88" : "#f1c40f";
+                        let icona = percentuale === 100 ? "✅" : "⏳";
+                        
+                        // --- FASE 4: AGGIUNTO L'ONCLICK AL BOX PER FILTRARE ---
+                        boxMaterialiHTML += `
+                            <div class="box-fornitore-filter" style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; border-radius: 4px;" onclick="filtraDistintaStandard('${forn}', this)">
+                                <div style="display:flex; justify-content:space-between; margin-bottom: 5px; align-items:center;">
+                                    <span style="font-size: 11px; font-weight: bold; color: ${colore}; text-transform:uppercase; pointer-events: none;">
+                                        ${icona} ${forn} ${testoData}
+                                    </span>
+                                    <span style="font-size: 12px; font-weight: bold; color: ${colore}; pointer-events: none;">
+                                        ${percentuale}%
+                                    </span>
+                                </div>
+                                <div style="width: 100%; height: 4px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; border: 1px solid #333; pointer-events: none;">
+                                    <div style="width: ${percentuale}%; height: 100%; background: ${bgBarra}; transition: width 0.5s ease-in-out;"></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    boxMaterialiHTML += `</div>`;
+                    
+                    // Inseriamo la magia in alto, sopra gli altri box
+                    document.getElementById('fasi-container').insertAdjacentHTML('afterbegin', boxMaterialiHTML);
+
                 }
             } else { dc.innerHTML = "Articolo non trovato in archivio."; }
         });
@@ -2112,17 +2223,50 @@ function switchSandboxTab(tabName) {
 
 
 
-    window.updatePerc = function(input, qTot, percCell) {
+
+
+
+
+
+window.updatePerc = function(input, qTot, percCell, id, cid) {
         let val = parseInt(input.value) || 0;
         let p = qTot > 0 ? Math.min(100, Math.round((val/qTot)*100)) : 0;
         percCell.innerText = p + "%";
         percCell.style.color = p === 100 ? '#00ff88' : (p > 0 ? '#f1c40f' : '#666');
+
+        // --- MAGIA DELL'AUTO-CHECK ---
+        let row = input.closest('.distinta-row-item');
+        let box = row.querySelector('.check-box');
+        
+        if (p === 100) {
+            if (!box.classList.contains('checked')) {
+                box.classList.add('checked');
+                row.classList.add('checked');
+                db.ref(`commesse/${currentClient}/${id}/checklist/distintaBase/${cid}`).set(true);
+            }
+        } else {
+            if (box.classList.contains('checked')) {
+                box.classList.remove('checked');
+                row.classList.remove('checked');
+                db.ref(`commesse/${currentClient}/${id}/checklist/distintaBase/${cid}`).set(false);
+            }
+        }
+
+        // Ricalcola il box in tempo reale!
+        if(typeof ricalcolaStatisticheFornitori === 'function') ricalcolaStatisticheFornitori(id);
     }
 
+    // QUESTA RIMANE IDENTICA (Serve per i box manuali)
     window.toggleChk = function(id, s, i, row) { 
-        let box = row.querySelector('.check-box');
-        let isChecked = box.classList.contains('checked');
-        if(isChecked) box.classList.remove('checked'); else box.classList.add('checked');
+        // FIX: Ora controlliamo l'intera riga, non solo il quadratino
+        let isChecked = row.classList.contains('checked');
+        
+        if(isChecked) {
+            row.classList.remove('checked');
+        } else {
+            row.classList.add('checked');
+        }
+        // Salviamo l'azione nel database
         db.ref(`commesse/${currentClient}/${id}/checklist/${s}/${i}`).set(!isChecked);
     }
 
@@ -2132,8 +2276,282 @@ function switchSandboxTab(tabName) {
         let row = div.closest('.distinta-row-item');
         if(!isC) { div.classList.add('checked'); row.classList.add('checked'); }
         else { div.classList.remove('checked'); row.classList.remove('checked'); }
+        
+        // Ricalcola il box in tempo reale!
+        if(typeof ricalcolaStatisticheFornitori === 'function') ricalcolaStatisticheFornitori(id);
     }
+
     window.saveDistData = function(id, cid, f, v) { db.ref(`commesse/${currentClient}/${id}/checklist/distintaDati/${cid}/${f}`).set(v); }
+
+
+
+
+    // =========================================================
+    // KILLER FEATURE: FILTRO DISTINTA PER FORNITORE
+    // =========================================================
+    window.filtraDistintaStandard = function(fornitoreTarget, btnElement) {
+        let isActive = btnElement.classList.contains('active-filter');
+        
+        // Spengo tutti i bottoni visivamente
+        document.querySelectorAll('.box-fornitore-filter').forEach(b => {
+            b.classList.remove('active-filter');
+            b.style.background = 'transparent';
+            b.style.borderLeft = 'none';
+        });
+
+        const righe = document.querySelectorAll('.distinta-row-item');
+
+        if (isActive) {
+            window.activeFornitoreFilter = null; // Spengo il filtro in memoria
+            righe.forEach(r => r.style.display = 'grid'); // Mostro tutte le righe
+        } else {
+            window.activeFornitoreFilter = fornitoreTarget; // Salvo il filtro in memoria
+            btnElement.classList.add('active-filter');
+            btnElement.style.background = 'rgba(0, 229, 255, 0.1)';
+            btnElement.style.borderLeft = '3px solid #00e5ff';
+            
+            righe.forEach(r => {
+                if (r.getAttribute('data-forn-filter') === fornitoreTarget) {
+                    r.style.display = 'grid';
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+        }
+    }
+
+
+
+
+
+
+    // =========================================================
+    // KILLER FEATURE: FILTRO GLOBALE SANDBOX (Click sul box a destra)
+    // Versione "Flat & Clean" (Unisce tutto in un'unica tabella)
+    // =========================================================
+    window.filtraGlobaleSandbox = function(fornitoreTarget, btnElement) {
+        let isActive = btnElement.classList.contains('active-filter');
+        
+        // 1. Spengo tutti i bottoni visivamente
+        document.querySelectorAll('.box-fornitore-filter').forEach(b => {
+            b.classList.remove('active-filter');
+            b.style.background = 'transparent';
+            b.style.borderLeft = 'none';
+        });
+
+        // 2. Prendo tutti i contenitori dei disegni
+        const boxes = document.querySelectorAll('.sandbox-disegno-box');
+
+        if (isActive) {
+            // Se riclicco il fornitore attivo, RIPRISTINO TUTTO ALLA NORMALITA'
+            boxes.forEach(box => {
+                box.style.display = 'block'; // Mostro il box intero
+                box.style.marginBottom = '20px'; // Ripristino lo spazio tra i disegni
+                box.style.borderBottom = '1px solid #333'; // Ripristino il bordo inferiore
+                
+                // Mostro l'intestazione del disegno (il box nero)
+                let header = box.querySelector('.sandbox-disegno-header');
+                if (header) header.style.display = 'flex'; 
+
+                // Mostro l'intestazione della tabella (la riga grigia con i nomi delle colonne)
+                let thead = box.querySelector('thead');
+                if (thead) thead.style.display = 'table-header-group';
+
+                // Mostro tutte le righe dei materiali
+                let righe = box.querySelectorAll('.riga-prod-filter');
+                righe.forEach(r => r.style.display = 'table-row');
+            });
+        } else {
+            // Altrimenti, ATTIVO IL FILTRO
+            btnElement.classList.add('active-filter');
+            btnElement.style.background = 'rgba(0, 229, 255, 0.1)';
+            btnElement.style.borderLeft = '3px solid #00e5ff';
+            
+            let isFirstVisibleBox = true; // Mi serve per lasciare solo la prima intestazione
+
+            boxes.forEach(box => {
+                let righe = box.querySelectorAll('.riga-prod-filter');
+                let foundMatch = false;
+
+                // Controllo e filtro le righe
+                righe.forEach(r => {
+                    if (r.getAttribute('data-forn') === fornitoreTarget) {
+                        r.style.display = 'table-row'; // Mostro la riga
+                        foundMatch = true;
+                    } else {
+                        r.style.display = 'none'; // Nascondo la riga
+                    }
+                });
+
+                if (foundMatch) {
+                    // Se questo disegno ha pezzi per il fornitore scelto:
+                    box.style.display = 'block';
+                    
+                    // NASCONDO L'INTESTAZIONE DEL DISEGNO (Così diventa snello)
+                    let header = box.querySelector('.sandbox-disegno-header');
+                    if (header) header.style.display = 'none';
+
+                    // GESTIONE INTESTAZIONE TABELLA (Lascio solo la prima, nascondo i doppioni)
+                    let thead = box.querySelector('thead');
+                    if (thead) {
+                        if (isFirstVisibleBox) {
+                            thead.style.display = 'table-header-group';
+                            isFirstVisibleBox = false; // Le prossime saranno nascoste
+                        } else {
+                            thead.style.display = 'none';
+                        }
+                    }
+
+                    // Togliendo il margine, le varie tabelle si "incollano" una all'altra
+                    box.style.marginBottom = '0px';
+                    box.style.borderBottom = 'none';
+                    
+                } else {
+                    // Se non ci sono pezzi per questo fornitore, nascondo l'intero blocco del disegno
+                    box.style.display = 'none';
+                }
+            });
+        }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// =========================================================
+    // MOTORE RICALCOLO STATISTICHE IN TEMPO REALE
+    // =========================================================
+    window.ricalcolaStatisticheFornitori = function(id) {
+        // Rileggiamo da Firebase al volo (molto veloce)
+        db.ref(`commesse/${currentClient}/${id}`).once('value').then(snap => {
+            let d = snap.val();
+            if(!d) return;
+
+            let fornitoriStats = {};
+            let righe = document.querySelectorAll('.distinta-row-item');
+            
+            // Usiamo il DOM (la tabella) come fonte di verità
+            righe.forEach(r => {
+                let forn = r.getAttribute('data-forn-filter') || "NON ASSEGNATO";
+                if(!fornitoriStats[forn]) fornitoriStats[forn] = { total: 0, arrivati: 0 };
+                
+                fornitoriStats[forn].total++;
+                if(r.classList.contains('checked')) {
+                    fornitoriStats[forn].arrivati++;
+                }
+            });
+
+            let boxHTML = `
+                <div class="stage-title" style="color: #0994E6; border-bottom-color: rgba(9, 148, 230, 0.3);">
+                    🚚 STATO MATERIALI
+                </div>`;
+                                        
+            for(let forn in fornitoriStats) {
+                let stats = fornitoriStats[forn];
+                let percentuale = Math.round((stats.arrivati / stats.total) * 100);
+                
+                let dataSalvata = (d.checklist && d.checklist.dateCompletamento && d.checklist.dateCompletamento[forn]) ? d.checklist.dateCompletamento[forn] : null;
+                let testoData = "";
+
+                if (percentuale === 100) {
+                    if (!dataSalvata) {
+                        let oggi = new Date();
+                        dataSalvata = String(oggi.getDate()).padStart(2, '0') + '/' + String(oggi.getMonth() + 1).padStart(2, '0');
+                        db.ref(`commesse/${currentClient}/${id}/checklist/dateCompletamento/${forn}`).set(dataSalvata);
+                    }
+                    testoData = `<span style="font-weight:normal; margin-left:8px; color:#aaa; font-size:10px;">- ${dataSalvata}</span>`;
+                } else if (dataSalvata) {
+                    db.ref(`commesse/${currentClient}/${id}/checklist/dateCompletamento/${forn}`).remove();
+                }
+
+                let colore = percentuale === 100 ? "#00ff88" : (percentuale > 0 ? "#f1c40f" : "#888");
+                let bgBarra = percentuale === 100 ? "#00ff88" : "#f1c40f";
+                let icona = percentuale === 100 ? "✅" : "⏳";
+                
+                // Manteniamo attivo il filtro se l'utente aveva cliccato il bottone
+                let extraStyle = "";
+                let activeClass = "";
+                if (window.activeFornitoreFilter === forn) {
+                    activeClass = "active-filter";
+                    extraStyle = "background: rgba(0, 229, 255, 0.1); border-left: 3px solid #00e5ff;";
+                }
+
+                boxHTML += `
+                    <div class="box-fornitore-filter ${activeClass}" style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; border-radius: 4px; ${extraStyle}" onclick="filtraDistintaStandard('${forn}', this)">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px; align-items:center;">
+                            <span style="font-size: 11px; font-weight: bold; color: ${colore}; text-transform:uppercase; pointer-events: none;">
+                                ${icona} ${forn} ${testoData}
+                            </span>
+                            <span style="font-size: 12px; font-weight: bold; color: ${colore}; pointer-events: none;">
+                                ${percentuale}%
+                            </span>
+                        </div>
+                        <div style="width: 100%; height: 4px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; border: 1px solid #333; pointer-events: none;">
+                            <div style="width: ${percentuale}%; height: 100%; background: ${bgBarra}; transition: width 0.5s ease-in-out;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            let container = document.getElementById('box-stato-materiali-dinamico');
+            if(container) {
+                container.innerHTML = boxHTML;
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function loadArchive() {
         const l = document.getElementById('archive-list'); l.innerHTML = "Caricamento...";
@@ -2365,11 +2783,47 @@ function switchSandboxTab(tabName) {
         }
     }
 
-    // EDITOR PLACEHOLDERS
-    function clickCell(td) {}
-    function editCell(td) {}
-    function chiudiEditor() { document.getElementById('editor-popup').style.display='none'; }
-    function salvaEditor() {}
+    // =========================================================
+    // POPUP EDITOR TESTO (DOPPIO CLICK)
+    // =========================================================
+    let inputInModifica = null;
+
+    window.apriPopupTesto = function(inputElement) {
+        inputInModifica = inputElement;
+        const popup = document.getElementById('editor-popup');
+        const textarea = document.getElementById('editor-textarea');
+        
+        // Copio il testo dalla cella al popup
+        textarea.value = inputElement.value;
+        
+        // Lo rendo bello, centrato e in primo piano
+        popup.style.position = 'fixed';
+        popup.style.top = '50%';
+        popup.style.left = '50%';
+        popup.style.transform = 'translate(-50%, -50%)';
+        popup.style.width = '400px';
+        popup.style.zIndex = '10005'; 
+        popup.style.borderColor = '#00e5ff';
+        popup.querySelector('.btn-editor:last-child').style.background = '#00e5ff';
+        
+        popup.style.display = 'block';
+        textarea.focus();
+    };
+
+    window.chiudiEditor = function() {
+        document.getElementById('editor-popup').style.display = 'none';
+        inputInModifica = null;
+    };
+
+    window.salvaEditor = function() {
+        if(inputInModifica) {
+            // Ricopio il testo modificato dal popup alla cella
+            inputInModifica.value = document.getElementById('editor-textarea').value;
+            // Dico al browser "Ehi, il testo è cambiato!" (utile per i salvataggi automatici)
+            inputInModifica.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        chiudiEditor();
+    };
 
 
 
@@ -2878,6 +3332,7 @@ function cambiaVista(targetId) {
                                 <th style="padding:8px; width:50px; text-align:center;">ICON</th> 
                                 <th style="padding:8px; width:120px;">Fornitore</th>
                                 <th style="padding:8px; width:40px;">#</th>
+                                <th style="padding:8px; width:100px; color:#3498db;">Codice 3D</th>
                                 <th style="padding:8px; width:150px;">Tipologia</th>
                                 <th style="padding:8px; width:100px;">Dim.</th>
                                 <th style="padding:8px; width:60px;">Spess.</th>
@@ -2885,9 +3340,9 @@ function cambiaVista(targetId) {
                                 <th style="padding:8px; width:50px; color:#00ff88;">Qta</th>
                                 <th style="padding:8px; width:100px;">Materiale</th>
                                 <th style="padding:8px; width:60px;">Kg</th>
-                                <th style="padding:8px; width:150px;">Tipo Scant.</th>
-                                <th style="padding:8px; width:100px;">Scant.</th>
-                                <th style="padding:8px; width:80px;">Fori</th>
+                                <th style="padding:8px; width:150px;">NOTE?.</th>
+                                <th style="padding:8px; width:100px;">QUI COSA METTIAMO?.</th>
+                                <th style="padding:8px; width:80px;">ALTRE NOTE?</th>
                                 <th style="padding:8px; width:30px;"></th>
                             </tr>
                         </thead>
@@ -3194,69 +3649,63 @@ function chiudiDashboard() {
     document.getElementById('modal-dashboard-overlay').style.display = 'none';
 }
 
-// --- Genera l'HTML delle righe (VERSIONE CORRETTA) ---
-function getTabellaMaterialiHTML(materiali) {
+// --- Genera l'HTML delle righe (VERSIONE CON CODICE 3D E DOPPIO CLICK) ---
+window.getTabellaMaterialiHTML = function(materiali) {
     if (!materiali || materiali.length === 0) return '';
     
     return materiali.map(function(m, index) {
-        // Controllo icona
-        var contenutoIcona = m.icona 
-            ? '<img src="' + m.icona + '" class="icon-thumb-mat">' 
-            : '<span style="font-size:16px; color:#555;">📷</span>';
+        var contenutoIcona = m.icona ? '<img src="' + m.icona + '" class="icon-thumb-mat">' : '<span style="font-size:16px; color:#555;">📷</span>';
 
         return `
         <tr class="riga-materiale-dinamica" style="border-bottom:1px solid #222;">
             <td style="padding:5px; text-align:center;">
-                <div class="icon-cell-materiale" onclick="attivaIncollaRiga(this)">
-                    ${contenutoIcona}
-                </div>
+                <div class="icon-cell-materiale" onclick="attivaIncollaRiga(this)">${contenutoIcona}</div>
                 <input type="hidden" class="inp-icona" value="${m.icona || ''}">
             </td>
-
-            <td style="padding:0;"><input type="text" value="${m.fornitore || ''}" class="inp-fornitore" style="width:100%; background:transparent; border:none; color:#00d26a; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.pos || ''}" class="inp-pos" style="width:100%; background:transparent; border:none; color:#aaa; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.tipologia || ''}" class="inp-tipologia" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.dim || ''}" class="inp-dim" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.spessore || ''}" class="inp-spessore" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.lunghezza || ''}" class="inp-lunghezza" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.qta || ''}" class="inp-qta" style="width:100%; background:transparent; border:none; color:#fff; font-weight:bold; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.materiale || ''}" class="inp-materiale" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.kg || ''}" class="inp-kg" style="width:100%; background:transparent; border:none; color:#888; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.tipoScant || ''}" class="inp-tipoScant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.scant || ''}" class="inp-scant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" value="${m.fori || ''}" class="inp-fori" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" value="${m.fornitore || ''}" class="inp-fornitore" style="width:100%; background:transparent; border:none; color:#00d26a; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.pos || ''}" class="inp-pos" style="width:100%; background:transparent; border:none; color:#aaa; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            
+            <td style="padding:0;"><input type="text" value="${m.codice3d || ''}" class="inp-codice3d" style="width:100%; background:transparent; border:none; color:#3498db; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            
+            <td style="padding:0;"><input type="text" value="${m.tipologia || ''}" class="inp-tipologia" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.dim || ''}" class="inp-dim" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.spessore || ''}" class="inp-spessore" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.lunghezza || ''}" class="inp-lunghezza" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.qta || ''}" class="inp-qta" style="width:100%; background:transparent; border:none; color:#fff; font-weight:bold; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.materiale || ''}" class="inp-materiale" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.kg || ''}" class="inp-kg" style="width:100%; background:transparent; border:none; color:#888; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.tipoScant || ''}" class="inp-tipoScant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.scant || ''}" class="inp-scant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" value="${m.fori || ''}" class="inp-fori" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
             <td style="text-align:center; color:red; cursor:pointer;" onclick="this.parentElement.remove()">×</td>
         </tr>`;
     }).join('');
 }
 
-// --- Aggiunge una riga vuota (VERSIONE 12 COLONNE) ---
-function aggiungiRigaMateriale() {
+// --- Aggiunge una riga vuota (VERSIONE CON CODICE 3D E DOPPIO CLICK) ---
+window.aggiungiRigaMateriale = function() {
     const tbody = document.getElementById('tb-disegno-body');
-    // Genero un ID univoco temporaneo per la cella (basato sul tempo) per evitare conflitti
-    const tempIndex = Date.now(); 
-
     const nuovaRiga = `
         <tr class="riga-materiale-dinamica" style="border-bottom:1px solid #222; background:rgba(255,255,255,0.05);">
             <td style="padding:5px; text-align:center;">
-                <div class="icon-cell-materiale" onclick="attivaIncollaRiga(this)">
-                    <span style="font-size:16px; color:#555;">📷</span>
-                </div>
+                <div class="icon-cell-materiale" onclick="attivaIncollaRiga(this)"><span style="font-size:16px; color:#555;">📷</span></div>
                 <input type="hidden" class="inp-icona" value="">
             </td>
-
-            <td style="padding:0;"><input type="text" placeholder="Forn..." class="inp-fornitore" style="width:100%; background:transparent; border:none; color:#00d26a; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-pos" style="width:100%; background:transparent; border:none; color:#aaa; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" placeholder="Tipologia" class="inp-tipologia" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-dim" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-spessore" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-lunghezza" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" placeholder="1" class="inp-qta" style="width:100%; background:transparent; border:none; color:#fff; font-weight:bold; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-materiale" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-kg" style="width:100%; background:transparent; border:none; color:#888; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-tipoScant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-scant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
-            <td style="padding:0;"><input type="text" class="inp-fori" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;"></td>
+            <td style="padding:0;"><input type="text" placeholder="Forn..." class="inp-fornitore" style="width:100%; background:transparent; border:none; color:#00d26a; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-pos" style="width:100%; background:transparent; border:none; color:#aaa; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            
+            <td style="padding:0;"><input type="text" placeholder="Cod..." class="inp-codice3d" style="width:100%; background:transparent; border:none; color:#3498db; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            
+            <td style="padding:0;"><input type="text" placeholder="Tipologia" class="inp-tipologia" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-dim" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-spessore" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-lunghezza" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" placeholder="1" class="inp-qta" style="width:100%; background:transparent; border:none; color:#fff; font-weight:bold; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-materiale" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-kg" style="width:100%; background:transparent; border:none; color:#888; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-tipoScant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-scant" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
+            <td style="padding:0;"><input type="text" class="inp-fori" style="width:100%; background:transparent; border:none; color:#ddd; padding:5px; outline:none;" ondblclick="apriPopupTesto(this)"></td>
             <td style="text-align:center; color:red; cursor:pointer;" onclick="this.parentElement.remove()">×</td>
         </tr>
     `;
@@ -3277,6 +3726,7 @@ function salvaDatiVistaCorrente() {
             
             fornitore: r.querySelector('.inp-fornitore').value,
             pos: r.querySelector('.inp-pos').value,
+            codice3d: r.querySelector('.inp-codice3d').value, // <--- CAMPO NUOVO
             tipologia: r.querySelector('.inp-tipologia').value,
             dim: r.querySelector('.inp-dim').value,
             spessore: r.querySelector('.inp-spessore').value,
@@ -3695,8 +4145,8 @@ function apriDashboardProduzione(id) {
                     let tabellaMaterialiHTML = generaTabellaProduzione(d.materiali || [], id, k);
 
                     htmlDisegni += `
-                        <div style="background:#222; border:1px solid #333; border-radius:8px; margin-bottom:20px; overflow:hidden;">
-                            <div style="padding:15px; background:#2a2a2a; border-bottom:1px solid #444; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div class="sandbox-disegno-box" style="background:#222; border:1px solid #333; border-radius:8px; margin-bottom:20px; overflow:hidden;">
+                            <div class="sandbox-disegno-header" style="padding:15px; background:#2a2a2a; border-bottom:1px solid #444; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                                 <div style="display:flex; align-items:center; gap:15px;">
                                     ${d.immagine ? `<img src="${d.immagine}" style="width:50px; height:50px; object-fit:contain; background:black; border:1px solid #555; border-radius:4px;">` : ''}
                                     <div>
@@ -3727,8 +4177,118 @@ function apriDashboardProduzione(id) {
                 });
             }
 
+            // =======================================================================
+            // CREAZIONE DINAMICA DEI 3 BOX CHECKLIST (LATO DESTRO)
+            // =======================================================================
+            let htmlChecklist = "";
+            let fornitoriStats = {};
+
+            // 1. Leggo tutti i materiali per il Box Automatico "In Attesa Materiale"
+            if (c.disegni) {
+                Object.values(c.disegni).forEach(dis => {
+                    if (dis.materiali) {
+                        dis.materiali.forEach(m => {
+                            let forn = m.fornitore ? m.fornitore.trim().toUpperCase() : "NON ASSEGNATO";
+                            if (!fornitoriStats[forn]) fornitoriStats[forn] = { total: 0, arrivati: 0 };
+                            fornitoriStats[forn].total++;
+                            
+                            let qTot = parseFloat(m.qta) || 1;
+                            let qArr = parseFloat(m.qtaArr) || 0;
+                            if (m.arrivato === true || (qArr >= qTot && qTot > 0)) {
+                                fornitoriStats[forn].arrivati++;
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Disegno il Box 1 (Automatico)
+            if (Object.keys(fornitoriStats).length > 0) {
+                htmlChecklist += `
+                <div class="stage-box" style="border-color: #0994E6; background: rgba(9, 148, 230, 0.05); margin-bottom: 15px;">
+                    <div class="stage-title" style="color: #0994E6; border-bottom-color: rgba(9, 148, 230, 0.3);">
+                        🚚 IN ATTESA MATERIALE
+                    </div>`;
+                    
+                for(let forn in fornitoriStats) {
+                    let stats = fornitoriStats[forn];
+                    let percentuale = Math.round((stats.arrivati / stats.total) * 100);
+                    
+                    let dataSalvata = (c.checklist && c.checklist.dateCompletamento && c.checklist.dateCompletamento[forn]) ? c.checklist.dateCompletamento[forn] : null;
+                    let testoData = "";
+
+                    // --- SPOSTATO QUI: Dichiaro i colori PRIMA dell'if ---
+                    let colore = percentuale === 100 ? "#00ff88" : (percentuale > 0 ? "#f1c40f" : "#888");
+                    let bgBarra = percentuale === 100 ? "#00ff88" : "#f1c40f";
+                    let icona = percentuale === 100 ? "✅" : "⏳";
+
+                    if (percentuale === 100) {
+                        if (!dataSalvata) {
+                            let oggi = new Date();
+                            dataSalvata = String(oggi.getDate()).padStart(2, '0') + '/' + String(oggi.getMonth() + 1).padStart(2, '0');
+                            db.ref(`commesse/Prova 1/${id}/checklist/dateCompletamento/${forn}`).set(dataSalvata);
+                        }
+                        if (dataSalvata) {
+                            testoData = `<span style="font-weight:normal; margin-left:8px; color:#aaa; font-size:10px;">- ${dataSalvata}</span>`;
+                        }
+                    } else if (dataSalvata) {
+                        db.ref(`commesse/Prova 1/${id}/checklist/dateCompletamento/${forn}`).remove();
+                    }
+                    
+                    htmlChecklist += `
+                        <div class="box-fornitore-filter" style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; border-radius: 4px;" onclick="filtraGlobaleSandbox('${forn}', this)">
+                            <div style="display:flex; justify-content:space-between; margin-bottom: 5px; align-items:center;">
+                                <span style="font-size: 11px; font-weight: bold; color: ${colore}; text-transform:uppercase; pointer-events: none;">
+                                    ${icona} ${forn} ${testoData}
+                                </span>
+                                <span style="font-size: 12px; font-weight: bold; color: ${colore}; pointer-events: none;">
+                                    ${percentuale}%
+                                </span>
+                            </div>
+                            <div style="width: 100%; height: 4px; background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden; border: 1px solid #333; pointer-events: none;">
+                                <div style="width: ${percentuale}%; height: 100%; background: ${bgBarra}; transition: width 0.5s ease-in-out;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                htmlChecklist += `</div>`;
+
+
+
+
+            } else {
+                htmlChecklist += `
+                <div class="stage-box" style="border-color: #0994E6; background: rgba(9, 148, 230, 0.05); margin-bottom: 15px;">
+                    <div class="stage-title" style="color: #0994E6; border-bottom-color: rgba(9, 148, 230, 0.3);">
+                        🚚 IN ATTESA MATERIALE
+                    </div>
+                    <div style="padding: 10px; color: #666; font-size: 11px; font-style: italic;">Nessun materiale in distinta.</div>
+                </div>`;
+            }
+
+            // Disegno i Box 2 e 3 (Manuali) usando 'stages'
+            Object.keys(stages).forEach(k => {
+                let conf = stages[k];
+                htmlChecklist += `<div class="stage-box" style="margin-bottom: 15px;">
+                    <div class="stage-title">${conf.title}</div>`;
+                
+                conf.items.forEach(i => {
+                    let checked = c.checklist && c.checklist[k] && c.checklist[k][i];
+                    htmlChecklist += `<div class="chk-row ${checked ? 'checked' : ''}" onclick="toggleChk('${id}','${k}','${i}', this)">
+                                        <div class="check-box"></div> 
+                                        <div style="font-weight:500;">${i}</div>
+                                     </div>`;
+                });
+                htmlChecklist += `</div>`;
+            });
+
+            // =======================================================================
+            // LAYOUT FINALE MODALE (75% Disegni - 25% Checklist)
+            // =======================================================================
             let modalContent = `
                 <div style="padding:20px; color:white; font-family:'Segoe UI'; height:100%; display:flex; flex-direction:column;">
+                    
                     <div style="border-bottom:1px solid #444; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <h2 style="margin:0; color:#00ff88;">GESTIONE MATERIALI & PRODUZIONE</h2>
@@ -3736,13 +4296,32 @@ function apriDashboardProduzione(id) {
                         </div>
                         <button onclick="chiudiDashboard()" style="background:none; border:1px solid #555; color:#ccc; padding:5px 15px; border-radius:4px; cursor:pointer;">CHIUDI</button>
                     </div>
-                    <div style="flex:1; overflow-y:auto; padding-right:5px;">
-                        ${htmlDisegni || '<div style="text-align:center; padding:30px; color:#555;">Nessun disegno presente.</div>'}
+                    
+                    <div style="display:flex; flex:1; overflow:hidden; gap:20px;">
+                        
+                        <div style="flex: 3; overflow-y:auto; padding-right:10px;">
+                            ${htmlDisegni || '<div style="text-align:center; padding:30px; color:#555;">Nessun disegno presente.</div>'}
+                        </div>
+
+                        <div style="flex: 1; min-width: 250px; border-left: 1px solid #333; padding-left: 20px; overflow-y:auto;">
+                            <div style="color: #9b59b6; font-size: 13px; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px; border-bottom: 1px solid #9b59b6; padding-bottom: 5px;">
+                                ✅ CHECKLIST AVANZAMENTO
+                            </div>
+                            ${htmlChecklist}
+                        </div>
+
                     </div>
                 </div>
             `;
 
             const container = document.getElementById('modal-dashboard-container');
+
+
+
+
+
+
+
             if(container) {
                 container.innerHTML = modalContent; 
                 document.getElementById('modal-dashboard-overlay').style.display = 'flex'; 
@@ -3803,18 +4382,10 @@ function generaTabellaProduzione(materiali, commessaId, disegnoId) {
         if(perc > 0 && perc < 100) colorPerc = '#f1c40f'; // Giallo (Parziale)
         if(perc === 100) colorPerc = '#00ff88'; // Verde (Completo)
 
-
-
-
-
-
-
-
-
-
         // ATTENZIONE!!! UTILE!!! qua sotto metto flex:1; oppure width:60px x decidere la grandezza delle colonne in festione materiale quando apro da lavori una commessa!!! qua me li posso gestire!!! 
         // ATTENZIONE!!! UTILE!!! qua sotto metto flex:1; oppure width:60px x decidere la grandezza delle colonne in festione materiale quando apro da lavori una commessa!!! qua me li posso gestire!!! 
         // ATTENZIONE!!! UTILE!!! qua sotto metto flex:1; oppure width:60px x decidere la grandezza delle colonne in festione materiale quando apro da lavori una commessa!!! qua me li posso gestire!!! 
+
         return `
             <tr class="riga-prod-filter" data-forn="${fornitoreTag}" style="border-bottom:1px solid #333; font-size:12px; ${bgRow}">
                 <td style="padding:8px; text-align:center; border-right:1px solid #333; width:30px;">
@@ -3826,21 +4397,27 @@ function generaTabellaProduzione(materiali, commessaId, disegnoId) {
 
                 <td style="padding:8px; color:${colorFornitore}; font-weight:bold;">${m.fornitore || '-'}</td>
                 <td style="padding:8px; color:#888;">${m.pos || ''}</td>
-                <td style="flex:1; padding:8px; color:#ddd;">${m.tipologia || ''}</td>
-                <td style="flex:1; padding:8px; color:#ddd;">${m.dim || ''}</td>
                 
-                <td style="flex:1; padding:8px; color:white; font-weight:bold; font-size:13px; text-align:center;">${m.qta || ''}</td>
+                <td style="padding:8px; color:#3498db; font-weight:bold;">${m.codice3d || ''}</td>
+                
+                <td style="padding:8px; color:#ddd;">${m.tipologia || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.dim || ''}</td>
+                
+                <td style="padding:8px; color:#ddd;">${m.spessore || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.lunghezza || ''}</td>
 
-                <td style="padding:5px;">
+                <td style="padding:8px; color:white; font-weight:bold; font-size:13px; text-align:center;">${m.qta || ''}</td>
+
+                <td style="padding:5px; width:70px;">
                     <input type="number" value="${qArr > 0 ? qArr : ''}" placeholder="0"
                         onchange="salvaQtaArrSandbox('${commessaId}', '${disegnoId}', ${index}, this.value)"
-                        style="flex:1; background:#111; border:1px solid #444; color:${colorPerc}; text-align:center; border-radius:4px; font-weight:bold;">
+                        style="width:100%; background:#111; border:1px solid #444; color:${colorPerc}; text-align:center; border-radius:4px; font-weight:bold;">
                 </td>
 
-                <td style="padding:5px;">
+                <td style="padding:5px; width:90px;">
                     <input type="text" value="${ddtVal}" placeholder="..."
                         onchange="salvaDDTSandbox('${commessaId}', '${disegnoId}', ${index}, this.value)"
-                        style="flex:1; background:#111; border:1px solid #444; color:#ccc; text-align:center; border-radius:4px;">
+                        style="width:100%; background:#111; border:1px solid #444; color:#ccc; text-align:center; border-radius:4px;">
                 </td>
 
                 <td style="padding:8px; width:60px;">
@@ -3852,32 +4429,41 @@ function generaTabellaProduzione(materiali, commessaId, disegnoId) {
                     </div>
                 </td>
 
-                <td style="flex:1; padding:8px; color:#ddd;">${m.materiale || ''}</td>
-                <td style="flex:1; padding:8px; color:#888;">${m.kg || ''}</td>
-                <td style="flex:1; padding:8px; color:#ddd;">${m.tipoScant || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.materiale || ''}</td>
+                <td style="padding:8px; color:#888;">${m.kg || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.tipoScant || ''}</td>
+                
+                <td style="padding:8px; color:#ddd;">${m.scant || ''}</td>
+                <td style="padding:8px; color:#ddd;">${m.fori || ''}</td>
             </tr>
         `;
     }).join('');
 
     return `
-        <table style="width:100%; text-align:left; border-collapse:collapse; min-width:1400px;">
+        <table style="width:100%; text-align:left; border-collapse:collapse; min-width:1800px;">
             <thead style="background:#1a1a1a; color:#888; font-size:11px; text-transform:uppercase;">
                 <tr>
                     <th style="padding:8px; text-align:center;">OK</th> 
                     <th style="padding:8px; text-align:center;">ICON</th>
                     <th style="padding:8px;">Fornitore</th>
                     <th style="padding:8px;">#</th>
-                    <th style="padding:8px;">Tipologia</th>
-                    <th style="padding:8px;">Dim.</th>
                     
-                    <th style="padding:8px;  color:##384147;">Q.TOT</th>
-                    <th style="padding:8px;  color:##384147;">Q.ARR</th>
-                    <th style="padding:8px;  color:##384147;">DDT</th>
+                    <th style="padding:8px; color:#3498db;">Codice 3D</th>
+                    <th style="padding:8px;">Sezione Profilo</th>
+                    <th style="padding:8px;">Dim.</th>
+                    <th style="padding:8px;">Spess.</th>
+                    <th style="padding:8px;">Lungh.</th>
+                    
+                    <th style="padding:8px; color:#777;">Q.TOT</th>
+                    <th style="padding:8px; color:#777;">Q.ARR</th>
+                    <th style="padding:8px; color:#777;">DDT</th>
                     <th style="padding:8px; width:80px;">% ARRIVO</th>
 
                     <th style="padding:8px;">Materiale</th>
                     <th style="padding:8px;">Kg</th>
                     <th style="padding:8px;">Tipo Scant.</th>
+                    <th style="padding:8px;">Scant.</th>
+                    <th style="padding:8px;">Fori</th>
                 </tr>
             </thead>
             <tbody class="tbody-prod-list">
@@ -4380,6 +4966,7 @@ function generaAnteprimaMaterialiHTML() {
                             <td style="text-align:center; width:40px; vertical-align:middle;">${iconHtml}</td>
                             <td style="color:#00e5ff; font-weight:bold;">${m.fornitore || '-'}</td>
                             <td style="color:#aaa;">${m.pos || ''}</td>
+                            <td style="color:#3498db; font-weight:bold;">${m.codice3d || ''}</td>
                             <td style="color:#ddd;">${m.tipologia || ''}</td>
                             <td style="color:#ddd;">${m.dim || ''}</td>
                             <td style="color:#ddd;">${m.spessore || ''}</td>
@@ -4410,7 +4997,8 @@ function generaAnteprimaMaterialiHTML() {
                     <th style="text-align:center; width:40px;">ICON</th>
                     <th>FORNITORE</th>
                     <th style="width:30px;">#</th>
-                    <th>TIPOLOGIA</th>
+                    <th style="color:#3498db;">CODICE 3D</th>
+                    <th>SEZIONE PROFILO</th>
                     <th>DIM.</th>
                     <th>SPESS.</th>
                     <th>LUNGH.</th>
