@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Ufficio Acquisti Tre Emme - Gestionale</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .header-bar { padding: 10px 15px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .btn-back { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
+        .btn-back:hover { border-color: white; color: white; }
+        .header-info { display: flex; gap: 30px; align-items: center; }
+        .h-label { color: #888; font-size: 12px; text-transform: uppercase; }
+        .h-val { color: #fff; font-size: 18px; font-weight: bold; }
+        .h-val-cyan { color: #00e5ff; font-size: 18px; font-weight: bold; }
+        .tabs-container { display: flex; gap: 15px; background: #151515; padding: 10px 20px; border-bottom: 2px solid #333; justify-content: center; }
+        .tab-btn { background: transparent; color: #888; border: 1px solid #444; padding: 8px 25px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; transition: 0.3s; }
+        .tab-btn:hover { border-color: #aaa; color: #ccc; }
+        .tab-btn.active[data-tab="preventivo"] { background: #3498db; color: #fff; border-color: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); }
+        .tab-btn.active[data-tab="ordine"] { background: #2ecc71; color: #000; border-color: #2ecc71; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
+        .tab-btn.active[data-tab="storico"] { background: #f1c40f; color: #000; border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); }
+        .tab-btn.active[data-tab="comparativo"] { background: #9b59b6; color: #fff; border-color: #9b59b6; box-shadow: 0 0 15px rgba(155, 89, 182, 0.4); }
+        .tab-content { display: none; height: 100%; flex-direction: column; overflow: hidden; padding: 15px; gap: 20px; background: #111; }
+        .tab-content.active { display: flex; }
+        .workspace-split { display: flex; gap: 20px; height: 100%; overflow: hidden; }
+        .col-tabella { flex: 3; display: flex; flex-direction: column; overflow: hidden; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 10px; }
+        .col-riepilogo { flex: 1.2; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        .comp-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        .comp-table th { text-align: center; font-size: 11px; border-bottom: 1px solid #444; padding: 10px 5px; position: sticky; top: 0; background: #1a1a1a; z-index: 10; text-transform: uppercase; }
+        .comp-table td { border-bottom: 1px solid #222; padding: 8px 5px; text-align: center; font-size: 13px; }
+        .comp-table tr:hover { background: rgba(255,255,255,0.02); }
+        .inp-mini { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; text-align: center; padding: 6px; border-radius: 4px; font-family: inherit; font-size: 13px; box-sizing: border-box; }
+        .inp-mini:focus { border-color: #00e5ff; outline: none; background: #000; }
+        .inp-ordina { background: rgba(0, 255, 136, 0.1); border-color: #00ff88; color: #00ff88; font-weight: bold; font-size: 15px; }
+        .inp-prezzo { color: #f1c40f; font-weight: bold; }
+        .check-box-custom { width: 18px; height: 18px; cursor: pointer; accent-color: #3498db; }
+        .btn-azione { border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; text-transform: uppercase; text-align: center; width: 100%; }
+        .btn-azione:hover { transform: translateY(-2px); }
+        .btn-prev { background: #3498db; color: white; margin-top: auto; } .btn-prev:hover { box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
+        .btn-ord { background: #2ecc71; color: black; margin-top: auto; } .btn-ord:hover { box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4); }
+        .filter-btn { background: #1a1a1a; color: #888; border: 1px solid #444; padding: 6px 15px; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; text-transform: uppercase; }
+        .filter-btn:hover { border-color: #00e5ff; color: white; }
+        .filter-btn.active { background: #00e5ff; color: black; border-color: #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,0.4); }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <button class="btn-back" onclick="window.location.href='archiviomastertreemme.html'">⬅ TORNA ALL'ARCHIVIO</button>
+        <div class="header-info">
+            <div><span class="h-label">N° Ordine Tre Emme:</span> <span class="h-val-cyan" id="head-ordine">CARICAMENTO...</span></div>
+            <div><span class="h-label">Articolo:</span> <span class="h-val" id="head-articolo">---</span></div>
+            <div><span class="h-label">Q.tà Lotto:</span> <span class="h-val" id="head-qta">---</span></div>
+        </div>
+        <div style="width: 150px;"></div> 
+    </div>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" data-tab="preventivo" onclick="switchAcquistiTab('preventivo')">📝 1. PREVENTIVO (RDO)</button>
+        <button class="tab-btn" data-tab="comparativo" onclick="switchAcquistiTab('comparativo')">⚖️ 2. QUADRO COMPARATIVO</button>
+        <button class="tab-btn" data-tab="ordine" onclick="switchAcquistiTab('ordine')">🛒 3. ORDINE UFFICIALE</button>
+        <button class="tab-btn" data-tab="storico" onclick="switchAcquistiTab('storico')">📚 STORICO PREZZI</button>
+    </div>
+
+    <div id="tab-preventivo" class="tab-content active">
+        <div class="workspace-split">
+            <div class="col-tabella" style="flex: 1;">
+                <div style="color:#3498db; font-size:16px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                    <span>SELEZIONA I MATERIALI PER CUI RICHIEDERE UN PREVENTIVO</span>
+                    <button style="background:transparent; border:1px solid #3498db; color:#3498db; padding:5px 15px; border-radius:4px; cursor:pointer;" onclick="selezionaTuttoPreventivo()">✓ Seleziona/Deseleziona Tutti</button>
+                </div>
+                <div id="preventivo-filtri" style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;"></div>
+                <div style="overflow-y:auto; flex:1;">
+                    <table class="comp-table">
+                        <thead>
+                            <tr>
+                                <th style="width:40px; color:#3498db;">CHK</th>
+                                <th style="width:30px; color:#3498db;">#</th>
+                                <th style="width:50px; color:#3498db;">IMG</th> 
+                                <th style="color:#3498db;">Classe Merceologica</th>
+                                <th style="color:#3498db;">Matricola / Descrizione</th>
+                                <th style="width:100px; color:#3498db;">N° Disegno</th>
+                                <th style="width:80px; color:#f39c12;">Rev. Pesa</th>
+                                <th style="width:80px; color:#f39c12;">Data Rev.</th>
+                                <th style="width:90px; color:#aaa;">Master</th>
+                                <th style="width:90px; color:#f39c12;">Magazzino</th>
+                                <th style="width:120px; color:#00ff88;">DA ORDINARE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preventivo-body"></tbody>
+                    </table>
+                </div>
+                <div style="padding-top:15px; border-top:1px solid #333;">
+                    <button class="btn-azione btn-prev" onclick="apriModalSceltaFornitori()">📄 GENERA PDF RICHIESTA OFFERTA (RDO)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-comparativo" class="tab-content">
+        <div class="workspace-split">
+            <div class="col-tabella" style="flex: 1; display:flex; flex-direction:column;">
+                <div style="color:#9b59b6; font-size:16px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+                    <span>INSERISCI I PREZZI RICEVUTI E CLICCA SULLA CELLA DEL VINCITORE</span>
+                    <button class="btn-azione" style="width:auto; padding:8px 20px; background:#2ecc71; color:black; font-size:12px; margin:0;" onclick="switchAcquistiTab('ordine')">VAI ALL'ORDINE UFFICIALE ➔</button>
+                </div>
+                <div style="overflow-y:auto; flex:1;">
+                    <table class="comp-table" id="table-gara">
+                        <thead id="gara-head"></thead>
+                        <tbody id="comparativo-body"></tbody>
+                    </table>
+                </div>
+                <div style="background:#151515; border-top:2px solid #9b59b6; padding:15px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; border-radius:0 0 8px 8px;">
+                    <div id="gara-totali-fornitori" style="display:flex; gap:20px; flex:1;"></div>
+                    <div id="gara-suggerimento" style="background:rgba(46, 204, 113, 0.1); border:1px solid #2ecc71; padding:10px 20px; border-radius:8px; color:#2ecc71; font-weight:bold; font-size:16px; text-align:right; min-width:300px;">
+                        Inserisci i prezzi per vedere il suggerimento...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-ordine" class="tab-content">
+        <div class="workspace-split">
+            <div class="col-tabella">
+                <div style="color:#2ecc71; font-size:16px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; font-weight:bold;">
+                    INSERIMENTO PREZZI DEFINITIVI E CONFERMA ORDINE
+                </div>
+                <div style="overflow-y:auto; flex:1;">
+                    <table class="comp-table">
+                        <thead>
+                            <tr>
+                                <th style="width:30px; color:#2ecc71;">#</th>
+                                <th style="width:50px; color:#2ecc71;">IMG</th>
+                                <th style="width:120px; color:#2ecc71;">Fornitore Definitivo</th>
+                                <th style="width:120px; color:#2ecc71;">Componente</th>
+                                <th style="width:90px; color:#00ff88;">Q.tà Ordine</th>
+                                <th style="width:80px; color:#2ecc71;">Unità</th>
+                                <th style="width:100px; color:#f1c40f;">€ / Cad.</th>
+                                <th style="width:90px; color:#2ecc71;">Unità €</th>
+                                <th style="width:100px; color:#00e5ff;">Totale Riga €</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordine-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-riepilogo">
+                <div style="color:#2ecc71; font-size:14px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; font-weight:bold;">RIEPILOGO COMMESSA E COSTI EXTRA</div>
+                <div style="color:#666; font-size:11px; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Totali Materiali</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#1a1a1a; padding:10px; border-radius:6px; margin-bottom:20px; border:1px solid #333;">
+                    <span style="color:#aaa; font-size:12px;">Totale Materiale:</span>
+                    <span id="uff-totale-assoluto" style="color:#00e5ff; font-size:16px; font-weight:bold;">0.00 €</span>
+                </div>
+                <div style="color:#666; font-size:11px; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Dettaglio per Fornitore</div>
+                <div id="uff-riepilogo-fornitori" style="display:flex; flex-direction:column; gap:8px; margin-bottom: 20px; overflow-y:auto; flex:1;"></div>
+                <div style="color:#666; font-size:11px; font-weight:bold; margin-bottom:10px; text-transform:uppercase;">Lavorazioni Aggiuntive</div>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+                    <div style="background: rgba(52, 152, 219, 0.1); border: 1px solid #333; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color:#3498db; font-size:12px; font-weight:bold;">LAV. MECC.</span>
+                        <input type="number" id="uff-lav-meccaniche" value="0.00" oninput="calcolaTotaliAcquisti()" style="width:70px; background:transparent; border:1px solid #555; color:white; text-align:right; border-radius:3px;">
+                    </div>
+                    <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid #333; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color:#e74c3c; font-size:12px; font-weight:bold;">LAV. EST.</span>
+                        <input type="number" id="uff-lav-esterne" value="0.00" oninput="calcolaTotaliAcquisti()" style="width:70px; background:transparent; border:1px solid #555; color:white; text-align:right; border-radius:3px;">
+                    </div>
+                    <div style="background: rgba(155, 89, 182, 0.1); border: 1px solid #333; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color:#9b59b6; font-size:12px; font-weight:bold;">VERNIC.</span>
+                        <input type="number" id="uff-verniciatura" value="0.00" oninput="calcolaTotaliAcquisti()" style="width:70px; background:transparent; border:1px solid #555; color:white; text-align:right; border-radius:3px;">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#000; padding:15px; border-radius:6px; border:2px solid #2ecc71; margin-bottom:15px;">
+                    <span style="color: #2ecc71; font-size: 14px; font-weight:bold;">COSTO TOTALE:</span>
+                    <span id="uff-totale-finito" style="color: #2ecc71; font-size: 20px; font-weight: bold;">0.00 €</span>
+                </div>
+                <button class="btn-azione btn-ord" onclick="confermaEInviaInOfficina()">✔️ BLOCCA PREZZI E INVIA IN OFFICINA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-storico" class="tab-content">
+        <h2 style="color: #f1c40f; margin-top: 0;">📚 Storico Prezzi Acquisti</h2>
+        <p style="color: #888;">Qui vedrai lo storico dei prezzi pagati per i materiali presenti in questo ordine.</p>
+    </div>
+
+    <div id="modal-rdo-fornitori" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:3000; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+        <div style="background:#1a1a1a; border:2px solid #3498db; border-radius:12px; padding:30px; width:100%; max-width:600px; box-shadow:0 15px 40px rgba(52,152,219,0.3); text-align:center;">
+            <h2 style="color:#3498db; margin-top:0;">📤 Invia RDO ai Fornitori</h2>
+            <p style="color:#aaa; font-size:14px;">Il sistema ha trovato questi fornitori compatibili con le classi merceologiche selezionate. Scegli a chi intestare i PDF:</p>
+            <div id="lista-fornitori-compatibili" style="text-align:left; background:#111; border:1px solid #333; border-radius:8px; padding:15px; max-height:300px; overflow-y:auto; margin-bottom:20px; display:flex; flex-direction:column; gap:10px;"></div>
+            <div id="rdo-modal-bottoni" style="display:flex; justify-content:flex-end; gap:15px;">
+                <button class="btn-azione" style="background:transparent; border:1px solid #666; color:#ccc; width:auto; padding:10px 20px;" onclick="document.getElementById('modal-rdo-fornitori').style.display='none'">ANNULLA</button>
+                <button class="btn-azione btn-prev" style="width:auto; padding:10px 30px; margin-top:0;" onclick="confermaGenerazionePDFMultipli()">📥 GENERA I PDF SELEZIONATI</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let ordineCorrenteId = null;
+        let datiOrdineOriginali = null;
+
+        window.onload = function() {
+            firebase.auth().onAuthStateChanged((user) => {
+                if (!user) { window.location.href = 'index.html'; return; }
+                const urlParams = new URLSearchParams(window.location.search);
+                ordineCorrenteId = urlParams.get('ordine');
+                if(!ordineCorrenteId) { alert("Nessun ordine selezionato!"); window.location.href = 'archiviomastertreemme.html'; return; }
+                caricaDatiOrdine();
+            });
+        };
+
+        window.switchAcquistiTab = function(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        function caricaDatiOrdine() {
+            db.ref('commesse/Tre Emme/' + ordineCorrenteId).once('value', snap => {
+                datiOrdineOriginali = snap.val();
+                if(!datiOrdineOriginali) { alert("Ordine non trovato nel database!"); return; }
+
+                document.getElementById('head-ordine').innerText = datiOrdineOriginali.nomeOrdine || ordineCorrenteId;
+                document.getElementById('head-articolo').innerText = datiOrdineOriginali.nome_articolo || datiOrdineOriginali.matricola;
+                document.getElementById('head-qta').innerText = datiOrdineOriginali.qtaTotale || "1";
+
+                if(datiOrdineOriginali.costiExtra) {
+                    document.getElementById('uff-lav-meccaniche').value = datiOrdineOriginali.costiExtra.lavMeccaniche || "0.00";
+                    document.getElementById('uff-lav-esterne').value = datiOrdineOriginali.costiExtra.lavEsterne || "0.00";
+                    document.getElementById('uff-verniciatura').value = datiOrdineOriginali.costiExtra.verniciatura || "0.00";
+                }
+
+                disegnaTabellaPreventivo();
+                disegnaTabellaComparativa();
+                disegnaTabellaOrdine();
+            });
+        }
+
+        function disegnaTabellaPreventivo() {
+            const tbody = document.getElementById('preventivo-body');
+            tbody.innerHTML = "";
+            let fabbisogno = datiOrdineOriginali.fabbisogno || {};
+            let index = 1;
+            let classiTrovate = new Set(); 
+
+            for (let compId in fabbisogno) {
+                let c = fabbisogno[compId];
+                let qtaOrdinare = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
+                let nomeClasse = c.fornitore || 'Senza Classe';
+                classiTrovate.add(nomeClasse); 
+
+                let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="width:40px; height:40px; object-fit:contain; background:#000; border-radius:4px; border:1px solid #444;">` : `<div style="font-size:20px; color:#555;">📷</div>`;
+
+                let tr = document.createElement('tr');
+                tr.setAttribute('data-comp-id', compId); 
+                tr.setAttribute('data-classe', nomeClasse); 
+                tr.className = 'riga-prev'; 
+                
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="check-box-custom chk-prev" checked></td>
+                    <td style="color:#666; text-align:center;">${index}</td>
+                    <td style="text-align:center;">${imgHtml}</td>
+                    <td style="color:#00e5ff; font-weight:bold; text-align:center;">${nomeClasse}</td>
+                    <td style="color:#fff; text-align:left; font-weight:bold; padding-left:10px;">${c.matricola || '-'} <span style="font-weight:normal; color:#ccc; font-size:11px; display:block;">${c.nome || ''}</span></td>
+                    <td style="color:#ccc; text-align:center;">${c.disegno || '-'}</td>
+                    <td style="color:#f39c12; text-align:center; font-weight:bold;">${c.revPesa || '-'}</td>
+                    <td style="color:#f39c12; text-align:center; font-size:11px;">${c.dataRev || '-'}</td>
+                    <td style="color:#aaa; text-align:center;">${c.qta_totale_teorica}</td>
+                    <td style="color:#f39c12; text-align:center;">${c.qta_in_magazzino}</td>
+                    <td style="color:#00ff88; font-weight:bold; font-size:16px; text-align:center;">${qtaOrdinare}</td>
+                `;
+                tbody.appendChild(tr);
+                index++;
+            }
+            disegnaFiltriClassi(Array.from(classiTrovate));
+        }
+
+        window.selezionaTuttoPreventivo = function() {
+            let checkboxes = document.querySelectorAll('.chk-prev');
+            let stato = checkboxes[0] ? !checkboxes[0].checked : true;
+            checkboxes.forEach(c => c.checked = stato);
+        }
+
+        window.disegnaFiltriClassi = function(classi) {
+            let contenitore = document.getElementById('preventivo-filtri');
+            if(!contenitore) return;
+            let html = `<button class="filter-btn active" onclick="filtraTabellaPreventivo('TUTTE', this)">TUTTE LE CLASSI</button>`;
+            classi.sort().forEach(c => {
+                if(c !== 'Senza Classe' && c !== '') html += `<button class="filter-btn" onclick="filtraTabellaPreventivo('${c}', this)">${c}</button>`;
+            });
+            contenitore.innerHTML = html;
+        }
+
+        window.filtraTabellaPreventivo = function(classeScelta, btnCliccato) {
+            document.querySelectorAll('#preventivo-filtri .filter-btn').forEach(b => b.classList.remove('active'));
+            if(btnCliccato) btnCliccato.classList.add('active');
+            document.querySelectorAll('.riga-prev').forEach(riga => {
+                let checkbox = riga.querySelector('.chk-prev');
+                if(classeScelta === 'TUTTE' || riga.getAttribute('data-classe') === classeScelta) {
+                    riga.style.display = ''; checkbox.checked = true; 
+                } else {
+                    riga.style.display = 'none'; checkbox.checked = false; 
+                }
+            });
+        }
+
+        // ==========================================
+        // MOTORE QUADRO COMPARATIVO DINAMICO
+        // ==========================================
+        
+// ==========================================
+        // MOTORE QUADRO COMPARATIVO DINAMICO V2 (INTELLIGENTE)
+        // ==========================================
+        function disegnaTabellaComparativa() {
+            const thead = document.getElementById('gara-head');
+            const tbody = document.getElementById('comparativo-body');
+            thead.innerHTML = ""; tbody.innerHTML = "";
+            
+            let fabbisogno = datiOrdineOriginali.fabbisogno || {};
+            let rdoInviate = datiOrdineOriginali.rdo_inviate || {}; 
+            
+            // FILTRO ANTI-BUG: Prende solo fornitori veri, escludendo "undefined" o vuoti
+            let fornitoriInGara = Object.keys(rdoInviate).filter(f => f !== 'undefined' && f !== 'null' && f.trim() !== '');
+
+            if (fornitoriInGara.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='15' style='padding:30px; color:#e74c3c;'>⚠️ Genera prima i PDF (RDO) nel Tab 1 per popolare questa tabella!</td></tr>";
+                document.getElementById('gara-totali-fornitori').innerHTML = "";
+                document.getElementById('gara-suggerimento').innerHTML = "Nessun fornitore in gara.";
+                return;
+            }
+
+            // INTESTAZIONI AMPLIATE
+            let thHtml = `<tr>
+                <th style="width:30px; color:#9b59b6;">IMG</th>
+                <th style="color:#00e5ff;">Classe</th>
+                <th style="color:#9b59b6; text-align:left;">Matricola / Descrizione</th>
+                <th style="color:#888;">Disegno</th>
+                <th style="color:#f39c12;">Rev</th>
+                <th style="color:#aaa;">Peso</th>
+                <th style="color:#aaa;">Sp.</th>
+                <th style="color:#aaa;">Dim.</th>
+                <th style="color:#aaa;">Note</th>
+                <th style="width:50px; color:#00ff88;">Q.tà</th>`;
+            
+            fornitoriInGara.forEach(forn => {
+                thHtml += `<th style="width:90px; color:${getColoreFornitore(forn)}; text-transform:uppercase;">${forn} (€)</th>`;
+            });
+            thHtml += `<th style="width:130px; color:#2ecc71;">🏆 VINCITORE</th></tr>`;
+            thead.innerHTML = thHtml;
+
+            // RIGHE CON DATI COMPLETI
+            for (let compId in fabbisogno) {
+                let c = fabbisogno[compId];
+                let qtaOrdinare = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
+                if (qtaOrdinare <= 0) continue; 
+
+                let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="width:30px; height:30px; object-fit:contain; border-radius:4px;">` : `📷`;
+                let nomeClasse = c.fornitore || '-'; // La classe è salvata in questo campo
+                let desc = c.denominazione || c.nome || '';
+
+                let tr = document.createElement('tr');
+                tr.setAttribute('data-comp-id', compId);
+                
+                let tdHtml = `
+                    <td style="text-align:center;">${imgHtml}</td>
+                    <td style="color:#00e5ff; font-weight:bold; font-size:11px;">${nomeClasse}</td>
+                    <td style="color:#fff; text-align:left;"><strong>${c.matricola || '-'}</strong> <br><span style="color:#888; font-size:10px;">${desc}</span></td>
+                    <td style="color:#ccc; font-size:11px;">${c.disegno || '-'}</td>
+                    <td style="color:#f39c12; font-size:11px;">${c.revPesa || '-'}</td>
+                    <td style="color:#ccc; font-size:11px;">${c.peso || '-'}</td>
+                    <td style="color:#ccc; font-size:11px;">${c.spessore || '-'}</td>
+                    <td style="color:#ccc; font-size:10px;">${c.dimensione || '-'}</td>
+                    <td style="color:#ccc; font-size:10px;">${c.note || '-'}</td>
+                    <td style="color:#00ff88; font-weight:bold; font-size:14px;" class="gara-qta">${qtaOrdinare}</td>
+                `;
+                
+                // CELLE PREZZO (Auto-calcolo al cambio input)
+                fornitoriInGara.forEach(forn => {
+                    let haRicevutoRdo = rdoInviate[forn] && rdoInviate[forn][compId];
+                    if (haRicevutoRdo) {
+                        tdHtml += `<td><input type="number" class="inp-mini gara-prz" data-forn="${forn}" placeholder="0.00" oninput="ricalcolaVincitoreRiga('${compId}', this.closest('tr')); calcolaTotaliGara();" style="font-weight:bold;"></td>`;
+                    } else {
+                        tdHtml += `<td><div style="background:rgba(255,255,255,0.02); color:#444; padding:5px; border-radius:4px; font-size:11px;">-</div></td>`;
+                    }
+                });
+                
+                tdHtml += `<td><div id="vincitore-${compId}" style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:6px; border-radius:6px; font-size:11px; color:#aaa; min-height:16px;">...</div></td>`;
+                tr.innerHTML = tdHtml;
+                tbody.appendChild(tr);
+            }
+            calcolaTotaliGara();
+        }
+
+        // AUTO-ELEZIONE DEL VINCITORE PIU' BASSO PER RIGA
+        window.ricalcolaVincitoreRiga = function(compId, tr) {
+            let inputs = tr.querySelectorAll('.gara-prz');
+            let minPrz = Infinity;
+            let bestInput = null;
+
+            // Scansiona tutti i prezzi inseriti in quella riga e trova il più basso (> 0)
+            inputs.forEach(inp => {
+                inp.style.backgroundColor = "rgba(0,0,0,0.3)";
+                inp.style.borderColor = "#444";
+                inp.style.boxShadow = "none";
+                
+                let val = parseFloat(inp.value) || 0;
+                if (val > 0 && val < minPrz) {
+                    minPrz = val;
+                    bestInput = inp;
+                }
+            });
+
+            let boxVincitore = document.getElementById(`vincitore-${compId}`);
+            let rigaOrdine = document.querySelector(`#ordine-body tr[data-comp-id="${compId}"]`);
+
+            if (bestInput) {
+                // Illumina di verde l'input vincente
+                bestInput.style.backgroundColor = "rgba(46, 204, 113, 0.2)";
+                bestInput.style.borderColor = "#2ecc71";
+                bestInput.style.boxShadow = "0 0 10px rgba(46, 204, 113, 0.5)";
+
+                let nomeFornitore = bestInput.getAttribute('data-forn');
+                boxVincitore.style.borderColor = "#2ecc71";
+                boxVincitore.innerHTML = `<strong style="color:#2ecc71; text-transform:uppercase;">${nomeFornitore}</strong><br><span style="color:#fff;">${minPrz.toFixed(2)} €</span>`;
+                
+                // Aggiorna Ordine Ufficiale in automatico
+                if (rigaOrdine) {
+                    let inputForn = rigaOrdine.querySelector('.field-fornitore');
+                    let inputPrezzo = rigaOrdine.querySelector('.field-prezzo');
+                    inputForn.value = nomeFornitore; 
+                    inputForn.style.color = getColoreFornitore(nomeFornitore);
+                    inputPrezzo.value = minPrz; 
+                    calcolaRiga(inputPrezzo);
+                }
+            } else {
+                // Se sono tutti a 0, resetta
+                boxVincitore.innerHTML = "...";
+                boxVincitore.style.borderColor = "#444";
+                if (rigaOrdine) {
+                    rigaOrdine.querySelector('.field-fornitore').value = "";
+                    let inputPrezzo = rigaOrdine.querySelector('.field-prezzo');
+                    inputPrezzo.value = 0;
+                    calcolaRiga(inputPrezzo);
+                }
+            }
+        }
+
+        // CALCOLO GLOBALE E RISPARMIO
+        window.calcolaTotaliGara = function() {
+            let rdoInviate = datiOrdineOriginali.rdo_inviate || {};
+            let fornitoriInGara = Object.keys(rdoInviate).filter(f => f !== 'undefined' && f !== 'null' && f.trim() !== '');
+            let totali = {};
+            fornitoriInGara.forEach(f => totali[f] = 0);
+
+            document.querySelectorAll('#comparativo-body tr').forEach(tr => {
+                let qta = parseFloat(tr.querySelector('.gara-qta').innerText) || 0;
+                tr.querySelectorAll('.gara-prz').forEach(inp => {
+                    let f = inp.getAttribute('data-forn');
+                    let prz = parseFloat(inp.value) || 0;
+                    if(prz > 0 && totali[f] !== undefined) totali[f] += (prz * qta);
+                });
+            });
+
+            let htmlTotali = ""; 
+            let fornitoreMigliore = null; 
+            let prezzoMinimo = Infinity;
+            let prezzoMassimo = 0;
+            let conteggioPreventiviValidi = 0;
+
+            for(let f in totali) {
+                if (totali[f] > 0) {
+                    conteggioPreventiviValidi++;
+                    htmlTotali += `<div><span style="color:#888; font-size:11px;">TOT. ${f.toUpperCase()}</span><br><strong style="color:${getColoreFornitore(f)}; font-size:18px;">${totali[f].toFixed(2)} €</strong></div>`;
+                    
+                    if (totali[f] < prezzoMinimo) { prezzoMinimo = totali[f]; fornitoreMigliore = f; }
+                    if (totali[f] > prezzoMassimo) { prezzoMassimo = totali[f]; }
+                }
+            }
+            document.getElementById('gara-totali-fornitori').innerHTML = htmlTotali || "<span style='color:#666;'>Inserisci i prezzi per calcolare i totali.</span>";
+
+            let boxSuggerimento = document.getElementById('gara-suggerimento');
+            if (conteggioPreventiviValidi >= 2) {
+                let risparmio = prezzoMassimo - prezzoMinimo;
+                boxSuggerimento.innerHTML = `🏆 Il più economico è <span style="text-transform:uppercase; color:#fff;">${fornitoreMigliore}</span> (${prezzoMinimo.toFixed(2)} €)<br>
+                <span style="font-size:13px; font-weight:normal; color:#ccc;">Risparmi <strong style="color:#00ff88;">${risparmio.toFixed(2)} €</strong> rispetto all'offerta più alta.</span>`;
+            } else if (conteggioPreventiviValidi === 1) {
+                boxSuggerimento.innerHTML = `Hai inserito una sola offerta.<br><span style="font-size:12px; font-weight:normal; color:#fff;">Spesa prevista: ${prezzoMinimo.toFixed(2)} €</span>`;
+            } else {
+                boxSuggerimento.innerHTML = "Inserisci i prezzi per vedere il suggerimento...";
+            }
+        }
+       
+
+        // ==========================================
+        // TABELLA ORDINE UFFICIALE
+        // ==========================================
+        function disegnaTabellaOrdine() {
+            const tbody = document.getElementById('ordine-body');
+            tbody.innerHTML = "";
+            let fabbisogno = datiOrdineOriginali.fabbisogno || {};
+            let index = 1;
+
+            for (let compId in fabbisogno) {
+                let c = fabbisogno[compId];
+                let qtaOrdinare = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
+                if (qtaOrdinare <= 0) continue;
+
+                let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="width:40px; height:40px; object-fit:contain; background:#000; border-radius:4px; border:1px solid #444;">` : `<div style="font-size:20px; color:#555;">📷</div>`;
+
+                let tr = document.createElement('tr');
+                tr.setAttribute('data-comp-id', compId);
+
+                tr.innerHTML = `
+                    <td style="color:#666; text-align:center;">${index}</td>
+                    <td style="text-align:center;">${imgHtml}</td> 
+                    <td><input type="text" class="inp-mini field-fornitore" value="${c.fornitore || ''}" style="color:${getColoreFornitore(c.fornitore)}; font-weight:bold; text-align:center;" oninput="this.style.color=getColoreFornitore(this.value); calcolaTotaliAcquisti();"></td>
+                    <td style="color:#fff; text-align:left; padding-left:10px;">${c.matricola || '-'} <span style="font-weight:normal; color:#ccc; font-size:11px; display:block;">${c.nome || ''}</span></td>
+                    <td><input type="number" class="inp-mini inp-ordina field-qta" value="${qtaOrdinare}" min="0" oninput="calcolaRiga(this)"></td>
+                    <td><select class="inp-mini field-u-qta" onchange="calcolaRiga(this)"><option value="Pz" ${c.unitaQta === 'Pz'?'selected':''}>Pz</option><option value="Kg" ${c.unitaQta === 'Kg'?'selected':''}>Kg</option><option value="m" ${c.unitaQta === 'm'?'selected':''}>m</option></select></td>
+                    <td><input type="number" class="inp-mini inp-prezzo field-prezzo" value="${c.prezzo || '0.00'}" oninput="calcolaRiga(this)"></td>
+                    <td><select class="inp-mini field-u-prz" onchange="calcolaRiga(this)"><option value="€/Pz" ${c.unitaPrezzo === '€/Pz'?'selected':''}>€/Pz</option><option value="€/Kg" ${c.unitaPrezzo === '€/Kg'?'selected':''}>€/Kg</option></select></td>
+                    <td><input type="text" class="inp-mini field-tot-riga" value="0.00" readonly style="color:#00e5ff; font-weight:bold; background:transparent; border:none; text-align:right;"></td>
+                `;
+                tbody.appendChild(tr);
+                calcolaRiga(tr.querySelector('.field-prezzo'));
+                index++;
+            }
+            calcolaTotaliAcquisti();
+        }
+
+        window.calcolaRiga = function(elemento) {
+            let riga = elemento.closest('tr');
+            let qta = parseFloat(riga.querySelector('.field-qta').value) || 0;
+            let prezzo = parseFloat(riga.querySelector('.field-prezzo').value) || 0;
+            riga.querySelector('.field-tot-riga').value = (qta * prezzo).toFixed(2);
+            calcolaTotaliAcquisti();
+        }
+
+        window.calcolaTotaliAcquisti = function() {
+            let totaleAssolutoEuro = 0; 
+            let fornitoriStats = {}; 
+            
+            document.querySelectorAll('#ordine-body tr').forEach(r => {
+                let fornitore = r.querySelector('.field-fornitore').value.trim().toUpperCase() || 'DA ASSEGNARE';
+                let euroRiga = parseFloat(r.querySelector('.field-tot-riga').value) || 0;
+                
+                if(!fornitoriStats[fornitore]) fornitoriStats[fornitore] = { euro: 0 };
+                fornitoriStats[fornitore].euro += euroRiga;
+                totaleAssolutoEuro += euroRiga;
+            });
+
+            let cMecc = parseFloat(document.getElementById('uff-lav-meccaniche').value) || 0;
+            let cEst = parseFloat(document.getElementById('uff-lav-esterne').value) || 0;
+            let cVern = parseFloat(document.getElementById('uff-verniciatura').value) || 0;
+
+            document.getElementById('uff-totale-assoluto').innerText = totaleAssolutoEuro.toFixed(2) + " €";
+            document.getElementById('uff-totale-finito').innerText = (totaleAssolutoEuro + cMecc + cEst + cVern).toFixed(2) + " €";
+
+            let fContainer = document.getElementById('uff-riepilogo-fornitori');
+            fContainer.innerHTML = "";
+            for(let f in fornitoriStats) {
+                let hexColor = getColoreFornitore(f);
+                fContainer.innerHTML += `
+                    <div style="background: rgba(255,255,255,0.05); border-left: 3px solid ${hexColor}; padding: 8px 10px; border-radius: 4px; display: flex; justify-content: space-between;">
+                        <span style="font-weight:bold; color:${hexColor}; font-size:11px;">${f}</span>
+                        <span style="font-weight:bold; color:white; font-size:13px;">${fornitoriStats[f].euro.toFixed(2)} €</span>
+                    </div>`;
+            }
+        }
+
+        window.confermaEInviaInOfficina = function() {
+            if(!confirm("Confermare l'acquisto dei materiali e sbloccare la commessa in Officina?")) return;
+
+            let fabbisognoAggiornato = {};
+            document.querySelectorAll('#ordine-body tr').forEach(r => {
+                let cId = r.getAttribute('data-comp-id');
+                let compOrig = datiOrdineOriginali.fabbisogno[cId];
+                fabbisognoAggiornato[cId] = {
+                    ...compOrig,
+                    fornitore: r.querySelector('.field-fornitore').value,
+                    qta_da_ordinare: parseFloat(r.querySelector('.field-qta').value) || 0,
+                    unitaQta: r.querySelector('.field-u-qta').value,
+                    prezzo: parseFloat(r.querySelector('.field-prezzo').value) || 0,
+                    unitaPrezzo: r.querySelector('.field-u-prz').value
+                };
+            });
+
+            let extra = { lavMeccaniche: document.getElementById('uff-lav-meccaniche').value, lavEsterne: document.getElementById('uff-lav-esterne').value, verniciatura: document.getElementById('uff-verniciatura').value };
+
+            db.ref('commesse/Tre Emme/' + ordineCorrenteId).update({
+                stato: 1, fabbisogno: fabbisognoAggiornato, costiExtra: extra
+            }).then(() => {
+                alert("✅ Prezzi bloccati! La commessa è ora sbloccata e visibile in Officina.");
+                window.location.href = "dashboardordini.html"; 
+            }).catch(err => alert("Errore: " + err));
+        }
+
+        window.getColoreFornitore = function(nome) {
+            if (!nome || nome === 'DA ASSEGNARE') return "#888888"; 
+            let n = nome.toUpperCase().trim();
+            if (n.includes("LAMIERE")) return "#3498db"; 
+            if (n.includes("TOMATIS")) return "#f1c40f"; 
+            if (n.includes("OFFICINA")) return "#e74c3c"; 
+            if (n.includes("CIVALLERI")) return "#d35400"; 
+            return "#00d26a"; 
+        }
+
+        // ==========================================
+        // GESTIONE PDF RDO (CON FILTRO "ANTI-CRASH" FIREBASE)
+        // ==========================================
+        window.apriModalSceltaFornitori = function() {
+            let selezionati = document.querySelectorAll('.chk-prev:checked');
+            if(selezionati.length === 0) return alert("Seleziona almeno un componente!");
+
+            let classiSelezionate = new Set();
+            let compsIds = [];
+            selezionati.forEach(chk => {
+                let tr = chk.closest('tr');
+                let compId = tr.getAttribute('data-comp-id');
+                let classeCat = tr.getAttribute('data-classe'); 
+                if(classeCat && classeCat !== 'Senza Classe') classiSelezionate.add(classeCat);
+                compsIds.push(compId);
+            });
+            window.compsPerRdo = compsIds.join(','); 
+
+            let box = document.getElementById('lista-fornitori-compatibili');
+            box.innerHTML = "<div style='color:#00e5ff; text-align:center;'>Ricerca fornitori... ⏳</div>";
+            document.getElementById('modal-rdo-fornitori').style.display = 'flex';
+
+            db.ref('anagrafica_fornitori').once('value').then(snap => {
+                let fornitori = snap.val() || {};
+                let fornitoriCompatibili = [];
+                for(let key in fornitori) {
+                    let f = fornitori[key];
+                    let catFornitore = f.categorie || [];
+                    let match = Array.from(classiSelezionate).some(c => catFornitore.includes(c));
+                    if(match || classiSelezionate.size === 0) fornitoriCompatibili.push(f.ragioneSociale || f.alias);
+                }
+                
+                box.innerHTML = "";
+                if(fornitoriCompatibili.length === 0) {
+                    box.innerHTML = "<div style='color:#e74c3c; text-align:center;'>⚠️ Nessun fornitore trovato per questa categoria.</div>";
+                } else {
+                    fornitoriCompatibili = [...new Set(fornitoriCompatibili)].sort();
+                    fornitoriCompatibili.forEach(nome => {
+                        box.innerHTML += `
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#222; padding:12px; border-radius:6px; border:1px solid #444; color:white;">
+                                <input type="checkbox" class="chk-forn-rdo" value="${nome}" style="width:20px; height:20px; accent-color:#3498db;" checked>
+                                <strong style="font-size:16px;">${nome}</strong>
+                            </label>`;
+                    });
+                }
+            });
+        }
+
+        window.confermaGenerazionePDFMultipli = function(azione) {
+            if (!azione) {
+                let checkboxes = document.querySelectorAll('.chk-forn-rdo:checked');
+                if (checkboxes.length === 0) return alert("Seleziona almeno un fornitore!");
+                window.listaFornitoriDaAprire = Array.from(checkboxes).map(chk => chk.value);
+            } 
+            else if (azione === 'salta') {
+                window.listaFornitoriDaAprire.shift();
+            } 
+            else if (azione === 'stampa') {
+                let fornitore = window.listaFornitoriDaAprire.shift();
+                
+                // LA MAGIA ANTI-CRASH: Rimuoviamo i punti (.) e altri simboli vietati da Firebase per la chiave!
+                let fornitoreKeyPulita = fornitore.replace(/[\.\#\$\[\]\/]/g, ""); 
+
+                let pezziRichiesti = {};
+                window.compsPerRdo.split(',').forEach(cid => pezziRichiesti[cid] = true);
+                
+                // Salviamo usando il nome pulito senza punti, così Firebase non va in blocco
+                db.ref(`commesse/Tre Emme/${ordineCorrenteId}/rdo_inviate/${fornitoreKeyPulita}`).update(pezziRichiesti);
+
+                let urlPdf = `pdfmastertreemme.html?ordine=${ordineCorrenteId}&fornitore=${encodeURIComponent(fornitore)}&comps=${window.compsPerRdo}`;
+                window.open(urlPdf, '_blank');
+            }
+
+            let box = document.getElementById('lista-fornitori-compatibili');
+            let btnContainer = document.getElementById('rdo-modal-bottoni');
+
+            if (window.listaFornitoriDaAprire && window.listaFornitoriDaAprire.length > 0) {
+                let prossimo = window.listaFornitoriDaAprire[0];
+                box.innerHTML = `
+                    <div style="text-align:center; padding:15px;">
+                        <p style="color:#aaa; font-size:16px;">In coda per la generazione:</p>
+                        <h2 style="color:#00e5ff; margin:10px 0; text-transform:uppercase;">${prossimo}</h2>
+                        <p style="color:#aaa; font-size:14px;">Cosa vuoi fare con questo fornitore?</p>
+                    </div>`;
+                btnContainer.innerHTML = `
+                    <button class="btn-azione" style="background:transparent; border:1px solid #e74c3c; color:#e74c3c; width:auto; padding:10px 20px;" onclick="confermaGenerazionePDFMultipli('salta')">⏭️ SALTA</button>
+                    <button class="btn-azione btn-prev" style="width:auto; padding:10px 30px; margin-top:0;" onclick="confermaGenerazionePDFMultipli('stampa')">📥 GENERA PDF E SALVA IN MEMORIA</button>
+                `;
+            } else {
+                document.getElementById('modal-rdo-fornitori').style.display = 'none';
+                if (azione) alert("✅ Coda PDF completata! Il Quadro Comparativo è stato aggiornato.");
+                
+                btnContainer.innerHTML = `
+                    <button class="btn-azione" style="background:transparent; border:1px solid #666; color:#ccc; width:auto; padding:10px 20px;" onclick="document.getElementById('modal-rdo-fornitori').style.display='none'">ANNULLA</button>
+                    <button class="btn-azione btn-prev" style="width:auto; padding:10px 30px; margin-top:0;" onclick="confermaGenerazionePDFMultipli()">📥 GENERA I PDF SELEZIONATI</button>
+                `;
+                caricaDatiOrdine(); 
+            }
+        }
+    </script>
+</body>
+</html>

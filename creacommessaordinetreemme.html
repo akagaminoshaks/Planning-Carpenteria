@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Crea Ordine - Tre Emme</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #111; color: white; margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* HEADER E NAVIGAZIONE */
+        .header {
+            width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 30px;
+        }
+        .btn-back {
+            background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 20px; cursor: pointer; transition: 0.2s; text-decoration: none; font-size: 13px; font-weight: bold;
+        }
+        .btn-back:hover { border-color: white; color: white; }
+
+        /* FORM CONTAINER */
+        .form-container {
+            background: #1a1a1a; border: 2px solid #2ecc71; border-radius: 12px; width: 100%; max-width: 900px; padding: 40px; box-shadow: 0 15px 40px rgba(46, 204, 113, 0.2); box-sizing: border-box;
+        }
+
+        .form-title { color: #2ecc71; margin-top: 0; font-size: 28px; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        
+        .form-group label { color: #888; font-size: 13px; font-weight: bold; text-transform: uppercase; }
+        
+        .form-input {
+            background: #111; border: 1px solid #444; color: white; padding: 15px; border-radius: 6px; font-size: 16px; outline: none; transition: 0.2s; font-family: inherit;
+        }
+        .form-input:focus { border-color: #2ecc71; box-shadow: 0 0 10px rgba(46,204,113,0.2); background: #000; }
+
+        .btn-salva {
+            background: #2ecc71; color: black; border: none; padding: 18px; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 40px; width: 100%; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-salva:hover { background: #27ae60; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(46,204,113,0.4); }
+
+        #loading-msg { display: none; color: #00e5ff; font-weight: bold; margin-top: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="hometreemme.html" class="btn-back">⬅ TORNA ALL'HUB</a>
+        <h2 style="margin:0; color:#888; font-size:16px;">Generazione Commessa Master</h2>
+    </div>
+
+    <div class="form-container">
+        <h2 class="form-title"><span>📦</span> Crea Nuovo Ordine</h2>
+
+        <div class="form-grid">
+            
+            <div class="form-group" style="grid-column: 1 / -1; background: rgba(0, 229, 255, 0.05); padding: 20px; border-radius: 8px; border: 1px dashed #00e5ff;">
+                <label style="color:#00e5ff;">1. Ricerca Articolo (Da Archivio Master) *</label>
+                <input type="text" id="ord-matr" class="form-input" list="lista-articoli-master" placeholder="Digita matricola o descrizione..." style="border-color:#00e5ff; font-weight:bold; font-size:20px; color:#00e5ff;">
+                <datalist id="lista-articoli-master"></datalist>
+                <span style="font-size: 12px; color: #666; margin-top: 5px;">*Il sistema importerà automaticamente l'intera distinta base e calcolerà il fabbisogno.</span>
+            </div>
+
+            <div class="form-group">
+                <label>N° Ordine Cliente *</label>
+                <input type="text" id="ord-num" class="form-input" placeholder="Es. ORD-2026-001">
+            </div>
+            
+            <div class="form-group">
+                <label>Quantità Lotto da Produrre *</label>
+                <input type="number" id="ord-qta" class="form-input" value="1" min="1" style="color:#2ecc71; font-weight:bold; font-size:20px;">
+            </div>
+            
+            <div class="form-group">
+                <label>Data di Inserimento</label>
+                <input type="date" id="ord-data" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label>Data Scadenza / Consegna</label>
+                <input type="date" id="ord-scadenza" class="form-input" style="color:#f1c40f; border-color:#f1c40f;">
+            </div>
+            
+            <div class="form-group">
+                <label>Prezzo di Vendita Pattuito (€)</label>
+                <input type="number" id="ord-prezzo" class="form-input" placeholder="0.00">
+            </div>
+            
+            <div class="form-group">
+                <label>Codice IDE (Rif. Esterno)</label>
+                <input type="text" id="ord-ide" class="form-input" placeholder="Opzionale">
+            </div>
+            
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label>Note Interne Ordine / Commessa</label>
+                <textarea id="ord-note" class="form-input" style="resize:vertical; min-height:80px;" placeholder="Scrivi qui eventuali note urgenti, specifiche del cliente, o dettagli per l'officina..."></textarea>
+            </div>
+        </div>
+
+        <div id="loading-msg">Elaborazione Distinta Base e creazione Contenitore in corso... ⏳</div>
+        <button class="btn-salva" id="btn-save" onclick="salvaNuovoOrdine()">💾 CREA CONTENITORE E VAI IN OFFICINA</button>
+    </div>
+
+    <script>
+        // CONFIGURAZIONE FIREBASE
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        let archivioArticoli = {}; 
+
+        window.onload = function() {
+            firebase.auth().onAuthStateChanged((user) => {
+                if (!user) window.location.href = 'index.html';
+                else caricaArchivioPerTendina(); 
+            });
+        };
+
+        function caricaArchivioPerTendina() {
+            db.ref('archivio/Tre Emme').once('value', snap => {
+                archivioArticoli = snap.val() || {};
+                let datalist = document.getElementById('lista-articoli-master');
+                datalist.innerHTML = '';
+                for(let key in archivioArticoli) {
+                    let art = archivioArticoli[key];
+                    let option = document.createElement('option');
+                    // Inseriamo Matricola e Descrizione per trovarla facilmente
+                    option.value = art.matricola;
+                    option.innerText = art.desc || "Nessuna descrizione";
+                    datalist.appendChild(option);
+                }
+            });
+            // Imposta la data di oggi
+            document.getElementById('ord-data').value = new Date().toISOString().split('T')[0];
+        }
+
+        window.salvaNuovoOrdine = function() {
+            let matricolaScelta = document.getElementById('ord-matr').value.trim();
+            let nOrdine = document.getElementById('ord-num').value.trim();
+            let qtaLotto = parseFloat(document.getElementById('ord-qta').value) || 1;
+
+            if(!matricolaScelta || !nOrdine) return alert("Matricola e N° Ordine sono obbligatori!");
+
+            // Cerca l'articolo in memoria
+            let artMaster = null;
+            let idMaster = null;
+            for(let key in archivioArticoli) {
+                if(archivioArticoli[key].matricola === matricolaScelta) {
+                    artMaster = archivioArticoli[key];
+                    idMaster = key;
+                    break;
+                }
+            }
+
+            if(!artMaster) return alert("Attenzione: Matricola non trovata in Archivio Master! Creala prima in Archivio.");
+
+            document.getElementById('btn-save').style.display = 'none';
+            document.getElementById('loading-msg').style.display = 'block';
+
+            // COSTRUISCE IL FABBISOGNO (Calcola i pezzi totali necessari)
+            let fabbisognoCalcolato = {};
+            if (artMaster.componenti) {
+                artMaster.componenti.forEach((comp, idx) => {
+                    let qtaSingola = parseFloat(comp.qta) || 1;
+                    let qtaTeorica = qtaSingola * qtaLotto;
+                    let qtaMagazzino = (artMaster.magazzino && artMaster.magazzino[idx]) ? parseFloat(artMaster.magazzino[idx]) : 0;
+
+                    fabbisognoCalcolato["comp_"+idx] = {
+                        ...comp, 
+                        qta_singola: qtaSingola,
+                        qta_totale_teorica: qtaTeorica,
+                        qta_in_magazzino: qtaMagazzino,
+                        qta_da_ordinare: Math.max(0, qtaTeorica - qtaMagazzino), 
+                        iconaBase64: comp.iconaBase64 || comp.iconaBase || ""
+                    };
+                });
+            }
+
+            // CREA IL "GRANDE CONTENITORE"
+            let nuovoContenitore = {
+                id_articolo_master: idMaster,
+                matricola: artMaster.matricola,
+                disegno: artMaster.disegno || "",
+                nome_articolo: artMaster.desc || "",
+                immagine: artMaster.immagine || "",
+                nomeOrdine: nOrdine,
+                qtaTotale: qtaLotto,
+                data: document.getElementById('ord-data').value,
+                scadenza: document.getElementById('ord-scadenza').value,
+                prezzo_vendita: document.getElementById('ord-prezzo').value,
+                ide: document.getElementById('ord-ide').value,
+                note: document.getElementById('ord-note').value,
+                stato: 0, // STATO 0: "ANCORA DA ORDINARE"
+                fabbisogno: fabbisognoCalcolato 
+            };
+
+            // SALVA IN FIREBASE DIRETTAMENTE NELLE COMMESSE
+            let keyCommessa = db.ref('commesse/Tre Emme').push().key; 
+            db.ref('commesse/Tre Emme/' + keyCommessa).set(nuovoContenitore).then(() => {
+                alert("✅ Ordine Creato! Il contenitore è pronto e in attesa degli Acquisti.");
+                window.location.href = "commessetreemme.html"; // Redirige alla visualizzazione officina
+            }).catch(e => {
+                alert("Errore di connessione: " + e);
+                document.getElementById('btn-save').style.display = 'block';
+                document.getElementById('loading-msg').style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>

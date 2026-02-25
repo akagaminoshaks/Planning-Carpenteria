@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Anagrafiche e Impostazioni - Tre Emme</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #111; color: white; margin: 0; padding: 20px;
+        }
+
+        /* HEADER E NAVIGAZIONE */
+        .header {
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .btn-back {
+            background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 20px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-back:hover { border-color: white; color: white; }
+
+        .top-nav { display: flex; gap: 15px; }
+        .nav-btn {
+            background: #1a1a1a; color: #888; border: 1px solid #444; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .nav-btn.active {
+            background: #00e5ff; color: black; border-color: #00e5ff; box-shadow: 0 0 15px rgba(0,229,255,0.4);
+        }
+
+        /* SEZIONI E CARD */
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card {
+            background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        /* FORM BASE */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { color: #888; font-size: 12px; text-transform: uppercase; font-weight: bold; }
+        .form-input {
+            background: #111; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s;
+        }
+        .form-input:focus { border-color: #00e5ff; box-shadow: 0 0 8px rgba(0,229,255,0.2); }
+
+        .btn-save {
+            background: #00e5ff; color: black; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 15px; width: 100%; font-size: 15px;
+        }
+        .btn-save:hover { background: #00c4cc; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,229,255,0.4); }
+
+        /* TABELLE */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .data-table th { background: #111; color: #888; text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #333; }
+        .data-table td { padding: 12px; border-bottom: 1px solid #222; font-size: 14px; vertical-align: middle; }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
+
+        .btn-action { background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 5px; transition: 0.2s; }
+        .btn-edit { color: #f1c40f; } .btn-edit:hover { color: #f39c12; transform: scale(1.1); }
+        .btn-delete { color: #e74c3c; } .btn-delete:hover { color: #c0392b; transform: scale(1.1); }
+
+        /* CHECKBOX CLASSI MERCEOLOGICHE */
+        .badge-cat { background: rgba(0, 229, 255, 0.1); border: 1px solid #00e5ff; color: #00e5ff; padding: 3px 8px; border-radius: 12px; font-size: 11px; margin: 2px; display: inline-block; font-weight: bold; }
+        .chk-container { display: flex; flex-wrap: wrap; gap: 12px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px dashed #444;}
+        .chk-item { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #ccc; font-size: 14px; background: #222; padding: 8px 12px; border-radius: 6px; border: 1px solid #333; transition: 0.2s;}
+        .chk-item:hover { border-color: #00e5ff; background: #1a1a1a; }
+        .chk-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #00e5ff; }
+
+        /* =========================================================
+           NUOVO STILE: FINESTRA MODALE POPUP (OVERLAY)
+        ========================================================= */
+        .modal-overlay {
+            display: none; /* Nascosta di default */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 2px solid #00e5ff;
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh; /* Se ci sono tanti campi, non esce dallo schermo */
+            overflow-y: auto; /* Aggiunge la rotellina di scorrimento interna se serve */
+            box-shadow: 0 15px 40px rgba(0,229,255,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Scrollbar personalizzata per la modale */
+        .modal-content::-webkit-scrollbar { width: 8px; }
+        .modal-content::-webkit-scrollbar-thumb { background: #00e5ff; border-radius: 4px; }
+        .modal-content::-webkit-scrollbar-track { background: #111; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="btn-back" onclick="window.location.href='menutreemme.html'">⬅ TORNA AL MENU</button>
+        <div class="top-nav">
+            <button class="nav-btn active" onclick="showSection('azienda')" id="btn-azienda">🏢 IMPOSTAZIONI AZIENDA</button>
+            <button class="nav-btn" onclick="showSection('fornitori')" id="btn-fornitori">🤝 FORNITORI</button>
+            <button class="nav-btn" onclick="showSection('classi')" id="btn-classi">🏷️ CLASSI MERCEOLOGICHE</button>
+        </div>
+    </div>
+
+    <div id="sec-azienda" class="section active">
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <h2 style="color: #00e5ff; margin-top: 0;">Dati Intestazione Azienda</h2>
+            <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Questi dati verranno utilizzati come mittente ufficiale per la generazione dei PDF (es. Richieste di Offerta).</p>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Ragione Sociale</label>
+                    <input type="text" id="az-nome" class="form-input" placeholder="Es. Carpenteria Pesa S.r.l.">
+                </div>
+                <div class="form-group">
+                    <label>Indirizzo Completo</label>
+                    <input type="text" id="az-indirizzo" class="form-input" placeholder="Via, CAP, Città (Prov)">
+                </div>
+                <div class="form-group">
+                    <label>P.IVA / Codice Fiscale</label>
+                    <input type="text" id="az-piva" class="form-input" placeholder="01234567890">
+                </div>
+                <div class="form-group">
+                    <label>Telefono</label>
+                    <input type="text" id="az-tel" class="form-input" placeholder="+39 000 000000">
+                </div>
+                <div class="form-group">
+                    <label>Email Ufficio Acquisti</label>
+                    <input type="email" id="az-email" class="form-input" placeholder="acquisti@azienda.it">
+                </div>
+                <div class="form-group">
+                    <label>Link Logo (URL Immagine)</label>
+                    <input type="text" id="az-logo" class="form-input" placeholder="https://...">
+                </div>
+            </div>
+            
+            <button class="btn-save" onclick="salvaAzienda()">💾 SALVA DATI AZIENDA</button>
+        </div>
+    </div>
+
+    <div id="sec-fornitori" class="section">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: #00e5ff; margin: 0;">Elenco Fornitori</h2>
+                <button class="btn-save" style="width: auto; margin: 0; padding: 10px 20px;" onclick="apriModalFornitore()">+ NUOVO FORNITORE</button>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ragione Sociale</th>
+                        <th>Alias (Sigla)</th>
+                        <th>Categorie Fornite</th>
+                        <th>P.IVA</th>
+                        <th>Città</th>
+                        <th style="width: 80px; text-align: center;">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tabella-fornitori">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="sec-classi" class="section">
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #00e5ff; margin-top: 0;">🏷️ Gestione Classi Merceologiche</h2>
+            <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Crea le categorie per raggruppare i tuoi pezzi e filtrare automaticamente a quali fornitori mandare i PDF.</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="nuova-classe-nome" class="form-input" placeholder="Es. Sagomati Laser, Ferramenta..." style="flex:1;">
+                <button class="btn-save" onclick="aggiungiClasse()" style="width:auto; padding:0 20px; margin-top:0;">+ AGGIUNGI CLASSE</button>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome Categoria</th>
+                        <th style="width: 60px; text-align: center;">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tabella-classi">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div id="modal-fornitore-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="color: #00e5ff; margin: 0; font-size: 24px;" id="forn-titolo">Aggiungi Fornitore</h2>
+                <button onclick="chiudiModalFornitore()" style="background:transparent; border:none; color:#888; font-size:28px; cursor:pointer; transition:0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='#888'">✖</button>
+            </div>
+            
+            <input type="hidden" id="forn-id">
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Ragione Sociale Completa *</label>
+                    <input type="text" id="forn-nome" class="form-input" placeholder="Es. BG Lamiere S.r.l.">
+                </div>
+                <div class="form-group">
+                    <label>Alias / Nome Breve (Per tabelle)</label>
+                    <input type="text" id="forn-alias" class="form-input" placeholder="Es. BG">
+                </div>
+                
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Categorie Merceologiche (Spunta cosa ci vende)</label>
+                    <div id="fornitore-classi-container" class="chk-container">
+                        </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Partita IVA</label>
+                    <input type="text" id="forn-piva" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Indirizzo</label>
+                    <input type="text" id="forn-indirizzo" class="form-input" placeholder="Via e Numero">
+                </div>
+                <div class="form-group">
+                    <label>Città e CAP</label>
+                    <input type="text" id="forn-citta" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Email Referente</label>
+                    <input type="email" id="forn-email" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Telefono</label>
+                    <input type="text" id="forn-tel" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Condizioni Pagamento</label>
+                    <input type="text" id="forn-pagamento" class="form-input" placeholder="Es. RIBA 60gg">
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content: flex-end; gap:15px; margin-top: 25px;">
+                <button class="btn-save" style="background:transparent; border:1px solid #666; color:#ccc; width:auto; padding:12px 25px;" onclick="chiudiModalFornitore()">ANNULLA</button>
+                <button class="btn-save" style="width:auto; padding:12px 35px; margin-top:0;" onclick="salvaFornitore()">💾 SALVA FORNITORE</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // CONFIGURAZIONE FIREBASE
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let classiGlobali = {}; 
+
+        window.onload = function() {
+            firebase.auth().onAuthStateChanged((user) => {
+                if (!user) { window.location.href = 'index.html'; return; }
+                caricaDatiAzienda();
+                caricaClassi(); 
+                caricaFornitori();
+            });
+        };
+
+        // NAVIGAZIONE TABS
+        window.showSection = function(secId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('sec-' + secId).classList.add('active');
+            document.getElementById('btn-' + secId).classList.add('active');
+        };
+
+        // ==========================================
+        // GESTIONE AZIENDA
+        // ==========================================
+        function caricaDatiAzienda() {
+            db.ref('impostazioni_azienda').once('value', snap => {
+                let dati = snap.val();
+                if(dati) {
+                    document.getElementById('az-nome').value = dati.ragioneSociale || '';
+                    document.getElementById('az-indirizzo').value = dati.indirizzo || '';
+                    document.getElementById('az-piva').value = dati.piva || '';
+                    document.getElementById('az-tel').value = dati.telefono || '';
+                    document.getElementById('az-email').value = dati.email || '';
+                    document.getElementById('az-logo').value = dati.logo || '';
+                }
+            });
+        }
+
+        window.salvaAzienda = function() {
+            let dati = {
+                ragioneSociale: document.getElementById('az-nome').value.trim(),
+                indirizzo: document.getElementById('az-indirizzo').value.trim(),
+                piva: document.getElementById('az-piva').value.trim(),
+                telefono: document.getElementById('az-tel').value.trim(),
+                email: document.getElementById('az-email').value.trim(),
+                logo: document.getElementById('az-logo').value.trim()
+            };
+            db.ref('impostazioni_azienda').set(dati).then(() => {
+                alert("✅ Dati Azienda salvati correttamente!");
+            }).catch(e => alert("Errore: " + e));
+        };
+
+        // ==========================================
+        // GESTIONE CLASSI MERCEOLOGICHE
+        // ==========================================
+        function caricaClassi() {
+            db.ref('classi_merceologiche').on('value', snap => {
+                classiGlobali = snap.val() || {};
+                disegnaTabellaClassi();
+            });
+        }
+
+        function disegnaTabellaClassi() {
+            const tbody = document.getElementById('tabella-classi');
+            tbody.innerHTML = '';
+            for (let key in classiGlobali) {
+                let c = classiGlobali[key];
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-weight:bold; color:white;">📌 ${c.nome}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-action btn-delete" onclick="eliminaClasse('${key}')" title="Elimina Classe">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        window.aggiungiClasse = function() {
+            let nome = document.getElementById('nuova-classe-nome').value.trim();
+            if(!nome) return alert("Inserisci un nome per la classe!");
+            
+            for(let k in classiGlobali) {
+                if(classiGlobali[k].nome.toUpperCase() === nome.toUpperCase()) {
+                    return alert("⚠️ Questa classe esiste già!");
+                }
+            }
+
+            db.ref('classi_merceologiche').push({ nome: nome }).then(() => {
+                document.getElementById('nuova-classe-nome').value = '';
+            });
+        }
+
+        window.eliminaClasse = function(key) {
+            if(confirm("Sicuro di voler eliminare questa classe?")) {
+                db.ref('classi_merceologiche/' + key).remove();
+            }
+        }
+
+        // ==========================================
+        // GESTIONE FORNITORI E MODALE
+        // ==========================================
+        function caricaFornitori() {
+            db.ref('anagrafica_fornitori').on('value', snap => {
+                const tbody = document.getElementById('tabella-fornitori');
+                tbody.innerHTML = "";
+                let fornitori = snap.val();
+                if(fornitori) {
+                    for(let id in fornitori) {
+                        let f = fornitori[id];
+                        
+                        let catHtml = '<span style="color:#555; font-size:11px;">Nessuna</span>';
+                        if (f.categorie && Array.isArray(f.categorie) && f.categorie.length > 0) {
+                            catHtml = f.categorie.map(c => `<span class="badge-cat">${c}</span>`).join('');
+                        }
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="font-weight:bold; color:#00e5ff;">${f.ragioneSociale || ''}</td>
+                                <td>${f.alias || ''}</td>
+                                <td>${catHtml}</td>
+                                <td>${f.piva || ''}</td>
+                                <td>${f.citta || ''}</td>
+                                <td style="text-align: center;">
+                                    <button class="btn-action btn-edit" onclick="apriModalFornitore('${id}')" title="Modifica">✏️</button>
+                                    <button class="btn-action btn-delete" onclick="eliminaFornitore('${id}')" title="Elimina">🗑️</button>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            });
+        }
+
+        // APRE LA NUOVA MODALE OVERLAY
+        window.apriModalFornitore = function(id = null) {
+            document.getElementById('modal-fornitore-overlay').style.display = 'flex';
+            document.getElementById('forn-id').value = id || '';
+            
+            if(id) {
+                document.getElementById('forn-titolo').innerText = "Modifica Fornitore";
+                db.ref('anagrafica_fornitori/' + id).once('value', snap => {
+                    let f = snap.val();
+                    document.getElementById('forn-nome').value = f.ragioneSociale || '';
+                    document.getElementById('forn-alias').value = f.alias || '';
+                    document.getElementById('forn-piva').value = f.piva || '';
+                    document.getElementById('forn-indirizzo').value = f.indirizzo || '';
+                    document.getElementById('forn-citta').value = f.citta || '';
+                    document.getElementById('forn-email').value = f.email || '';
+                    document.getElementById('forn-tel').value = f.telefono || '';
+                    document.getElementById('forn-pagamento').value = f.pagamento || '';
+                    
+                    generaCheckboxClassi(f); 
+                });
+            } else {
+                document.getElementById('forn-titolo').innerText = "Aggiungi Nuovo Fornitore";
+                // Resetto i campi
+                document.getElementById('forn-nome').value = '';
+                document.getElementById('forn-alias').value = '';
+                document.getElementById('forn-piva').value = '';
+                document.getElementById('forn-indirizzo').value = '';
+                document.getElementById('forn-citta').value = '';
+                document.getElementById('forn-email').value = '';
+                document.getElementById('forn-tel').value = '';
+                document.getElementById('forn-pagamento').value = '';
+                
+                generaCheckboxClassi(null); 
+            }
+        };
+
+        function generaCheckboxClassi(fornitoreData) {
+            const container = document.getElementById('fornitore-classi-container');
+            container.innerHTML = '';
+            
+            const classiArr = Object.values(classiGlobali).map(c => c.nome).sort();
+            
+            if (classiArr.length === 0) {
+                container.innerHTML = '<span style="color:#f39c12; font-size:13px;">⚠️ Nessuna classe creata. Vai nel tab "Classi Merceologiche" per crearne una prima.</span>';
+                return;
+            } 
+            
+            classiArr.forEach(catNome => {
+                let isChecked = (fornitoreData && fornitoreData.categorie && fornitoreData.categorie.includes(catNome)) ? 'checked' : '';
+                container.innerHTML += `
+                    <label class="chk-item">
+                        <input type="checkbox" class="chk-cat" value="${catNome}" ${isChecked}>
+                        ${catNome}
+                    </label>
+                `;
+            });
+        }
+
+        // CHIUDE LA MODALE OVERLAY
+        window.chiudiModalFornitore = function() {
+            document.getElementById('modal-fornitore-overlay').style.display = 'none';
+        };
+
+        window.salvaFornitore = function() {
+            let id = document.getElementById('forn-id').value;
+            let nome = document.getElementById('forn-nome').value.trim();
+            if(!nome) return alert("La Ragione Sociale è obbligatoria!");
+
+            let catScelte = [];
+            document.querySelectorAll('.chk-cat:checked').forEach(chk => {
+                catScelte.push(chk.value);
+            });
+
+            let dati = {
+                ragioneSociale: nome,
+                alias: document.getElementById('forn-alias').value.trim(),
+                categorie: catScelte,
+                piva: document.getElementById('forn-piva').value.trim(),
+                indirizzo: document.getElementById('forn-indirizzo').value.trim(),
+                citta: document.getElementById('forn-citta').value.trim(),
+                email: document.getElementById('forn-email').value.trim(),
+                telefono: document.getElementById('forn-tel').value.trim(),
+                pagamento: document.getElementById('forn-pagamento').value.trim()
+            };
+
+            let rif = id ? db.ref('anagrafica_fornitori/' + id) : db.ref('anagrafica_fornitori').push();
+            rif.set(dati).then(() => {
+                chiudiModalFornitore();
+            }).catch(e => alert("Errore: " + e));
+        };
+
+        window.eliminaFornitore = function(id) {
+            if(confirm("Sicuro di voler eliminare questo fornitore?")) {
+                db.ref('anagrafica_fornitori/' + id).remove();
+            }
+        };
+
+        // Chiusura della modale cliccando fuori (sullo sfondo nero)
+        window.onclick = function(event) {
+            const overlay = document.getElementById('modal-fornitore-overlay');
+            if (event.target === overlay) {
+                chiudiModalFornitore();
+            }
+        }
+    </script>
+</body>
+</html>

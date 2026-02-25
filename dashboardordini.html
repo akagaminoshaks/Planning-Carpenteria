@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Archivio Ordini - Tre Emme</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 30px; }
+        .btn-back { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 20px; cursor: pointer; transition: 0.2s; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .btn-back:hover { border-color: white; color: white; }
+
+        .container { width: 100%; max-width: 1200px; }
+        .title { color: #9b59b6; margin-top: 0; font-size: 28px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+
+        .order-card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .order-card:hover { border-color: #555; transform: translateY(-2px); }
+        
+        .order-info { display: flex; flex-direction: column; gap: 5px; }
+        .order-title { font-size: 20px; font-weight: bold; color: white; }
+        .order-sub { font-size: 13px; color: #888; }
+        
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: 1px solid transparent; }
+        .badge.todo { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-color: #e74c3c; }
+        .badge.wip { background: rgba(52, 152, 219, 0.1); color: #3498db; border-color: #3498db; }
+        .badge.done { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border-color: #2ecc71; }
+
+        .btn-go { background: #9b59b6; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .btn-go:hover { background: #8e44ad; box-shadow: 0 0 15px rgba(155, 89, 182, 0.4); }
+        .btn-disabled { background: #333; color: #666; cursor: not-allowed; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; }
+        
+        /* Stile Tasto Elimina */
+        .btn-del-commessa { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-del-commessa:hover { background: rgba(231, 76, 60, 0.1); box-shadow: 0 0 10px rgba(231, 76, 60, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="hometreemme.html" class="btn-back">⬅ TORNA ALL'HUB</a>
+        <h2 style="margin:0; color:#888; font-size:16px;">Cruscotto Acquisti e Ordini</h2>
+    </div>
+
+    <div class="container">
+        <h2 class="title">🗂️ Archivio Ordini (Contenitori)</h2>
+        <div id="lista-ordini">
+            <div style="color:#00e5ff;">Caricamento ordini in corso... ⏳</div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        window.onload = function() {
+            firebase.auth().onAuthStateChanged((user) => {
+                if (!user) window.location.href = 'index.html';
+                else caricaOrdini();
+            });
+        };
+
+        function caricaOrdini() {
+            // Leggiamo tutti i contenitori del cliente Tre Emme
+            db.ref('commesse/Tre Emme').on('value', snap => {
+                const lista = document.getElementById('lista-ordini');
+                lista.innerHTML = "";
+                let dati = snap.val();
+                
+                if(!dati) { lista.innerHTML = "<div style='color:#888;'>Nessun ordine presente.</div>"; return; }
+
+                // Convertiamo in array e ordiniamo per avere i più recenti (o da ordinare) in alto
+                let arrayOrdini = Object.keys(dati).map(key => { return { id: key, ...dati[key] }; });
+                
+                // Mettiamo in cima quelli con stato 0 (Da ordinare)
+                arrayOrdini.sort((a, b) => a.stato - b.stato);
+
+                arrayOrdini.forEach(ord => {
+                    let statoHtml = "";
+                    let btnHtml = "";
+
+                    if(ord.stato === 0) {
+                        statoHtml = `<span class="badge todo">⚠️ Manca Materiale (Da Ordinare)</span>`;
+                        btnHtml = `<a href="acquistitreemme.html?ordine=${ord.id}" class="btn-go">🛒 GESTISCI ACQUISTI E PREVENTIVI</a>`;
+                    } else if (ord.stato > 0 && ord.stato < 4) {
+                        statoHtml = `<span class="badge wip">⚙️ In Officina (Produzione)</span>`;
+                        btnHtml = `<button class="btn-disabled" disabled>🔒 MATERIALE ORDINATO</button>`;
+                    } else {
+                        statoHtml = `<span class="badge done">✅ Completato</span>`;
+                        btnHtml = `<button class="btn-disabled" disabled>CHIUSO</button>`;
+                    }
+
+                    lista.innerHTML += `
+                        <div class="order-card">
+                            <div class="order-info">
+                                <div class="order-title">${ord.nomeOrdine} - <span style="color:#00e5ff;">${ord.nome_articolo || ord.matricola}</span></div>
+                                <div class="order-sub">Q.tà: <strong style="color:white;">${ord.qtaTotale}</strong> | Data: ${ord.data} | Matricola: ${ord.matricola}</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                ${statoHtml}
+                                ${btnHtml}
+                                <button class="btn-del-commessa" onclick="eliminaCommessa('${ord.id}')">🗑️ ELIMINA</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // --- NUOVA FUNZIONE PER ELIMINARE LA COMMESSA ---
+        window.eliminaCommessa = function(id) {
+            let conferma = confirm("⚠️ ATTENZIONE: Sei sicuro di voler eliminare questa commessa?\nTutti i dati andranno persi irreversibilmente!");
+            
+            if (conferma) {
+                db.ref('commesse/Tre Emme/' + id).remove()
+                .then(() => {
+                    console.log("Commessa eliminata con successo.");
+                    // L'interfaccia si aggiornerà da sola grazie al .on('value') nella funzione caricaOrdini!
+                })
+                .catch(err => alert("Si è verificato un errore durante l'eliminazione: " + err));
+            }
+        }
+    </script>
+</body>
+</html>

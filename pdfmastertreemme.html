@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Anteprima e Generazione PDF - RDO</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body { background-color: #111; display: flex; justify-content: center; padding: 40px; padding-bottom: 120px; font-family: Arial, sans-serif; margin: 0; }
+        .a4-page { width: 210mm; min-height: 297mm; background: white; color: black; padding: 8mm 8mm; box-sizing: border-box; box-shadow: 0 0 30px rgba(0,229,255,0.3); position: relative; }
+        
+        .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .my-logo-box { width: 40%; }
+        .my-logo { max-width: 100%; max-height: 100px; object-fit: contain; }
+        .my-company-info { width: 30%; font-size: 13px; line-height: 1.4; color: #000; }
+        .my-company-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+
+        .recipient-box { width: 30%; margin-left: auto; margin-bottom: 30px; font-size: 13px; line-height: 1.4; }
+        .recipient-title { font-weight: bold; font-size: 15px; margin-bottom: 3px; }
+
+        .doc-references { font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+        .doc-references div { margin-bottom: 5px; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 11px; }
+        th, td { border: 1px solid #000; padding: 6px; vertical-align: top; }
+        th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+        .center-col { text-align: center; }
+        .bold-col { font-weight: bold; }
+        .cell-specifiche { font-size: 10px; line-height: 1.4; white-space: pre-wrap; }
+
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; font-family: sans-serif; }
+
+        #action-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(20, 20, 20, 0.95); border-top: 2px solid #00e5ff; padding: 20px; display: none; justify-content: center; align-items: center; gap: 30px; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); box-sizing: border-box; }
+        .btn-action { padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; border: none; transition: 0.2s; }
+        .btn-download { background: #00e5ff; color: black; box-shadow: 0 0 15px rgba(0,229,255,0.4); }
+        .btn-download:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,229,255,0.7); }
+        .btn-cancel { background: transparent; border: 2px solid #ff4d4d; color: #ff4d4d; }
+        .btn-cancel:hover { background: rgba(255, 77, 77, 0.1); }
+    
+        @media print {
+            body { background: white; padding: 0; margin: 0; display: block; }
+            .a4-page { box-shadow: none; margin: 0; width: 100%; height: 100%; padding: 0; }
+            #action-bar, #loading-msg { display: none !important; }
+            @page { margin: 8mm; size: A4 portrait; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-msg" class="overlay-screen">
+        <div style="font-size: 24px; font-weight:bold; margin-bottom:15px;">⏳ Creazione Anteprima in corso...</div>
+        <div id="loading-sub" style="font-size: 16px; color:#00e5ff;">Recupero dati dal server...</div>
+    </div>
+
+    <div class="a4-page" id="pdf-content">
+        <div class="pdf-header">
+            <div class="my-logo-box"><img id="pdf-logo" class="my-logo" src="" style="display:none;"></div>
+            <div class="my-company-info">
+                <div class="my-company-name" id="pdf-my-name">Carpenteria Pesa srl</div>
+                <div id="pdf-my-address">---</div>
+                P.Iva / C.F. <span id="pdf-my-piva">---</span><br>
+                Tel. <span id="pdf-my-tel">---</span><br>
+                <span id="pdf-my-email">---</span>
+            </div>
+        </div>
+
+        <div class="recipient-box">
+            Spett.le<br>
+            <div class="recipient-title" id="pdf-forn-nome">---</div>
+            <div id="pdf-forn-address"></div>
+            P. Iva <span id="pdf-forn-piva">---</span>
+        </div>
+
+        <div class="doc-references">
+            <div>Richiesta di Offerta N° <strong id="pdf-id-ordine"></strong> del <strong id="pdf-data-oggi"></strong></div>
+            <div>MATRICOLA: <strong id="pdf-articolo-master">---</strong></div>
+            <div><strong><span id="pdf-forn-nome-2"></span> Ordine N° <span id="pdf-id-ordine-2"></span> (<span id="pdf-articolo-master-2"></span>, <span id="pdf-data-oggi-2"></span>)</strong></div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:20px;">#</th>
+                    <th style="width:65px;">IMG</th>
+                    <th style="width:80px;">Codice</th>
+                    <th>Descrizione / Disegno</th>
+                    <th style="width:40px;">UM</th>
+                    <th style="width:40px;">Q.tà</th>
+                    <th style="width:160px;">Specifiche / Note</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="action-bar">
+        <div style="color: white; font-size: 14px; margin-right: 20px;">👀 Controlla l'anteprima del foglio qui sopra. Se è tutto corretto, procedi al download.</div>
+        <button class="btn-action btn-cancel" onclick="window.close()">❌ ANNULLA</button>
+        <button class="btn-action btn-download" onclick="avviaDownloadPDF()">📥 STAMPA / SALVA PDF</button>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const ordineId = urlParams.get('ordine');
+        const nomeFornitore = urlParams.get('fornitore');
+        const componentiSelezionati = urlParams.get('comps');
+
+        const loadingMsg = document.getElementById('loading-msg');
+        const loadingSub = document.getElementById('loading-sub');
+        const actionBar = document.getElementById('action-bar');
+
+        window.onload = function() {
+            if(!ordineId || !nomeFornitore || !componentiSelezionati) {
+                alert("Errore: Dati mancanti per generare il PDF!"); window.close(); return;
+            }
+            
+            let dataOggi = new Date().toLocaleDateString('it-IT');
+            document.getElementById('pdf-data-oggi').innerText = dataOggi;
+            document.getElementById('pdf-data-oggi-2').innerText = dataOggi;
+
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) recuperaDatiDaDatabase();
+                else { alert("⚠️ Accesso Negato: Devi essere loggato!"); window.close(); }
+            });
+        };
+
+        async function recuperaDatiDaDatabase() {
+            try {
+                let snapAzienda = await db.ref('impostazioni_azienda').once('value');
+                let datiAzienda = snapAzienda.val() || {};
+
+                let snapOrdine = await db.ref('commesse/Tre Emme/' + ordineId).once('value');
+                let datiOrdine = snapOrdine.val();
+
+                // SALVATAGGIO ERRORI: Se l'ordine non c'è, avvisa e fermati!
+                if(!datiOrdine) throw new Error("Ordine non trovato nel database o ID errato.");
+
+                // Recupero i dati dell'articolo master per prendere la matricola esatta (con sicurezza)
+                let idMaster = datiOrdine.id_articolo_master || 'sconosciuto';
+                let snapArticolo = await db.ref('archivio/Tre Emme/' + idMaster).once('value');
+                let datiArticolo = snapArticolo.val() || {};
+
+                let snapFornitori = await db.ref('anagrafica_fornitori').once('value');
+                let tuttiFornitori = snapFornitori.val() || {};
+                let datiFornitore = { ragioneSociale: nomeFornitore }; 
+                
+                for(let id in tuttiFornitori) {
+                    let nomeTrovato = tuttiFornitori[id].ragioneSociale || "";
+                    let aliasTrovato = tuttiFornitori[id].alias || "";
+                    if(nomeTrovato.toUpperCase() === nomeFornitore.toUpperCase() || aliasTrovato.toUpperCase() === nomeFornitore.toUpperCase()) {
+                        datiFornitore = tuttiFornitori[id]; break;
+                    }
+                }
+
+                loadingSub.innerText = "Impostazione Layout...";
+                
+                // COMPILAZIONE INTESTAZIONI
+                if(datiAzienda.logo) { let logoEl = document.getElementById('pdf-logo'); logoEl.src = datiAzienda.logo; logoEl.style.display = 'block'; }
+                document.getElementById('pdf-my-name').innerText = datiAzienda.ragioneSociale || "Carpenteria Pesa srl";
+                document.getElementById('pdf-my-address').innerText = datiAzienda.indirizzo || "";
+                document.getElementById('pdf-my-piva').innerText = datiAzienda.piva || "";
+                document.getElementById('pdf-my-tel').innerText = datiAzienda.telefono || "";
+                document.getElementById('pdf-my-email').innerText = datiAzienda.email || "";
+
+                document.getElementById('pdf-forn-nome').innerText = datiFornitore.ragioneSociale || nomeFornitore;
+                document.getElementById('pdf-forn-nome-2').innerText = datiFornitore.ragioneSociale || nomeFornitore;
+                if(datiFornitore.indirizzo) document.getElementById('pdf-forn-address').innerText = datiFornitore.indirizzo;
+                if(datiFornitore.piva) document.getElementById('pdf-forn-piva').innerText = datiFornitore.piva;
+
+                // COMPILAZIONE RIFERIMENTI
+                let matricolaMaster = datiArticolo.matricola || datiOrdine.nome_articolo || "Senza Matricola";
+                document.getElementById('pdf-articolo-master').innerText = matricolaMaster;
+                document.getElementById('pdf-articolo-master-2').innerText = matricolaMaster;
+                
+                let idOrd = datiOrdine.nomeOrdine || datiOrdine.nome_ordine_cliente || ordineId;
+                document.getElementById('pdf-id-ordine').innerText = idOrd;
+                document.getElementById('pdf-id-ordine-2').innerText = idOrd;
+
+                // COMPILAZIONE TABELLA 
+                let idsSelezionati = componentiSelezionati.split(',');
+                let tbody = document.getElementById('pdf-table-body');
+                let index = 1;
+
+                idsSelezionati.forEach(compId => {
+                    let c = datiOrdine.fabbisogno[compId];
+                    if(c) {
+                        let tr = document.createElement('tr');
+                        let qta = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
+                        
+                        let specificheTesto = `Codice: ${c.matricola || '-'}\n`;
+                        if(c.materiale) specificheTesto += `Materiale: ${c.materiale}\n`;
+                        if(c.spessore) specificheTesto += `Spessore: ${c.spessore}\n`;
+                        if(c.peso) specificheTesto += `Peso: ${c.peso}\n`;
+                        if(c.dimensione) specificheTesto += `Dimensioni: ${c.dimensione}\n`;
+                        if(c.note) specificheTesto += `Note: ${c.note}`;
+
+                        let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="max-width:55px; max-height:55px; object-fit:contain; border-radius:3px;">` : ``;
+
+                        let codiceTesto = `<strong style="font-size:11px;">${c.matricola || '-'}</strong>`;
+                        if(c.disegno) codiceTesto += `<br><span style="font-size:9px; color:#333;">Dis: ${c.disegno}</span>`;
+                        if(c.revPesa) codiceTesto += `<br><span style="font-size:9px; color:#333;">Rev: ${c.revPesa}</span>`;
+
+                        // Evitiamo che stampi "Componente" a caso se non hai compilato nessuna descrizione nel master
+                        let descMessaInStampa = c.nome;
+                        if(descMessaInStampa === "Componente") descMessaInStampa = "Senza Descrizione";
+
+                        tr.innerHTML = `
+                            <td class="center-col">#${index}</td>
+                            <td class="center-col" style="vertical-align:middle;">${imgHtml}</td>
+                            <td class="center-col" style="line-height:1.9;">${codiceTesto}</td>                           
+                            <td>${descMessaInStampa}</td>
+                            <td class="center-col">${c.unitaQta || 'N°'}</td>
+                            <td class="center-col bold-col">${qta}</td>
+                            <td class="cell-specifiche">${specificheTesto}</td>
+                        `;
+                        tbody.appendChild(tr);
+                        index++;
+                    }
+                });
+
+                setTimeout(() => {
+                    loadingMsg.style.display = 'none';
+                    actionBar.style.display = 'flex';
+                }, 500);
+
+            } catch(e) {
+                loadingMsg.innerHTML = `<h2 style="color:red;">❌ Errore Caricamento:</h2><p>${e.message}</p>`;
+            }
+        }
+
+        function avviaDownloadPDF() {
+            let nomeFilePulito = nomeFornitore.replace(/[^a-zA-Z0-9]/g, "_");
+            document.title = `Ordine_${nomeFilePulito}`;
+            window.print();
+        }
+    </script>
+</body>
+</html>

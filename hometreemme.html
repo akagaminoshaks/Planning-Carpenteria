@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Tre Emme - Gestionale</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        /* BASE & SFONDO */
+        body { 
+            font-family: 'Segoe UI', 'Roboto', sans-serif; 
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+            color: white; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            overflow: hidden;
+        }
+
+        /* HEADER / BACK BUTTON */
+        .top-bar { position: absolute; top: 20px; left: 20px; z-index: 1000; }
+        .btn-back { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.3s; text-decoration: none; display: inline-block; }
+        .btn-back:hover { background: rgba(255,255,255,0.1); border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        /* DASHBOARD CONTAINER */
+        #dashboard {
+            width: 100%; max-width: 1200px; padding: 40px; display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* TITOLO */
+        h1.dash-title { 
+            margin-bottom: 50px; font-size: 38px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; text-shadow: 0 0 20px rgba(255,255,255,0.1); text-align: center;
+        }
+        h1.dash-title span { color: #3498db; text-shadow: 0 0 20px rgba(52, 152, 219, 0.6); }
+
+        /* GRIGLIA CARDS */
+        .grid-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; max-width: 900px;
+        }
+
+        /* STILE BOTTONI (VETRO) */
+        .card {
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; text-decoration: none; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; cursor: pointer;
+        }
+
+        .card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(255, 255, 255, 0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,255,255,0.05); }
+
+        /* COLORI SPECIFICI */
+        .c-crea { background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(46, 204, 113, 0.0)); }
+        .c-crea:hover { box-shadow: 0 0 30px rgba(46, 204, 113, 0.4); border-color: #2ecc71; }
+        
+        .c-comm { background: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(241, 196, 15, 0.0)); }
+        .c-comm:hover { box-shadow: 0 0 30px rgba(241, 196, 15, 0.4); border-color: #f1c40f; }
+        
+        .c-arch { background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(52, 152, 219, 0.0)); }
+        .c-arch:hover { box-shadow: 0 0 30px rgba(52, 152, 219, 0.4); border-color: #3498db; }
+        
+        .c-ord { background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(155, 89, 182, 0.0)); }
+        .c-ord:hover { box-shadow: 0 0 30px rgba(155, 89, 182, 0.4); border-color: #9b59b6; }
+
+        .card-icon { font-size: 55px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); transition: 0.3s; }
+        .card:hover .card-icon { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(255,255,255,0.5)); }
+
+        .card-title { font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        .card-desc { font-size: 13px; color: #aaa; font-weight: 300; }
+
+        /* RESPONSIVE (MOBILE) */
+        @media (max-width: 768px) {
+            body { overflow-y: auto; }
+            .grid-container { grid-template-columns: 1fr; }
+            h1.dash-title { font-size: 28px; }
+            
+            /* LA MAGIA: NASCONDE IL BOTTONE CREA ORDINE SUI CELLULARI */
+            #card-crea-ordine { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="index.html" class="btn-back">⬅ TORNA AL MENU PRINCIPALE</a>
+    </div>
+
+    <div id="dashboard">
+        <h1 class="dash-title">HUB <span>TRE EMME</span></h1>
+
+        <div class="grid-container">
+            
+            <a href="creacommessaordinetreemme.html" id="card-crea-ordine" class="card c-crea">
+                <div class="card-icon">➕</div>
+                <div class="card-title">Crea Ordine</div>
+                <div class="card-desc">Nuova Commessa da PC</div>
+            </a>
+
+            <a href="commessetreemme.html" class="card c-comm">
+                <div class="card-icon">🏭</div>
+                <div class="card-title">Commesse Officina</div>
+                <div class="card-desc">Avanzamento e Produzione</div>
+            </a>
+
+            <a href="archiviomastertreemme.html" class="card c-arch">
+                <div class="card-icon">📚</div>
+                <div class="card-title">Archivio Master</div>
+                <div class="card-desc">Distinte Base e Articoli</div>
+            </a>
+
+            <a href="dashboardordini.html" class="card c-ord">
+                <div class="card-icon">🗂️</div>
+                <div class="card-title">CALENDARIO Questo sarà il calendario tre emme del nostro gestionale Archivio Ordini</div>
+                <div class="card-desc">Gestione Preventivi e Acquisti</div>
+            </a>
+
+        </div>
+    </div>
+
+    <script>
+        // Controllo Login di Sicurezza
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
