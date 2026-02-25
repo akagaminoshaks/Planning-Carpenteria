@@ -178,7 +178,8 @@
                     <span style="color: #2ecc71; font-size: 14px; font-weight:bold;">COSTO TOTALE:</span>
                     <span id="uff-totale-finito" style="color: #2ecc71; font-size: 20px; font-weight: bold;">0.00 €</span>
                 </div>
-                <button class="btn-azione btn-ord" onclick="confermaEInviaInOfficina()">✔️ BLOCCA PREZZI E INVIA IN OFFICINA</button>
+                <button class="btn-azione" style="background:#f1c40f; color:black; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3);" onclick="apriModalGenerazioneODA()">📄 1. GENERA PDF ORDINI D'ACQUISTO (ODA)</button>
+                <button class="btn-azione btn-ord" onclick="confermaEInviaInOfficina()">✔️ 2. BLOCCA PREZZI E INVIA IN OFFICINA</button>
             </div>
         </div>
     </div>
@@ -199,6 +200,35 @@
             </div>
         </div>
     </div>
+
+
+
+    <div id="modal-oda" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:3000; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+        <div style="background:#1a1a1a; border:2px solid #f1c40f; border-radius:12px; padding:30px; width:100%; max-width:500px; text-align:center; box-shadow:0 15px 40px rgba(241, 196, 15, 0.3);">
+            <h2 style="color:#f1c40f; margin-top:0;">🛒 Stampa Ordini d'Acquisto</h2>
+            <p style="color:#aaa; font-size:14px;">In coda per la stampa del PDF:</p>
+            <div id="lista-fornitori-oda" style="margin: 20px 0;"></div>
+            <div style="display:flex; justify-content:center; gap:15px;">
+                <button class="btn-azione" style="background:transparent; border:1px solid #e74c3c; color:#e74c3c; width:auto; padding:10px 20px;" onclick="mostraPopupODA('salta')">⏭️ SALTA</button>
+                <button class="btn-azione" style="background:#f1c40f; color:black; width:auto; padding:10px 30px;" onclick="mostraPopupODA('stampa')">📥 GENERA PDF</button>
+            </div>
+            <button style="margin-top: 20px; background:none; border:none; color:#666; cursor:pointer; text-decoration:underline;" onclick="document.getElementById('modal-oda').style.display='none'">Annulla e chiudi</button>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
@@ -523,7 +553,7 @@
                 tr.innerHTML = `
                     <td style="color:#666; text-align:center;">${index}</td>
                     <td style="text-align:center;">${imgHtml}</td> 
-                    <td><input type="text" class="inp-mini field-fornitore" value="${c.fornitore || ''}" style="color:${getColoreFornitore(c.fornitore)}; font-weight:bold; text-align:center;" oninput="this.style.color=getColoreFornitore(this.value); calcolaTotaliAcquisti();"></td>
+                    <td><input type="text" class="inp-mini field-fornitore" value="${c.fornitore_definitivo || ''}" style="color:${getColoreFornitore(c.fornitore_definitivo)}; font-weight:bold; text-align:center;" oninput="this.style.color=getColoreFornitore(this.value); calcolaTotaliAcquisti();"></td>
                     <td style="color:#fff; text-align:left; padding-left:10px;">${c.matricola || '-'} <span style="font-weight:normal; color:#ccc; font-size:11px; display:block;">${c.nome || ''}</span></td>
                     <td><input type="number" class="inp-mini inp-ordina field-qta" value="${qtaOrdinare}" min="0" oninput="calcolaRiga(this)"></td>
                     <td><select class="inp-mini field-u-qta" onchange="calcolaRiga(this)"><option value="Pz" ${c.unitaQta === 'Pz'?'selected':''}>Pz</option><option value="Kg" ${c.unitaQta === 'Kg'?'selected':''}>Kg</option><option value="m" ${c.unitaQta === 'm'?'selected':''}>m</option></select></td>
@@ -587,7 +617,7 @@
                 let compOrig = datiOrdineOriginali.fabbisogno[cId];
                 fabbisognoAggiornato[cId] = {
                     ...compOrig,
-                    fornitore: r.querySelector('.field-fornitore').value,
+                    fornitore_definitivo: r.querySelector('.field-fornitore').value,
                     qta_da_ordinare: parseFloat(r.querySelector('.field-qta').value) || 0,
                     unitaQta: r.querySelector('.field-u-qta').value,
                     prezzo: parseFloat(r.querySelector('.field-prezzo').value) || 0,
@@ -714,6 +744,103 @@
                 caricaDatiOrdine(); 
             }
         }
+
+
+
+
+
+        // ==========================================
+        // GESTIONE PDF ODA (ORDINI UFFICIALI)
+        // ==========================================
+        window.apriModalGenerazioneODA = function() {
+            // 1. Salva la tabella in background prima di stampare
+            let fabbisognoAggiornato = {};
+            let fornitoriAssegnati = {}; 
+
+            document.querySelectorAll('#ordine-body tr').forEach(r => {
+                let cId = r.getAttribute('data-comp-id');
+                let compOrig = datiOrdineOriginali.fabbisogno[cId];
+                let forn = r.querySelector('.field-fornitore').value.trim();
+                let qta = parseFloat(r.querySelector('.field-qta').value) || 0;
+                let prz = parseFloat(r.querySelector('.field-prezzo').value) || 0;
+
+                fabbisognoAggiornato[cId] = {
+                    ...compOrig,
+                    fornitore_definitivo: forn,
+                    qta_da_ordinare: qta,
+                    unitaQta: r.querySelector('.field-u-qta').value,
+                    prezzo: prz,
+                    unitaPrezzo: r.querySelector('.field-u-prz').value
+                };
+
+                // Raggruppa i pezzi in base al fornitore
+                if(forn && forn !== 'DA ASSEGNARE' && qta > 0) {
+                    if(!fornitoriAssegnati[forn]) fornitoriAssegnati[forn] = [];
+                    fornitoriAssegnati[forn].push(cId);
+                }
+            });
+
+            // 2. Salva nel database e apri il popup
+            db.ref('commesse/Tre Emme/' + ordineCorrenteId + '/fabbisogno').set(fabbisognoAggiornato).then(() => {
+                datiOrdineOriginali.fabbisogno = fabbisognoAggiornato; 
+                let keysFornitori = Object.keys(fornitoriAssegnati);
+                
+                if(keysFornitori.length === 0) return alert("Nessun fornitore assegnato o quantità pari a zero!");
+
+                window.mappaFornitoriODA = fornitoriAssegnati;
+                window.listaFornitoriODA = keysFornitori;
+                mostraPopupODA();
+            });
+        }
+
+        window.mostraPopupODA = function(azione) {
+            if (azione === 'salta') {
+                window.listaFornitoriODA.shift();
+            } else if (azione === 'stampa') {
+                let fornitore = window.listaFornitoriODA.shift();
+                let comps = window.mappaFornitoriODA[fornitore].join(',');
+                let urlPdf = `pdfoda_treemme.html?ordine=${ordineCorrenteId}&fornitore=${encodeURIComponent(fornitore)}&comps=${comps}`;
+                window.open(urlPdf, '_blank');
+            }
+
+            let box = document.getElementById('lista-fornitori-oda');
+            if (window.listaFornitoriODA && window.listaFornitoriODA.length > 0) {
+                let prossimo = window.listaFornitoriODA[0];
+                document.getElementById('modal-oda').style.display = 'flex';
+                box.innerHTML = `<h2 style="color:#f1c40f; margin:10px 0; text-transform:uppercase;">${prossimo}</h2>`;
+            } else {
+                document.getElementById('modal-oda').style.display = 'none';
+                if(azione) alert("✅ Generazione PDF Ordini completata!");
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
 </body>
 </html>

@@ -845,8 +845,8 @@
                         let imgSrc = c.iconaBase64 || c.iconaBase || c.immagine || "";
                         let iconHtml = imgSrc ? `<img src="${imgSrc}" class="part-icon-thumb">` : `<div class="part-icon-placeholder">📷</div>`;
 
-                        // MAGIA: Leggiamo il fornitore REALE salvato negli acquisti. Se non c'è, usiamo la classe base.
-                        let fornitoreReale = (d.fabbisogno && d.fabbisogno[cid] && d.fabbisogno[cid].fornitore) ? d.fabbisogno[cid].fornitore : (c.fornitore || "NON ASSEGNATO");
+                        // MAGIA: Leggiamo il fornitore_definitivo salvato negli acquisti. Se non c'è, usiamo la classe base.
+                        let fornitoreReale = (d.fabbisogno && d.fabbisogno[cid] && d.fabbisogno[cid].fornitore_definitivo) ? d.fabbisogno[cid].fornitore_definitivo : (c.fornitore || "NON ASSEGNATO");
                         
                         let nomeFornitore = fornitoreReale.trim().toUpperCase();
 
