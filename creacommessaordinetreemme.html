@@ -61,11 +61,17 @@
 
         <div class="form-grid">
             
-            <div class="form-group" style="grid-column: 1 / -1; background: rgba(0, 229, 255, 0.05); padding: 20px; border-radius: 8px; border: 1px dashed #00e5ff;">
-                <label style="color:#00e5ff;">1. Ricerca Articolo (Da Archivio Master) *</label>
-                <input type="text" id="ord-matr" class="form-input" list="lista-articoli-master" placeholder="Digita matricola o descrizione..." style="border-color:#00e5ff; font-weight:bold; font-size:20px; color:#00e5ff;">
-                <datalist id="lista-articoli-master"></datalist>
-                <span style="font-size: 12px; color: #666; margin-top: 5px;">*Il sistema importerà automaticamente l'intera distinta base e calcolerà il fabbisogno.</span>
+            <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; background: rgba(0, 229, 255, 0.05); padding: 20px; border-radius: 8px; border: 1px dashed #00e5ff;">
+                <div class="form-group">
+                    <label style="color:#00e5ff;">1. Ricerca Articolo (Da Archivio Master) *</label>
+                    <input type="text" id="ord-matr" class="form-input" list="lista-articoli-master" placeholder="Digita matricola o descrizione..." style="border-color:#00e5ff; font-weight:bold; font-size:20px; color:#00e5ff;">
+                    <datalist id="lista-articoli-master"></datalist>
+                    <span style="font-size: 12px; color: #666; margin-top: 5px;">*Il sistema importerà l'intera distinta.</span>
+                </div>
+                <div class="form-group">
+                    <label style="color:#00e5ff;">N° Disegno (Opzionale)</label>
+                    <input type="text" id="ord-disegno" class="form-input" placeholder="Es. X00163_2N" style="border-color:#00e5ff; font-weight:bold; font-size:20px; color:#00e5ff;">
+                </div>
             </div>
 
             <div class="form-group">
@@ -145,6 +151,7 @@
             let matricolaScelta = document.getElementById('ord-matr').value.trim();
             let nOrdine = document.getElementById('ord-num').value.trim();
             let qtaLotto = parseFloat(document.getElementById('ord-qta').value) || 1;
+            let disegnoFornito = document.getElementById('ord-disegno').value.trim();
 
             if(!matricolaScelta || !nOrdine) return alert("Matricola e N° Ordine sono obbligatori!");
 
@@ -187,7 +194,8 @@
             let nuovoContenitore = {
                 id_articolo_master: idMaster,
                 matricola: artMaster.matricola,
-                disegno: artMaster.disegno || "",
+                // Se l'utente ha scritto un disegno manuale usa quello, altrimenti pesca quello salvato nel Master
+                disegno: disegnoFornito || artMaster.disegno || "",
                 nome_articolo: artMaster.desc || "",
                 immagine: artMaster.immagine || "",
                 nomeOrdine: nOrdine,

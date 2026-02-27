@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Stampa Distinta Base Master</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        /* STILI IDENTICI AL PDF MASTER TRE EMME */
+        body { background-color: #111; display: flex; justify-content: center; padding: 40px; padding-bottom: 120px; font-family: Arial, sans-serif; margin: 0; }
+        .a4-page { width: 210mm; min-height: 297mm; background: white; color: black; padding: 8mm 8mm; box-sizing: border-box; box-shadow: 0 0 30px rgba(0,229,255,0.3); position: relative; }
+        
+        .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .my-logo-box { width: 40%; }
+        .my-logo { max-width: 100%; max-height: 100px; object-fit: contain; }
+        .my-company-info { width: 30%; font-size: 13px; line-height: 1.4; color: #000; text-align: right; }
+        .my-company-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+
+        .doc-title-box { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .doc-title { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        
+        .article-info-box { display: flex; gap: 20px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; }
+        .art-img { width: 120px; height: 120px; object-fit: contain; border: 1px dashed #ccc; background: #fff; }
+        .art-details { flex: 1; font-size: 14px; line-height: 1.6; }
+        .art-details strong { color: #000; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 11px; }
+        th, td { border: 1px solid #000; padding: 6px; vertical-align: middle; }
+        th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+        .center-col { text-align: center; }
+        .bold-col { font-weight: bold; font-size: 13px; }
+        .cell-specifiche { font-size: 10px; line-height: 1.4; white-space: pre-wrap; }
+
+        .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; font-family: sans-serif; }
+
+        #action-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(20, 20, 20, 0.95); border-top: 2px solid #00e5ff; padding: 20px; display: none; justify-content: center; align-items: center; gap: 30px; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); box-sizing: border-box; }
+        .btn-action { padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; border: none; transition: 0.2s; }
+        .btn-download { background: #00e5ff; color: black; box-shadow: 0 0 15px rgba(0,229,255,0.4); }
+        .btn-download:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,229,255,0.7); }
+        .btn-cancel { background: transparent; border: 2px solid #ff4d4d; color: #ff4d4d; }
+        .btn-cancel:hover { background: rgba(255, 77, 77, 0.1); }
+    
+        @media print {
+            body { background: white; padding: 0; margin: 0; display: block; }
+            .a4-page { box-shadow: none; margin: 0; width: 100%; height: 100%; padding: 0; }
+            #action-bar, #loading-msg { display: none !important; }
+            @page { margin: 8mm; size: A4 portrait; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-msg" class="overlay-screen">
+        <div style="font-size: 24px; font-weight:bold; margin-bottom:15px;">⏳ Generazione Distinta Base...</div>
+        <div id="loading-sub" style="font-size: 16px; color:#00e5ff;">Recupero dati da Firebase...</div>
+    </div>
+
+    <div class="a4-page" id="pdf-content">
+        <div class="pdf-header">
+            <div class="my-logo-box"><img id="pdf-logo" class="my-logo" src="" style="display:none;"></div>
+            <div class="my-company-info">
+                <div class="my-company-name" id="pdf-my-name">Carpenteria Pesa srl</div>
+                <div id="pdf-my-address">---</div>
+                P.Iva <span id="pdf-my-piva">---</span><br>
+                <span id="pdf-my-email">---</span>
+            </div>
+        </div>
+
+        <div class="doc-title-box">
+            <div class="doc-title">DISTINTA BASE MASTER</div>
+            <div style="font-size: 13px; color: #555;">Documento ad uso interno / Produzione - Stampato il: <span id="pdf-data-oggi"></span></div>
+        </div>
+
+        <div class="article-info-box">
+            <img id="pdf-art-img" class="art-img" src="" style="display:none;">
+            <div class="art-details">
+                <div style="font-size: 20px; font-weight: bold; color: #00e5ff; margin-bottom: 5px; print-color-adjust: exact; -webkit-print-color-adjust: exact;">
+                    <span style="color: black;" id="pdf-art-matr">---</span>
+                </div>
+                <div><strong>Descrizione:</strong> <span id="pdf-art-desc">---</span></div>
+                <div><strong>N° Disegno:</strong> <span id="pdf-art-dis">---</span></div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:20px;">#</th>
+                    <th style="width:55px;">IMG</th>
+                    <th style="width:90px;">Codice</th>
+                    <th>Descrizione e Note</th>
+                    <th style="width:40px;">Q.tà</th>
+                    <th style="width:140px;">Specifiche Tecniche</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="action-bar">
+        <div style="color: white; font-size: 14px; margin-right: 20px;">👀 Controlla la distinta base. Se è tutto corretto, procedi alla stampa.</div>
+        <button class="btn-action btn-cancel" onclick="window.close()">❌ ANNULLA</button>
+        <button class="btn-action btn-download" onclick="avviaStampa()">🖨️ STAMPA / SALVA PDF</button>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const artId = urlParams.get('id');
+
+        window.onload = function() {
+            if(!artId) {
+                alert("Errore: Nessun articolo selezionato!"); window.close(); return;
+            }
+            document.getElementById('pdf-data-oggi').innerText = new Date().toLocaleDateString('it-IT');
+
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) recuperaDatiArchivio();
+                else { alert("⚠️ Accesso Negato: Devi essere loggato!"); window.close(); }
+            });
+        };
+
+        async function recuperaDatiArchivio() {
+            try {
+                // Recupero Impostazioni Azienda
+                let snapAzienda = await db.ref('impostazioni_azienda').once('value');
+                let datiAzienda = snapAzienda.val() || {};
+                
+                if(datiAzienda.logo) { let logoEl = document.getElementById('pdf-logo'); logoEl.src = datiAzienda.logo; logoEl.style.display = 'block'; }
+                document.getElementById('pdf-my-name').innerText = datiAzienda.ragioneSociale || "Carpenteria Pesa srl";
+                document.getElementById('pdf-my-address').innerText = datiAzienda.indirizzo || "";
+                document.getElementById('pdf-my-piva').innerText = datiAzienda.piva || "";
+                document.getElementById('pdf-my-email').innerText = datiAzienda.email || "";
+
+                // Recupero Dati Articolo (presuppongo client fisso 'Tre Emme' come nel gestionale)
+                let snapArticolo = await db.ref('archivio/Tre Emme/' + artId).once('value');
+                let a = snapArticolo.val();
+
+                if(!a) throw new Error("Articolo non trovato nel database.");
+
+                // Compilo l'intestazione dell'articolo
+                if(a.immagine) { let imgM = document.getElementById('pdf-art-img'); imgM.src = a.immagine; imgM.style.display = 'block'; }
+                document.getElementById('pdf-art-matr').innerText = a.matricola || "SENZA MATRICOLA";
+                document.getElementById('pdf-art-desc').innerText = a.desc || "-";
+                document.getElementById('pdf-art-dis').innerText = a.disegno || "-";
+
+                // Genero la tabella componenti
+                let tbody = document.getElementById('pdf-table-body');
+                let componenti = a.componenti || [];
+                
+                componenti.forEach((c, i) => {
+                    let index = i + 1;
+                    let tr = document.createElement('tr');
+                    
+                    // Colonna Specifiche Destra (Materiale, Spessore, Peso, ecc.)
+                    let specificheTesto = "";
+                    if(c.materiale) specificheTesto += `Materiale: ${c.materiale}\n`;
+                    if(c.spessore) specificheTesto += `Spessore: ${c.spessore}\n`;
+                    if(c.peso) specificheTesto += `Peso: ${c.peso}\n`;
+                    if(c.dimensione) specificheTesto += `Dimensioni: ${c.dimensione}\n`;
+                    if(c.fornitore) specificheTesto += `Classe: ${c.fornitore}`;
+
+                    let imgHtml = (c.iconaBase64 || c.iconaBase) ? `<img src="${c.iconaBase64 || c.iconaBase}" style="max-width:45px; max-height:45px; object-fit:contain; border-radius:3px;">` : ``;
+
+                    let codiceTesto = `<strong style="font-size:12px;">${c.matricola || '-'}</strong>`;
+                    if(c.disegno) codiceTesto += `<br><span style="font-size:10px; color:#333;">Dis: ${c.disegno}</span>`;
+                    if(c.revPesa) codiceTesto += `<br><span style="font-size:10px; color:#333;">Rev: ${c.revPesa}</span>`;
+
+                    // Colonna Centrale: Descrizione + Note + Note Carpenteria
+                    let descCentrale = `<strong style="font-size:12px;">${c.denominazione || 'Senza Descrizione'}</strong>`;
+                    if (c.note) descCentrale += `<br><br><strong>Note:</strong> ${c.note}`;
+                    if (c.noteCarpenteria) descCentrale += `<br><strong style="color:#d35400;">Note Officina:</strong> <span style="color:#d35400;">${c.noteCarpenteria}</span>`;
+
+                    tr.innerHTML = `
+                        <td class="center-col">${index}</td>
+                        <td class="center-col">${imgHtml}</td>
+                        <td class="center-col" style="line-height:1.6;">${codiceTesto}</td>                           
+                        <td>${descCentrale}</td>
+                        <td class="center-col bold-col">${c.qta || 1} ${c.unitaQta || 'Pz'}</td>
+                        <td class="cell-specifiche">${specificheTesto}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                if(componenti.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="center-col" style="padding:20px; color:#666;">Nessun componente inserito in distinta.</td></tr>`;
+                }
+
+                setTimeout(() => {
+                    document.getElementById('loading-msg').style.display = 'none';
+                    document.getElementById('action-bar').style.display = 'flex';
+                }, 500);
+
+            } catch(e) {
+                document.getElementById('loading-msg').innerHTML = `<h2 style="color:red;">❌ Errore Caricamento:</h2><p>${e.message}</p>`;
+            }
+        }
+
+        function avviaStampa() {
+            let matr = document.getElementById('pdf-art-matr').innerText.replace(/[^a-zA-Z0-9]/g, "_");
+            document.title = `Distinta_Base_${matr}`;
+            window.print();
+        }
+    </script>
+</body>
+</html>

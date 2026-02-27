@@ -2,16 +2,15 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Anteprima e Generazione PDF - RDO</title>
+    <title>Stampa Ordine d'Acquisto - CIECO</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body { background-color: #111; display: flex; justify-content: center; padding: 40px; padding-bottom: 120px; font-family: Arial, sans-serif; margin: 0; }
-        .a4-page { width: 210mm; min-height: 297mm; background: white; color: black; padding: 8mm 8mm; box-sizing: border-box; box-shadow: 0 0 30px rgba(0,229,255,0.3); position: relative; }
+        .a4-page { width: 210mm; min-height: 297mm; background: white; color: black; padding: 8mm 8mm; box-sizing: border-box; box-shadow: 0 0 30px rgba(46, 204, 113, 0.3); position: relative; }
         
         .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .my-logo-box { width: 40%; }
@@ -34,10 +33,10 @@
 
         .overlay-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; font-family: sans-serif; }
 
-        #action-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(20, 20, 20, 0.95); border-top: 2px solid #00e5ff; padding: 20px; display: none; justify-content: center; align-items: center; gap: 30px; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); box-sizing: border-box; }
+        #action-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(20, 20, 20, 0.95); border-top: 2px solid #2ecc71; padding: 20px; display: none; justify-content: center; align-items: center; gap: 30px; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); box-sizing: border-box; }
         .btn-action { padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; border: none; transition: 0.2s; }
-        .btn-download { background: #00e5ff; color: black; box-shadow: 0 0 15px rgba(0,229,255,0.4); }
-        .btn-download:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(0,229,255,0.7); }
+        .btn-download { background: #2ecc71; color: black; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
+        .btn-download:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(46, 204, 113, 0.7); }
         .btn-cancel { background: transparent; border: 2px solid #ff4d4d; color: #ff4d4d; }
         .btn-cancel:hover { background: rgba(255, 77, 77, 0.1); }
     
@@ -52,8 +51,8 @@
 <body>
 
     <div id="loading-msg" class="overlay-screen">
-        <div style="font-size: 24px; font-weight:bold; margin-bottom:15px;">⏳ Creazione Anteprima in corso...</div>
-        <div id="loading-sub" style="font-size: 16px; color:#00e5ff;">Recupero dati dal server...</div>
+        <div style="font-size: 24px; font-weight:bold; margin-bottom:15px;">⏳ Creazione Ordine Cieco in corso...</div>
+        <div id="loading-sub" style="font-size: 16px; color:#2ecc71;">Recupero dati dal server...</div>
     </div>
 
     <div class="a4-page" id="pdf-content">
@@ -76,9 +75,9 @@
         </div>
 
         <div class="doc-references">
-            <div>Richiesta di Offerta N° <strong id="pdf-id-ordine"></strong> del <strong id="pdf-data-oggi"></strong></div>
-            <div>MATRICOLA: <strong id="pdf-articolo-master">---</strong></div>
-            <div><strong><span id="pdf-forn-nome-2"></span> Ordine N° <span id="pdf-id-ordine-2"></span> (<span id="pdf-articolo-master-2"></span>, <span id="pdf-data-oggi-2"></span>)</strong></div>
+            <div style="font-size: 16px; font-weight:bold; text-decoration:underline;">ORDINE D'ACQUISTO N° <span id="pdf-id-ordine"></span></div>
+            <div>Del: <strong id="pdf-data-oggi"></strong></div>
+            <div style="margin-top: 10px;">Rif. Articolo Master: <strong id="pdf-articolo-master">---</strong></div>
         </div>
 
         <table>
@@ -86,8 +85,8 @@
                 <tr>
                     <th style="width:20px;">#</th>
                     <th style="width:65px;">IMG</th>
-                    <th style="width:80px;">Codice</th>
-                    <th>Note</th>
+                    <th style="width:80px;">Codice / Disegno</th>
+                    <th>Descrizione / Note</th>
                     <th style="width:40px;">UM</th>
                     <th style="width:40px;">Q.tà</th>
                     <th style="width:160px;">Specifiche</th>
@@ -99,7 +98,7 @@
     </div>
 
     <div id="action-bar">
-        <div style="color: white; font-size: 14px; margin-right: 20px;">👀 Controlla l'anteprima del foglio qui sopra. Se è tutto corretto, procedi al download.</div>
+        <div style="color: white; font-size: 14px; margin-right: 20px;">👀 Controlla l'ordine. Se è tutto corretto, procedi alla stampa (Versione CIECA).</div>
         <button class="btn-action btn-cancel" onclick="window.close()">❌ ANNULLA</button>
         <button class="btn-action btn-download" onclick="avviaDownloadPDF()">📥 STAMPA / SALVA PDF</button>
     </div>
@@ -123,9 +122,7 @@
                 alert("Errore: Dati mancanti per generare il PDF!"); window.close(); return;
             }
             
-            let dataOggi = new Date().toLocaleDateString('it-IT');
-            document.getElementById('pdf-data-oggi').innerText = dataOggi;
-            document.getElementById('pdf-data-oggi-2').innerText = dataOggi;
+            document.getElementById('pdf-data-oggi').innerText = new Date().toLocaleDateString('it-IT');
 
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) recuperaDatiDaDatabase();
@@ -141,10 +138,8 @@
                 let snapOrdine = await db.ref('commesse/Tre Emme/' + ordineId).once('value');
                 let datiOrdine = snapOrdine.val();
 
-                // SALVATAGGIO ERRORI: Se l'ordine non c'è, avvisa e fermati!
-                if(!datiOrdine) throw new Error("Ordine non trovato nel database o ID errato.");
+                if(!datiOrdine) throw new Error("Ordine non trovato nel database.");
 
-                // Recupero i dati dell'articolo master per prendere la matricola esatta (con sicurezza)
                 let idMaster = datiOrdine.id_articolo_master || 'sconosciuto';
                 let snapArticolo = await db.ref('archivio/Tre Emme/' + idMaster).once('value');
                 let datiArticolo = snapArticolo.val() || {};
@@ -161,9 +156,7 @@
                     }
                 }
 
-                loadingSub.innerText = "Impostazione Layout...";
-                
-                // COMPILAZIONE INTESTAZIONI
+                // INTESTAZIONI
                 if(datiAzienda.logo) { let logoEl = document.getElementById('pdf-logo'); logoEl.src = datiAzienda.logo; logoEl.style.display = 'block'; }
                 document.getElementById('pdf-my-name').innerText = datiAzienda.ragioneSociale || "Carpenteria Pesa srl";
                 document.getElementById('pdf-my-address').innerText = datiAzienda.indirizzo || "";
@@ -172,18 +165,15 @@
                 document.getElementById('pdf-my-email').innerText = datiAzienda.email || "";
 
                 document.getElementById('pdf-forn-nome').innerText = datiFornitore.ragioneSociale || nomeFornitore;
-                document.getElementById('pdf-forn-nome-2').innerText = datiFornitore.ragioneSociale || nomeFornitore;
                 if(datiFornitore.indirizzo) document.getElementById('pdf-forn-address').innerText = datiFornitore.indirizzo;
                 if(datiFornitore.piva) document.getElementById('pdf-forn-piva').innerText = datiFornitore.piva;
 
-                // COMPILAZIONE RIFERIMENTI
+                // RIFERIMENTI
                 let matricolaMaster = datiArticolo.matricola || datiOrdine.nome_articolo || "Senza Matricola";
                 document.getElementById('pdf-articolo-master').innerText = matricolaMaster;
-                document.getElementById('pdf-articolo-master-2').innerText = matricolaMaster;
                 
                 let idOrd = datiOrdine.nomeOrdine || datiOrdine.nome_ordine_cliente || ordineId;
                 document.getElementById('pdf-id-ordine').innerText = idOrd;
-                document.getElementById('pdf-id-ordine-2').innerText = idOrd;
 
                 // COMPILAZIONE TABELLA 
                 let idsSelezionati = componentiSelezionati.split(',');
@@ -201,7 +191,6 @@
                         if(c.spessore) specificheTesto += `Spessore: ${c.spessore}\n`;
                         if(c.peso) specificheTesto += `Peso: ${c.peso}\n`;
                         if(c.dimensione) specificheTesto += `Dimensioni: ${c.dimensione}\n`;
-                        // Ho rimosso l'inserimento delle note qui dentro
 
                         let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="max-width:55px; max-height:55px; object-fit:contain; border-radius:3px;">` : ``;
 
@@ -209,14 +198,16 @@
                         if(c.disegno) codiceTesto += `<br><span style="font-size:9px; color:#333;">Dis: ${c.disegno}</span>`;
                         if(c.revPesa) codiceTesto += `<br><span style="font-size:9px; color:#333;">Rev: ${c.revPesa}</span>`;
 
-                        // Recuperiamo le note. Se non ci sono, lasciamo vuoto
                         let notaMessaInStampa = c.note || "";
+                        let descTesto = c.denominazione || c.nome || 'Senza Descrizione';
+                        if(descTesto === 'Componente') descTesto = 'Senza Descrizione';
 
                         tr.innerHTML = `
                             <td class="center-col">#${index}</td>
                             <td class="center-col" style="vertical-align:middle;">${imgHtml}</td>
-                            <td class="center-col" style="line-height:1.9;">${codiceTesto}</td>                           
-                            <td>${notaMessaInStampa}</td> <td class="center-col">${c.unitaQta || 'N°'}</td>
+                            <td class="center-col" style="line-height:1.6;">${codiceTesto}</td>                           
+                            <td style="line-height:1.4;"><strong>${descTesto}</strong><br><span style="font-size:10px; color:#555;">${notaMessaInStampa}</span></td>
+                            <td class="center-col">${c.unitaQta || 'N°'}</td>
                             <td class="center-col bold-col">${qta}</td>
                             <td class="cell-specifiche">${specificheTesto}</td>
                         `;
@@ -237,7 +228,7 @@
 
         function avviaDownloadPDF() {
             let nomeFilePulito = nomeFornitore.replace(/[^a-zA-Z0-9]/g, "_");
-            document.title = `Ordine_${nomeFilePulito}`;
+            document.title = `Ordine_CIECO_${nomeFilePulito}`;
             window.print();
         }
     </script>

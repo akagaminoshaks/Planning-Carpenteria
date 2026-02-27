@@ -2,128 +2,972 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Archivio Ordini - Tre Emme</title>
+    <title>Dashboard Ordini - Tre Emme</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .header { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 30px; }
-        .btn-back { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 20px; cursor: pointer; transition: 0.2s; text-decoration: none; font-size: 13px; font-weight: bold; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; padding: 0; 
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+
+        /* HEADER */
+        .header { 
+            padding: 15px 20px; background: #1a1a1a; border-bottom: 2px solid #333; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        .btn-back { 
+            background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 20px; cursor: pointer; transition: 0.2s; text-decoration: none; font-size: 13px; font-weight: bold;
+        }
         .btn-back:hover { border-color: white; color: white; }
 
-        .container { width: 100%; max-width: 1200px; }
-        .title { color: #9b59b6; margin-top: 0; font-size: 28px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        /* SWITCH APERTI / CHIUSI */
+        .switch-container {
+            display: flex; background: #000; border: 1px solid #444; border-radius: 30px; overflow: hidden;
+        }
+        .btn-switch {
+            padding: 10px 30px; font-weight: bold; font-size: 14px; border: none; cursor: pointer; color: #888; background: transparent; transition: 0.3s;
+        }
+        .btn-switch.active-open { background: #2ecc71; color: #000; }
+        .btn-switch.active-closed { background: #e74c3c; color: #fff; }
 
-        .order-card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .order-card:hover { border-color: #555; transform: translateY(-2px); }
-        
-        .order-info { display: flex; flex-direction: column; gap: 5px; }
-        .order-title { font-size: 20px; font-weight: bold; color: white; }
-        .order-sub { font-size: 13px; color: #888; }
-        
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; border: 1px solid transparent; }
-        .badge.todo { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-color: #e74c3c; }
-        .badge.wip { background: rgba(52, 152, 219, 0.1); color: #3498db; border-color: #3498db; }
-        .badge.done { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border-color: #2ecc71; }
+        /* WORKSPACE TABELLA */
+        .workspace { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 15px; }
+        .table-container { flex: 1; overflow: auto; background: #181818; border: 1px solid #333; border-radius: 8px; }
 
-        .btn-go { background: #9b59b6; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; }
-        .btn-go:hover { background: #8e44ad; box-shadow: 0 0 15px rgba(155, 89, 182, 0.4); }
-        .btn-disabled { background: #333; color: #666; cursor: not-allowed; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; }
+        /* STILE TABELLA EXCEL */
+        .excel-table { width: 100%; border-collapse: collapse; min-width: 1800px; }
+        .excel-table th, .excel-table td { border: 1px solid #333; padding: 8px; text-align: center; font-size: 13px; vertical-align: middle; }
         
-        /* Stile Tasto Elimina */
-        .btn-del-commessa { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-del-commessa:hover { background: rgba(231, 76, 60, 0.1); box-shadow: 0 0 10px rgba(231, 76, 60, 0.3); }
+        .excel-table thead { position: sticky; top: 0; background: #1a1a1a; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .excel-table th { color: #00e5ff; font-weight: bold; text-transform: uppercase; font-size: 11px; padding: 10px 5px; }
+        
+        .excel-table tbody tr { background: #111; transition: 0.1s; }
+        .excel-table tbody tr:hover { background: rgba(255,255,255,0.05); }
+
+        /* INPUT FILTRI NELLE COLONNE */
+        .filter-row th { background: #111; padding: 4px; border-top: none; }
+        .filter-input { 
+            width: 100%; background: #000; border: 1px solid #444; color: white; padding: 5px; font-size: 11px; border-radius: 4px; box-sizing: border-box; text-align: center;
+        }
+        .filter-input:focus { border-color: #00e5ff; outline: none; }
+
+        /* DETTAGLI CELLE */
+        .cell-img { width: 40px; height: 40px; object-fit: contain; background: white; border-radius: 4px; display: block; margin: 0 auto; }
+        .badge-stato { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; border: 1px solid #444; background: rgba(255,255,255,0.05); }
+        
+        /* IMPILAMENTO CONSEGNE MULTIPLE (RIGIDO E PERFETTO) */
+        .stacked-list { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+        .stacked-item { 
+            background: #222; border: 1px solid #444; border-radius: 4px; font-size: 12px; 
+            height: 24px; /* Altezza blindata per tutte le celle */
+            display: flex; align-items: center; justify-content: center; 
+            box-sizing: border-box; margin: 0; padding: 0 5px;
+        }
+        .mancanti-badge { 
+            display: inline-block; margin-top: 10px; padding: 3px 8px; 
+            background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c; 
+            border-radius: 4px; font-size: 11px; font-weight: bold; 
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; } 
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-corner { background: #111; }
+
+
+
+
+        /* MODALE GRANDE DETTAGLIO ORDINE (FASE 5) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box-grande { background: #181818; width: 95%; height: 95%; border: 1px solid #333; border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .modal-head { padding: 15px 30px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #111; }
+        .btn-close-modal { background: transparent; border: 1px solid #444; color: #888; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 14px; margin-left: 20px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-close-modal:hover { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,0.1); }
+        .art-tab-btn { background: transparent; border: 1px solid #444; color: #888; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: all 0.3s ease; }
+        .art-tab-btn:hover { border-color: white; color: white; }
+        .art-tab-btn.active { background: #00e5ff; color: #000; border-color: #00e5ff; box-shadow: 0 0 10px rgba(0, 229, 255, 0.4); }
+        .modal-body { flex: 1; overflow: hidden; padding: 20px; display: flex; flex-direction: column; background: #111; }
+        .tab-content-panel { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 10px; border: 1px dashed #333; border-radius: 8px; }
+        .tab-content-panel.active { display: flex; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
 </head>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+    <!-- inizia HTML -->
+
+
+
+
+
+
+
+
+
+
 <body>
 
     <div class="header">
         <a href="hometreemme.html" class="btn-back">⬅ TORNA ALL'HUB</a>
-        <h2 style="margin:0; color:#888; font-size:16px;">Cruscotto Acquisti e Ordini</h2>
+        
+        <div class="switch-container">
+            <button class="btn-switch active-open" id="tab-aperti" onclick="cambiaVista('aperti')">🟢 ORDINI APERTI</button>
+            <button class="btn-switch" id="tab-chiusi" onclick="cambiaVista('chiusi')">🔴 ARCHIVIO CHIUSI</button>
+        </div>
+        
+        <h2 style="margin:0; color:#888; font-size:16px;">Logistica e Spedizioni</h2>
     </div>
 
-    <div class="container">
-        <h2 class="title">🗂️ Archivio Ordini (Contenitori)</h2>
-        <div id="lista-ordini">
-            <div style="color:#00e5ff;">Caricamento ordini in corso... ⏳</div>
+    <div class="workspace">
+        <div class="table-container">
+            <table class="excel-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Icona</th>
+                        <th style="width: 150px; cursor:pointer;" onclick="ordinaTabella('stato')" title="Ordina per Stato">Stato Avanzamento ↕</th>
+                        <th style="width: 250px; cursor:pointer;" onclick="ordinaTabella('nomeOrdine')" title="Ordina per Nome/DDT">Codice DDT ↕</th>
+                        <th style="width: 100px; cursor:pointer;" onclick="ordinaTabella('data')" title="Ordina per Data">Data Ordine ↕</th>
+                        <th style="width: 120px; cursor:pointer;" onclick="ordinaTabella('matricola')" title="Ordina per Matricola">Matricola ↕</th>
+                        <th style="width: 120px; cursor:pointer;" onclick="ordinaTabella('disegno')" title="Ordina per Disegno">N° Disegno ↕</th>
+                        <th style="width: 200px; cursor:pointer;" onclick="ordinaTabella('nome_articolo')" title="Ordina per Descrizione">Descrizione ↕</th>
+                        <th style="width: 100px; cursor:pointer;" onclick="ordinaTabella('scadenza')" title="Ordina per Scadenza">Scadenza ↕</th>
+                        <th style="width: 80px; color:#f1c40f; cursor:pointer;" onclick="ordinaTabella('qtaTotale')" title="Ordina per Quantità">Q.tà da Cons. ↕</th>
+                        <th style="width: 80px; cursor:pointer;" onclick="ordinaTabella('prezzo_vendita')" title="Ordina per Prezzo">Prezzo Unit. ↕</th>
+                        
+                        <th style="width: 110px; color:#2ecc71;">Data Consegna</th>
+                        <th style="width: 120px; color:#2ecc71;">N° DDT (Clicca x Elimina)</th>
+                        <th style="width: 100px; color:#2ecc71;">Q.tà Consegnate</th>
+                        
+                        <th style="width: 120px; color:#e74c3c; cursor:pointer;" onclick="ordinaTabella('data_chiusura')" title="Ordina per Data Chiusura">Ordine Chiuso il ↕</th>
+                    </tr>
+                    <tr class="filter-row">
+                        <th></th>
+                        <th><input type="text" class="filter-input" placeholder="Filtra..."></th>
+                        <th><input type="text" class="filter-input" placeholder="Cerca IDE/Ord..."></th>
+                        <th><input type="date" class="filter-input"></th>
+                        <th><input type="text" class="filter-input" placeholder="Cerca..."></th>
+                        <th><input type="text" class="filter-input" placeholder="Cerca..."></th>
+                        <th><input type="text" class="filter-input" placeholder="Cerca..."></th>
+                        <th><input type="date" class="filter-input"></th>
+                        <th><input type="text" class="filter-input" placeholder="Q.tà..."></th>
+                        <th><input type="text" class="filter-input" placeholder="€..."></th>
+                        <th><input type="text" class="filter-input" placeholder="Cerca data..."></th>
+                        <th><input type="text" class="filter-input" placeholder="Cerca DDT..."></th>
+                        <th></th>
+                        <th><input type="text" class="filter-input" placeholder="Filtra..."></th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
         </div>
     </div>
 
+    <div id="modal-consegna" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:3000; justify-content:center; align-items:center; backdrop-filter:blur(3px);">
+        <div style="background:#1a1a1a; border:2px solid #2ecc71; border-radius:12px; padding:30px; width:100%; max-width:400px; box-shadow:0 15px 40px rgba(46, 204, 113, 0.3);">
+            <h2 style="color:#2ecc71; margin-top:0;">🚚 Registra Consegna</h2>
+            
+            <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
+                <div>
+                    <label style="color:#888; font-size:12px; font-weight:bold;">DATA CONSEGNA</label>
+                    <input type="date" id="cons-data" style="width:100%; background:#000; border:1px solid #444; color:white; padding:10px; border-radius:4px; margin-top:5px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="color:#888; font-size:12px; font-weight:bold;">N° DDT (Documento)</label>
+                    <input type="text" id="cons-ddt" placeholder="Es. DDT-1234" style="width:100%; background:#000; border:1px solid #444; color:white; padding:10px; border-radius:4px; margin-top:5px; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="color:#888; font-size:12px; font-weight:bold;">QUANTITÀ CONSEGNATA</label>
+                    <input type="number" id="cons-qta" style="width:100%; background:#000; border:1px solid #444; color:#2ecc71; font-weight:bold; font-size:18px; text-align:center; padding:10px; border-radius:4px; margin-top:5px; box-sizing:border-box;" min="1">
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:15px; margin-top:30px;">
+                <button onclick="chiudiModalConsegna()" style="background:transparent; border:1px solid #555; color:#ccc; padding:10px 20px; border-radius:4px; cursor:pointer;">ANNULLA</button>
+                <button onclick="salvaConsegna()" style="background:#2ecc71; color:black; font-weight:bold; border:none; padding:10px 20px; border-radius:4px; cursor:pointer;">💾 SALVA CONSEGNA</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="modal-dettaglio" class="modal-overlay">
+        <div class="modal-box-grande">
+            
+            <div class="modal-head">
+                <div style="display: flex; align-items: center; gap: 40px;">
+                    <span id="dettaglio-titolo" style="color: #fff; font-size: 24px; font-family: 'Segoe UI', sans-serif; font-weight: 300;">DETTAGLIO ORDINE</span>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="art-tab-btn active" id="btn-tab-distinta" onclick="switchDettaglioTab('distinta')">1. Distinta Base</button>
+                        <button class="art-tab-btn" id="btn-tab-ordini" onclick="vaiAdAcquistiDaModale()" style="border-color: #3498db; color: #3498db;">🛒 2. Vai ad Acquisti ➔</button>
+                        <button class="art-tab-btn" id="btn-tab-archiviopdf" onclick="switchDettaglioTab('archiviopdf')">📁 3. Archivio PDF</button>
+                        <button class="art-tab-btn" id="btn-tab-note2" onclick="switchDettaglioTab('note2')">4. Note 1</button>
+                        <button class="art-tab-btn" id="btn-tab-note3" onclick="switchDettaglioTab('note3')">5. Note 2</button>
+                    </div>
+                </div>
+                <button onclick="chiudiModaleDettaglio()" class="btn-close-modal">X</button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="tab-distinta" class="tab-content-panel active">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h2 style="color:#00e5ff; margin:0;">Distinta Base (Componenti in Ordine)</h2>
+                        <span style="color:#888; font-size:12px;">Mostra solo i pezzi ufficialmente confermati (🔒) dall'Ufficio Acquisti</span>
+                    </div>
+                    <div style="overflow-y:auto; flex:1; border:1px solid #333; border-radius:6px;">
+                        <table class="excel-table" style="min-width: 1200px;">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px;">#</th>
+                                    <th style="width:50px;">IMG</th>
+                                    <th style="width:120px; color:#2ecc71;">Fornitore</th>
+                                    <th style="width:120px;">Matricola</th>
+                                    <th>Descrizione</th>
+                                    <th style="width:100px;">Disegno</th>
+                                    <th style="width:60px; color:#00ff88;">Q.tà</th>
+                                    <th style="width:60px;">UM</th>
+                                    <th>Note</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-distinta-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="tab-archiviopdf" class="tab-content-panel" style="padding: 0; border: none; background: transparent;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h2 style="color: #00e5ff; margin: 0;">📁 Archivio PDF & Checklist</h2>
+                        <span style="color:#888; font-size:12px;">Stato avanzamento invio documenti.</span>
+                    </div>
+                    
+                    <div style="display: flex; gap: 20px; flex: 1; overflow: hidden;">
+                        <div style="flex: 1; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                            <h3 style="color:#3498db; margin-top:0; margin-bottom: 15px;">📝 Preventivi Generati (RDO)</h3>
+                            <div id="dash-tracker-rdo" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #444;"></div>
+                            <div id="dash-lista-rdo" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; padding-right:5px;"></div>
+                        </div>
+
+                        <div style="flex: 1; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                            <h3 style="color:#f1c40f; margin-top:0; margin-bottom: 15px;">🛒 Ordini Generati (ODA)</h3>
+                            <div id="dash-tracker-oda" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #444;"></div>
+                            <div id="dash-lista-oda" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; padding-right:5px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-note2" class="tab-content-panel">
+                    <h2 style="color:#e74c3c; margin-top:0;">Area Note Tecniche</h2>
+                    <p style="color:#888;">Spazio per testo libero.</p>
+                </div>
+                
+                <div id="tab-note3" class="tab-content-panel">
+                    <h2 style="color:#9b59b6; margin-top:0;">Area Note Commerciali</h2>
+                    <p style="color:#888;">Spazio per testo libero.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+    <!-- INIZIO JAVA SCRIPT -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <script>
+        // CONFIGURAZIONE FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        let vistaAttuale = 'aperti';
+        let tuttiGliOrdini = [];
+        let ordinePerConsegnaId = null;
+
+
+
+
+
+
+
+
+
+
+
+        // VARIABILI ORDINAMENTO
+        let campoOrdinamento = 'data'; // Ordina per Data Ordine di default
+        let ordineCrescente = false;   // Dal più recente al più vecchio di default
 
         window.onload = function() {
             firebase.auth().onAuthStateChanged((user) => {
                 if (!user) window.location.href = 'index.html';
                 else caricaOrdini();
             });
+            impostaFiltri();
         };
 
+        function cambiaVista(vista) {
+            vistaAttuale = vista;
+            let btnAperti = document.getElementById('tab-aperti');
+            let btnChiusi = document.getElementById('tab-chiusi');
+
+            if(vista === 'aperti') {
+                btnAperti.className = "btn-switch active-open";
+                btnChiusi.className = "btn-switch";
+            } else {
+                btnAperti.className = "btn-switch";
+                btnChiusi.className = "btn-switch active-closed";
+            }
+            disegnaTabella();
+        }
+
+        const STATI_COMMESSA = [
+            { testo: "DA ORDINARE", classe: "color: #e74c3c; border-color: #e74c3c; background: rgba(231, 76, 60, 0.1);" },
+            { testo: "ATTESA MATERIALE", classe: "color: #f1c40f; border-color: #f1c40f; background: rgba(241, 196, 15, 0.1);" },
+            { testo: "IN PRODUZIONE", classe: "color: #3498db; border-color: #3498db; background: rgba(52, 152, 219, 0.1);" },
+            { testo: "PRONTO SPEDIZIONE", classe: "color: #9b59b6; border-color: #9b59b6; background: rgba(155, 89, 182, 0.1);" },
+            { testo: "ORDINE CHIUSO", classe: "color: #2ecc71; border-color: #2ecc71; background: rgba(46, 204, 113, 0.1);" },
+            { testo: "ARCHIVIATO", classe: "color: #888; border-color: #888; background: rgba(136, 136, 136, 0.1);" }
+        ];
+
         function caricaOrdini() {
-            // Leggiamo tutti i contenitori del cliente Tre Emme
             db.ref('commesse/Tre Emme').on('value', snap => {
-                const lista = document.getElementById('lista-ordini');
-                lista.innerHTML = "";
+                tuttiGliOrdini = [];
                 let dati = snap.val();
-                
-                if(!dati) { lista.innerHTML = "<div style='color:#888;'>Nessun ordine presente.</div>"; return; }
-
-                // Convertiamo in array e ordiniamo per avere i più recenti (o da ordinare) in alto
-                let arrayOrdini = Object.keys(dati).map(key => { return { id: key, ...dati[key] }; });
-                
-                // Mettiamo in cima quelli con stato 0 (Da ordinare)
-                arrayOrdini.sort((a, b) => a.stato - b.stato);
-
-                arrayOrdini.forEach(ord => {
-                    let statoHtml = "";
-                    let btnHtml = "";
-
-                    if(ord.stato === 0) {
-                        statoHtml = `<span class="badge todo">⚠️ Manca Materiale (Da Ordinare)</span>`;
-                        btnHtml = `<a href="acquistitreemme.html?ordine=${ord.id}" class="btn-go">🛒 GESTISCI ACQUISTI E PREVENTIVI</a>`;
-                    } else if (ord.stato > 0 && ord.stato < 4) {
-                        statoHtml = `<span class="badge wip">⚙️ In Officina (Produzione)</span>`;
-                        btnHtml = `<button class="btn-disabled" disabled>🔒 MATERIALE ORDINATO</button>`;
-                    } else {
-                        statoHtml = `<span class="badge done">✅ Completato</span>`;
-                        btnHtml = `<button class="btn-disabled" disabled>CHIUSO</button>`;
-                    }
-
-                    lista.innerHTML += `
-                        <div class="order-card">
-                            <div class="order-info">
-                                <div class="order-title">${ord.nomeOrdine} - <span style="color:#00e5ff;">${ord.nome_articolo || ord.matricola}</span></div>
-                                <div class="order-sub">Q.tà: <strong style="color:white;">${ord.qtaTotale}</strong> | Data: ${ord.data} | Matricola: ${ord.matricola}</div>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:15px;">
-                                ${statoHtml}
-                                ${btnHtml}
-                                <button class="btn-del-commessa" onclick="eliminaCommessa('${ord.id}')">🗑️ ELIMINA</button>
-                            </div>
-                        </div>
-                    `;
-                });
+                if(dati) {
+                    tuttiGliOrdini = Object.keys(dati).map(key => { return { id: key, ...dati[key] }; });
+                    eseguiOrdinamento(); // Applica l'ordinamento impostato
+                }
+                disegnaTabella();
             });
         }
 
-        // --- NUOVA FUNZIONE PER ELIMINARE LA COMMESSA ---
-        window.eliminaCommessa = function(id) {
-            let conferma = confirm("⚠️ ATTENZIONE: Sei sicuro di voler eliminare questa commessa?\nTutti i dati andranno persi irreversibilmente!");
-            
-            if (conferma) {
-                db.ref('commesse/Tre Emme/' + id).remove()
-                .then(() => {
-                    console.log("Commessa eliminata con successo.");
-                    // L'interfaccia si aggiornerà da sola grazie al .on('value') nella funzione caricaOrdini!
-                })
-                .catch(err => alert("Si è verificato un errore durante l'eliminazione: " + err));
+        // ==========================================
+        // MOTORE DI ORDINAMENTO INTELLIGENTE
+        // ==========================================
+        window.ordinaTabella = function(campo) {
+            // Se clicchi sulla stessa colonna, inverte l'ordine.
+            if (campoOrdinamento === campo) {
+                ordineCrescente = !ordineCrescente; 
+            } else {
+                campoOrdinamento = campo;
+                // Seleziona la logica intuitiva: se è un numero o data parte dal Più Grande, se è testo da A-Z.
+                if (['qtaTotale', 'prezzo_vendita', 'data', 'scadenza', 'data_chiusura'].includes(campo)) {
+                    ordineCrescente = false; 
+                } else {
+                    ordineCrescente = true; 
+                }
+            }
+            eseguiOrdinamento();
+            disegnaTabella();
+        }
+
+        function eseguiOrdinamento() {
+            tuttiGliOrdini.sort((a, b) => {
+                let valA = a[campoOrdinamento] || '';
+                let valB = b[campoOrdinamento] || '';
+
+                if (['qtaTotale', 'prezzo_vendita', 'stato'].includes(campoOrdinamento)) {
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                } else if (['data', 'scadenza', 'data_chiusura'].includes(campoOrdinamento)) {
+                    valA = valA ? new Date(valA).getTime() : 0;
+                    valB = valB ? new Date(valB).getTime() : 0;
+                } else {
+                    valA = valA.toString().toLowerCase();
+                    valB = valB.toString().toLowerCase();
+                }
+
+                if (valA < valB) return ordineCrescente ? -1 : 1;
+                if (valA > valB) return ordineCrescente ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // ==========================================
+        // DISEGNO DELLA TABELLA E BOTTONE ELIMINA
+        // ==========================================
+        function disegnaTabella() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = "";
+
+            let ordiniFiltrati = tuttiGliOrdini.filter(ord => {
+                let isChiuso = ord.data_chiusura != null || ord.stato >= 4;
+                return vistaAttuale === 'aperti' ? !isChiuso : isChiuso;
+            });
+
+            if(ordiniFiltrati.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="14" style="padding:30px; color:#666; font-size:16px;">Nessun ordine presente in questa vista.</td></tr>`;
+                return;
+            }
+
+            ordiniFiltrati.forEach(ord => {
+                // ICONA + BOTTONE ELIMINA
+                let imgBox = ord.immagine ? `<img src="${ord.immagine}" class="cell-img">` : `<div style="font-size:25px;">📦</div>`;
+                let btnElimina = `<button onclick="eliminaOrdineDefinitivo('${ord.id}', event)" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:16px; margin-top:8px; padding:0; transition:0.2s;" title="Elimina questo ordine DEFINITIVAMENTE">🗑️</button>`;
+                let cellaIcona = `<div style="display:flex; flex-direction:column; align-items:center;">${imgBox}${btnElimina}</div>`;
+                
+                let infoStato = STATI_COMMESSA[ord.stato] || { testo: "SCONOSCIUTO", classe: "color: #fff; border-color: #fff;" };
+                let badgeStato = `<span class="badge-stato" style="${infoStato.classe}">${infoStato.testo}</span>`;
+
+                let txtIde = ord.ide ? `IDE <strong style="color:white;">${ord.ide}</strong> ` : "";
+                let txtOrd = `ORD. N° <strong style="color:white;">${ord.nomeOrdine || ''}</strong>`;
+                let txtData = ord.data ? ` del ${ord.data.split('T')[0]}` : "";
+                let codiceDDT = `<span style="color:#aaa;">${txtIde}${txtOrd}${txtData}</span>`;
+
+                let qta = parseFloat(ord.qtaTotale) || 1;
+                let prz = ord.prezzo_vendita ? parseFloat(ord.prezzo_vendita).toFixed(2) + " €" : "-";
+
+                // --- MAGIA CONSEGNE MULTIPLE ---
+                let consegne = ord.consegne || {};
+                let arrayConsegne = Object.keys(consegne).map(k => { return { id_cons: k, ...consegne[k] }; });
+
+                let htmlDate = `<div class="stacked-list">`;
+                let htmlDDT = `<div class="stacked-list">`;
+                let htmlQta = `<div class="stacked-list">`;
+                let totConsegnato = 0;
+
+                if (arrayConsegne.length > 0) {
+                    arrayConsegne.forEach(cons => {
+                        totConsegnato += parseFloat(cons.qta);
+                        let dataForm = cons.data ? cons.data.split('-').reverse().join('/') : ''; 
+                        htmlDate += `<div class="stacked-item">${dataForm}</div>`;
+                        htmlDDT += `<div class="stacked-item" style="color:#00e5ff; cursor:pointer;" onclick="eliminaConsegna('${ord.id}', '${cons.id_cons}', event)" title="❌ Clicca per cancellare"><strong>${cons.ddt}</strong></div>`;
+                        htmlQta += `<div class="stacked-item" style="color:#2ecc71; font-weight:bold;">${cons.qta}</div>`;
+                    });
+                } else {
+                    htmlDate += `<div style="font-size:10px; color:#555; text-align:center; margin-top:5px;">-</div>`;
+                    htmlDDT += `<div style="font-size:10px; color:#555; text-align:center; margin-top:5px;">Nessuna</div>`;
+                    htmlQta += `<div style="font-size:10px; color:#555; text-align:center; margin-top:5px;">-</div>`;
+                }
+
+                htmlDate += `</div>`; htmlDDT += `</div>`; htmlQta += `</div>`;
+
+                let mancanti = qta - totConsegnato;
+                let badgeMancanti = "";
+                if (mancanti > 0) {
+                    badgeMancanti = `<div class="mancanti-badge">Mancano ${mancanti} pz</div>`;
+                } else if (mancanti === 0 && qta > 0) {
+                    badgeMancanti = `<div class="mancanti-badge" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; border-color: #2ecc71;">COMPLETO ✅</div>`;
+                } else if (mancanti < 0) {
+                    badgeMancanti = `<div class="mancanti-badge" style="background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-color: #f1c40f;">ECCEDENZA (+${Math.abs(mancanti)})</div>`;
+                }
+
+                let btnAddConsegna = vistaAttuale === 'aperti' ? `onclick="apriModalConsegna('${ord.id}', ${mancanti})"` : "";
+                let rigaBackground = vistaAttuale === 'aperti' ? 'rgba(46, 204, 113, 0.05)' : 'transparent';
+
+                let tr = document.createElement('tr');
+                tr.className = "row-item";
+                tr.ondblclick = () => apriModaleDettaglio(ord.id, ord.nomeOrdine, ord.matricola);
+                
+                tr.innerHTML = `
+                    <td>${cellaIcona}</td>
+                    <td>${badgeStato}</td>
+                    <td>${codiceDDT}</td>
+                    <td>${ord.data ? ord.data.split('T')[0] : ''}</td>
+                    <td style="font-weight:bold; color:#00e5ff;">${ord.matricola || ''}</td>
+                    <td style="color:#ccc;">${ord.disegno || ''}</td>
+                    <td style="text-align:left; color:#ccc; font-size:11px;">${ord.nome_articolo || ''}</td>
+                    <td style="color:#f1c40f;">${ord.scadenza || ''}</td>
+                    <td style="font-weight:bold; font-size:16px;">${qta}</td>
+                    <td>${prz}</td>
+                    
+                    <td ${btnAddConsegna} style="cursor:pointer; background:${rigaBackground}; border-left:1px solid #333; vertical-align: top; padding-top: 15px;">${htmlDate}</td>
+                    <td ${btnAddConsegna} style="cursor:pointer; background:${rigaBackground}; vertical-align: top; padding-top: 15px;">${htmlDDT}</td>
+                    <td ${btnAddConsegna} style="cursor:pointer; background:${rigaBackground}; border-right:1px solid #333; vertical-align: top; padding-top: 15px;">
+                        ${htmlQta}
+                        ${badgeMancanti}
+                    </td>
+                    
+                    <td>
+                        ${vistaAttuale === 'aperti' 
+                            ? `<input type="date" class="filter-input" style="background:#222; cursor:pointer; color:#e74c3c;" title="Imposta data per chiudere l'ordine" onchange="archiviaOrdine('${ord.id}', this.value)">` 
+                            : `<span style="color:#e74c3c; font-weight:bold;">${ord.data_chiusura.split('-').reverse().join('/')}</span>`}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            applicaFiltri();
+        }
+
+        // ==========================================
+        // ARCHIVIAZIONE E CANCELLAZIONE
+        // ==========================================
+        window.archiviaOrdine = function(idOrdine, dataChiusura) {
+            if(!dataChiusura) return;
+            if(confirm("Sei sicuro di voler chiudere questo ordine?\nVerrà spostato in ARCHIVIO CHIUSI e l'immagine verrà eliminata per alleggerire il database.")) {
+                db.ref('commesse/Tre Emme/' + idOrdine).update({
+                    data_chiusura: dataChiusura,
+                    stato: 4, 
+                    immagine: null 
+                }).catch(err => alert("Errore durante l'archiviazione: " + err));
             }
         }
+
+        window.eliminaOrdineDefinitivo = function(idOrdine, event) {
+            event.stopPropagation(); // Evita di far aprire altre cose
+            if(confirm("⚠️ ATTENZIONE CRITICA:\nSei sicuro di voler ELIMINARE DEFINITIVAMENTE questo ordine dal database?\n\nQuesta operazione NON è reversibile!")) {
+                db.ref('commesse/Tre Emme/' + idOrdine).remove()
+                .catch(err => alert("Errore durante l'eliminazione: " + err));
+            }
+        }
+
+        // ==========================================
+        // FUNZIONI POPUP CONSEGNE
+        // ==========================================
+        window.apriModalConsegna = function(idOrdine, qtaMancante) {
+            ordinePerConsegnaId = idOrdine;
+            document.getElementById('cons-data').value = new Date().toISOString().split('T')[0]; 
+            document.getElementById('cons-ddt').value = "";
+            document.getElementById('cons-qta').value = qtaMancante > 0 ? qtaMancante : 1; 
+            document.getElementById('modal-consegna').style.display = 'flex';
+        }
+
+        window.chiudiModalConsegna = function() {
+            document.getElementById('modal-consegna').style.display = 'none';
+            ordinePerConsegnaId = null;
+        }
+
+        window.salvaConsegna = function() {
+            let data = document.getElementById('cons-data').value;
+            let ddt = document.getElementById('cons-ddt').value.trim();
+            let qta = parseFloat(document.getElementById('cons-qta').value) || 0;
+
+            if(!data || !ddt || qta <= 0) return alert("Inserisci Data, N° DDT e una Quantità maggiore di zero!");
+            let nuovaConsegna = { data: data, ddt: ddt, qta: qta };
+            
+            db.ref('commesse/Tre Emme/' + ordinePerConsegnaId + '/consegne').push(nuovaConsegna).then(() => {
+                chiudiModalConsegna();
+            }).catch(err => alert("Errore: " + err));
+        }
+
+        window.eliminaConsegna = function(idOrdine, idConsegna, event) {
+            event.stopPropagation();
+            if(confirm("Vuoi davvero eliminare questo DDT? La quantità tornerà tra i mancanti.")) {
+                db.ref('commesse/Tre Emme/' + idOrdine + '/consegne/' + idConsegna).remove();
+            }
+        }
+
+        // ==========================================
+        // MOTORE FILTRI DI RICERCA
+        // ==========================================
+        function impostaFiltri() {
+            let inputs = document.querySelectorAll('.filter-input');
+            inputs.forEach(input => { input.addEventListener('input', applicaFiltri); });
+        }
+
+        function applicaFiltri() {
+            let trs = document.querySelectorAll('#table-body tr.row-item');
+            let inputs = document.querySelectorAll('.filter-input');
+            
+            trs.forEach(tr => {
+                let mostraRiga = true;
+                inputs.forEach((input, index) => {
+                    let filtro = input.value.toLowerCase().trim();
+                    if(filtro !== "") {
+                        let cella = tr.cells[index + 1]; 
+                        if(cella) {
+                            let testoCella = cella.innerText.toLowerCase();
+                            if(!testoCella.includes(filtro)) mostraRiga = false;
+                        }
+                    }
+                });
+                tr.style.display = mostraRiga ? "" : "none";
+            });
+        }
+
+
+
+
+        // ==========================================
+        // FASE 5: MODALE DOPPIO CLIC & ARCHIVIO PDF
+        // ==========================================
+        let ordineCorrenteModale = null; 
+
+        // RICEZIONE COMANDO "AUTO-OPEN" DALL'UFFICIO ACQUISTI
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const openId = urlParams.get('open');
+            if (openId && tuttiGliOrdini.length > 0) {
+                let ord = tuttiGliOrdini.find(o => o.id === openId);
+                if (ord) apriModaleDettaglio(ord.id, ord.nomeOrdine, ord.matricola);
+                // Pulisce l'URL per evitare che ricaricando la pagina si riapra all'infinito
+                window.history.replaceState({}, document.title, "dashboardordini.html");
+            }
+        }, 800);
+
+        window.apriModaleDettaglio = function(idOrdine, nomeOrdine, matricola) {
+            ordineCorrenteModale = idOrdine; 
+            
+            let nomePulito = nomeOrdine || 'Nessun Nome';
+            let matrPulita = matricola || 'N/D';
+            
+            document.getElementById('dettaglio-titolo').innerHTML = `<strong style="color:#00e5ff;">${nomePulito}</strong> <span style="font-size:14px; color:#888;">(Matr: ${matrPulita})</span>`;
+            document.getElementById('modal-dettaglio').style.display = 'flex';
+            
+            switchDettaglioTab('distinta'); 
+            caricaArchivioPDFModale(idOrdine); // Carica i PDF in background
+            caricaDistintaModale(idOrdine); // <--- AGGIUNGI QUESTA RIGA per chiamare la funzione di caricamento
+        }
+
+
+        window.caricaDistintaModale = function(idOrdine) {
+            let tbody = document.getElementById('dashboard-distinta-body');
+            tbody.innerHTML = "<tr><td colspan='9' style='padding:20px; color:#00e5ff;'>Caricamento in corso...</td></tr>";
+
+            db.ref(`commesse/Tre Emme/${idOrdine}/fabbisogno`).once('value', snap => {
+                let fabbisogno = snap.val();
+                tbody.innerHTML = "";
+
+                if (!fabbisogno) {
+                    tbody.innerHTML = "<tr><td colspan='9' style='padding:20px; color:#666;'>Nessun dato o ordine ancora processato.</td></tr>";
+                    return;
+                }
+
+                let index = 1;
+                let pezziMostrati = 0;
+
+                for (let cid in fabbisogno) {
+                    let c = fabbisogno[cid];
+                    
+                    // IL FILTRO SUPREMO: Mostra solo quelli con il lucchetto chiuso
+                    if (c.ordinato !== true || c.qta_da_ordinare <= 0) continue;
+                    
+                    pezziMostrati++;
+
+                    let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="max-width:40px; max-height:40px; object-fit:contain; background:#fff; border-radius:3px;">` : `📷`;
+                    
+                    tbody.innerHTML += `
+                        <tr style="background: rgba(255,255,255,0.02);">
+                            <td style="color:#666;">${index}</td>
+                            <td>${imgHtml}</td>
+                            <td style="color:#2ecc71; font-weight:bold; text-transform:uppercase;">${c.fornitore_definitivo || '-'}</td>
+                            <td style="color:#fff; font-weight:bold;">${c.matricola || '-'}</td>
+                            <td style="text-align:left;">${c.nome || c.denominazione || '-'}</td>
+                            <td style="color:#ccc;">${c.disegno || '-'}</td>
+                            <td style="color:#00ff88; font-weight:bold; font-size:15px;">${c.qta_da_ordinare}</td>
+                            <td style="color:#aaa;">${c.unitaQta || 'Pz'}</td>
+                            <td style="color:#aaa; text-align:left; font-size:11px;">${c.note || '-'}</td>
+                        </tr>
+                    `;
+                    index++;
+                }
+
+                if (pezziMostrati === 0) {
+                    tbody.innerHTML = "<tr><td colspan='9' style='padding:30px; color:#e74c3c;'>L'Ufficio Acquisti non ha ancora confermato/ordinato (🔒) nessun componente per questa commessa.</td></tr>";
+                }
+            });
+        }
+
+
+
+
+
+
+        window.chiudiModaleDettaglio = function() {
+            document.getElementById('modal-dettaglio').style.display = 'none';
+            ordineCorrenteModale = null;
+        }
+
+        window.vaiAdAcquistiDaModale = function() {
+            if(ordineCorrenteModale) {
+                window.location.href = "acquistitreemme.html?ordine=" + ordineCorrenteModale;
+            }
+        }
+
+        window.switchDettaglioTab = function(tabName) {
+            // Aggiornato con i nuovi nomi dei tab
+            const tabs = ['distinta', 'archiviopdf', 'note2', 'note3']; 
+            tabs.forEach(t => {
+                let btn = document.getElementById('btn-tab-' + t);
+                let panel = document.getElementById('tab-' + t);
+                if(btn) btn.classList.remove('active');
+                if(panel) panel.classList.remove('active');
+            });
+            
+            let btnAttivo = document.getElementById('btn-tab-' + tabName);
+            let panelAttivo = document.getElementById('tab-' + tabName);
+            
+            if(btnAttivo) btnAttivo.classList.add('active');
+            if(panelAttivo) panelAttivo.classList.add('active');
+        }
+
+        // CARICA I PDF IN TEMPO REALE DAL DATABASE
+        function caricaArchivioPDFModale(idOrdine) {
+            db.ref(`commesse/Tre Emme/${idOrdine}`).on('value', snap => {
+                let dati = snap.val() || {};
+                let archivio = dati.archivio_pdf || {};
+                let fabbisogno = dati.fabbisogno || {};
+
+                let containerRdo = document.getElementById('dash-lista-rdo');
+                let containerOda = document.getElementById('dash-lista-oda');
+                let trackerRdo = document.getElementById('dash-tracker-rdo');
+                let trackerOda = document.getElementById('dash-tracker-oda');
+                
+                if(!containerRdo || !containerOda) return;
+
+                containerRdo.innerHTML = "";
+                containerOda.innerHTML = "";
+                
+                let arrayPdf = Object.values(archivio).sort((a,b) => new Date(b.data) - new Date(a.data));
+                
+                let fornitoriRdoFatti = new Set();
+                let fornitoriOdaFatti = new Set();
+                let fornitoriOdaAttesi = new Set();
+
+                for (let key in fabbisogno) {
+                    let f = fabbisogno[key].fornitore_definitivo;
+                    let qta = fabbisogno[key].qta_da_ordinare !== undefined ? fabbisogno[key].qta_da_ordinare : 1; 
+                    if (f && f !== 'DA ASSEGNARE' && f.trim() !== '' && qta > 0) {
+                        fornitoriOdaAttesi.add(f.toUpperCase());
+                    }
+                }
+
+                arrayPdf.forEach(pdf => {
+                    let dataFormattata = new Date(pdf.data).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    let nomeForn = pdf.fornitore.toUpperCase();
+
+                    if (pdf.tipo === 'RDO') {
+                        fornitoriRdoFatti.add(nomeForn);
+                        let color = '#3498db';
+                        containerRdo.innerHTML += `
+                            <div style="background:#1a1a1a; border-left:4px solid ${color}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333;">
+                                <div>
+                                    <strong style="color:${color}; font-size:13px;">${nomeForn}</strong><br>
+                                    <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
+                                </div>
+                                <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px;">VISUALIZZA</button>
+                            </div>
+                        `;
+                    } else if (pdf.tipo.includes('ODA')) {
+                        fornitoriOdaFatti.add(nomeForn);
+                        let isCieco = pdf.tipo.includes('CIECO');
+                        let color = isCieco ? '#2ecc71' : '#f1c40f';
+                        let label = isCieco ? 'CIECO (Officina)' : 'COMPLETO';
+                        
+                        containerOda.innerHTML += `
+                            <div style="background:#1a1a1a; border-left:4px solid ${color}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333;">
+                                <div>
+                                    <strong style="color:${color}; font-size:13px;">${nomeForn} - ${label}</strong><br>
+                                    <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
+                                </div>
+                                <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px;">VISUALIZZA</button>
+                            </div>
+                        `;
+                    }
+                });
+
+                if(containerRdo.innerHTML === "") containerRdo.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun preventivo generato.</div>";
+                if(containerOda.innerHTML === "") containerOda.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun ordine generato.</div>";
+
+                trackerRdo.innerHTML = "";
+                if(fornitoriRdoFatti.size === 0) {
+                    trackerRdo.innerHTML = "<span style='color:#666; font-size:12px;'>Nessun preventivo inviato.</span>";
+                } else {
+                    fornitoriRdoFatti.forEach(f => {
+                        trackerRdo.innerHTML += `<span style="background:rgba(52, 152, 219, 0.1); color:#3498db; border:1px solid #3498db; padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">✓ ${f}</span>`;
+                    });
+                }
+
+                trackerOda.innerHTML = "";
+                if(fornitoriOdaAttesi.size === 0) {
+                    trackerOda.innerHTML = "<span style='color:#666; font-size:12px;'>Fabbisogno non ancora elaborato in Acquisti.</span>";
+                } else {
+                    fornitoriOdaAttesi.forEach(f => {
+                        let fatto = fornitoriOdaFatti.has(f);
+                        let stile = fatto 
+                            ? "background:rgba(46, 204, 113, 0.15); color:#2ecc71; border:1px solid #2ecc71;" 
+                            : "background:rgba(255, 255, 255, 0.03); color:#888; border:1px dashed #666; opacity: 0.7;";
+                        let icona = fatto ? "✅" : "⏳";
+                        trackerOda.innerHTML += `<span style="${stile} padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">${icona} ${f}</span>`;
+                    });
+                }
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
 </body>
 </html>

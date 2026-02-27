@@ -50,6 +50,26 @@
             #action-bar, #loading-msg { display: none !important; }
             @page { margin: 8mm; size: A4 portrait; }
         }
+
+
+
+
+        .cell-specifiche { font-size: 10px; line-height: 1.4; white-space: pre-wrap; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -91,6 +111,7 @@
                     <th style="width:65px;">IMG</th>
                     <th style="width:90px;">Codice / Disegno</th>
                     <th>Descrizione / Note</th>
+                    <th style="width:140px;">Specifiche</th>
                     <th style="width:30px;">UM</th>
                     <th style="width:30px;">Q.tà</th>
                     <th style="width:70px;">€ / Unit.</th>
@@ -195,12 +216,18 @@
                         let qta = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
                         let przUnit = parseFloat(c.prezzo) || 0;
                         
-                        // Il calcolo preciso in base all'unità di misura
                         let moltiplicatore = 1;
                         if(c.unitaQta === 'mm' && c.unitaPrezzo === '€/metro') moltiplicatore = 0.001;
                         
                         let totaleRiga = (qta * moltiplicatore) * przUnit;
                         granTotaleOrdine += totaleRiga;
+
+                        // -- CREAZIONE TESTO SPECIFICHE --
+                        let specificheTesto = `Codice: ${c.matricola || '-'}\n`;
+                        if(c.materiale) specificheTesto += `Materiale: ${c.materiale}\n`;
+                        if(c.spessore) specificheTesto += `Spessore: ${c.spessore}\n`;
+                        if(c.peso) specificheTesto += `Peso: ${c.peso}\n`;
+                        if(c.dimensione) specificheTesto += `Dimensioni: ${c.dimensione}\n`;
 
                         let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="max-width:55px; max-height:55px; object-fit:contain; border-radius:3px;">` : ``;
 
@@ -220,6 +247,7 @@
                             <td class="center-col" style="vertical-align:middle;">${imgHtml}</td>
                             <td class="center-col" style="line-height:1.6;">${codiceTesto}</td>                           
                             <td style="line-height:1.4;">${descTesto}</td>
+                            <td class="cell-specifiche">${specificheTesto}</td>
                             <td class="center-col">${c.unitaQta || 'Pz'}</td>
                             <td class="center-col bold-col">${qta}</td>
                             <td class="right-col">${przUnit.toFixed(2)} ${unitStr}</td>

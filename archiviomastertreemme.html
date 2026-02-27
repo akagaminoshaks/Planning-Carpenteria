@@ -97,6 +97,7 @@
         .article-grid { display: flex; gap: 20px; margin-bottom: 20px; }
         .art-img-box { width: 150px; height: 150px; border: 2px dashed #444; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 10px; position: relative; overflow: hidden; }
         .art-img-box:hover { border-color: #0994E6; }
+        .active-paste-main { border-color: #00e5ff !important; box-shadow: 0 0 15px rgba(0,229,255,0.4); background: rgba(0, 229, 255, 0.05); }
         .art-img-prev { width: 100%; height: 100%; object-fit: contain; display: none; }
         .art-fields { flex: 1; display: flex; flex-direction: column; gap: 10px; }
         
@@ -136,14 +137,19 @@
                         <button class="art-tab-btn" id="btn-art-note" onclick="switchArticoloTab('note')">NOTE</button>
                     </div>
                 </div>
-                <button onclick="chiudiModalArticolo()" class="btn-close-modal">X</button>
+
+                <div style="display: flex; align-items: center; gap: 15px; margin-left: 20px;">
+                    <button class="btn-glass" style="border-color:#3498db; color:#3498db;" onclick="stampaDistintaBase()">🖨️ STAMPA DISTINTA BASE</button>
+                    <button class="btn-glass green" onclick="salvaArticolo()">💾 SALVA ARTICOLO E MAGAZZINO</button>
+                    <button onclick="chiudiModalArticolo()" class="btn-close-modal" style="margin-left: 0;">X</button>
+                </div>
             </div>
 
             <div class="modal-body" style="flex-direction: column; overflow: hidden; padding: 20px; display:flex;">
                 
                 <div id="art-tab-distinta" style="display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
                     <div class="article-grid">
-                        <div class="art-img-box" onclick="document.getElementById('upload-art-img').click()">
+                        <div class="art-img-box" id="main-art-img-box" onclick="attivaIncollaMainImg(this)" ondblclick="document.getElementById('upload-art-img').click()" ondragover="event.preventDefault(); this.style.borderColor='#0994E6';" ondragleave="this.style.borderColor='#444';" ondrop="gestisciDropMainImg(event)">
                             <span id="art-placeholder" style="font-size:40px; color:#555;">📷</span>
                             <img id="art-preview" class="art-img-prev">
                             <input type="file" id="upload-art-img" style="display:none;" accept="image/*" onchange="previewArtImg()">
@@ -187,9 +193,7 @@
                         </div>
                     </div>
 
-                    <div style="padding-top:15px; border-top:1px solid #333; text-align:right;">
-                        <button class="btn-glass green" style="padding:10px 30px;" onclick="salvaArticolo()">SALVA ARTICOLO E MAGAZZINO</button>
-                    </div>
+                    
                 </div>
                     
                 <div id="art-tab-ufficio" style="display: none; flex-direction: row; height: 100%; overflow: hidden; gap: 20px;">
@@ -363,21 +367,22 @@
 
     <div class="header-bar">
         <button class="btn-back" onclick="window.location.href='hometreemme.html'">⬅ TORNA ALL'HUB</button>
-        <div class="clients-scroll" id="clients-bar"></div>
+        
+        <input type="text" id="search-archive" placeholder="🔍 Cerca articolo per matricola o descrizione..." oninput="filtraArchivioStandard()" style="flex: 1; padding: 10px 15px; background: #222; border: 1px solid #444; color: #00e5ff; border-radius: 20px; font-size: 14px; box-sizing: border-box; outline: none; transition: 0.2s; margin: 0 20px;">
+        
+        <div class="clients-scroll" id="clients-bar" style="display: none;"></div> <button class="btn-manage" style="background:#2ecc71; color:black; border-color:#2ecc71;" onclick="apriModalNuovoArticolo()">+ CREA NUOVA DISTINTA</button>
         <button class="btn-manage" style="background:#f1c40f; color:black; border-color:#f1c40f;" onclick="alert('Lo Scanner verrà attivato nella fase di Produzione/Officina')">📷 SCANSIONA QR</button>
     </div>
 
     <div id="workspace">
         <div id="view-standard">
             <div id="view-archivio" style="display:block; flex:1; overflow-y:auto;">
-                <div class="archive-list">
-                    <button class="btn-add-archive" onclick="apriModalNuovoArticolo()">+ CREA NUOVA DISTINTA MASTER</button>
-                    <input type="text" id="search-archive" placeholder="🔍 Cerca articolo per matricola o descrizione..." oninput="filtraArchivioStandard()" style="width: 100%; padding: 15px; background: #1a1a1a; border: 1px solid #444; color: #00e5ff; border-radius: 10px; margin-bottom: 20px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s;">
-                    <div id="archive-list"></div>
-                </div>
+                <div class="archive-list" id="archive-list"></div>
             </div>
         </div>
     </div>
+
+
 
     <div id="placeholder" style="text-align:center; padding:100px; color:#444; font-size: 14px; letter-spacing: 1px; display:none;">SELEZIONA UN CLIENTE DALLA BARRA IN ALTO</div>
 
@@ -473,7 +478,7 @@
                 if(a.magazzino) { for(let k in a.magazzino) totGiacenze += parseFloat(a.magazzino[k] || 0); }
 
                 l.innerHTML += `
-                    <div class="arch-item" data-search="${stringaRicerca}">
+                    <div class="arch-item" data-search="${stringaRicerca}" ondblclick="modificaArticolo('${id}')" style="cursor: pointer;" title="Fai doppio clic per modificare">
                         ${imgSrc}
                         <div class="arch-info">
                             <div style="font-size:20px; font-weight:bold; color:#00e5ff;">${a.matricola || 'Senza Matricola'}</div>
@@ -481,9 +486,9 @@
                             <div style="font-size:12px; color:#2ecc71; margin-top:5px; font-weight:bold;">📦 Giacenza componenti: ${totGiacenze} pz</div>
                         </div>
                         <div class="arch-actions">
-                            <button class="btn-glass green" onclick="produci('${id}')">🚀 PRODUCI</button>
-                            <button class="btn-glass yellow" onclick="modificaArticolo('${id}')">⚙️ MODIFICA</button>
-                            <button class="btn-glass red" onclick="eliminaArticolo('${id}')">🗑️ ELIMINA</button>
+                            <button class="btn-glass green" onclick="produci('${id}'); event.stopPropagation();">🚀 PRODUCI</button>
+                            <button class="btn-glass yellow" onclick="modificaArticolo('${id}'); event.stopPropagation();">⚙️ MODIFICA</button>
+                            <button class="btn-glass red" onclick="eliminaArticolo('${id}'); event.stopPropagation();">🗑️ ELIMINA</button>
                         </div>
                     </div>
                 `;
@@ -664,7 +669,13 @@
             
             document.getElementById('comp-body').innerHTML = "";
             if(a.componenti && a.componenti.length > 0) {
-                a.componenti.forEach(c => aggiungiRigaComp(c));
+                // Passa anche il numero riga salvato (se c'è), altrimenti usa l'indice
+                a.componenti.forEach((c, index) => {
+                    let numForzato = c.numeroRiga || null; 
+                    aggiungiRigaComp(c, numForzato);
+                });
+                // Ricalcola per sicurezza
+                ricalcolaNumeriRiga();
             } else {
                 aggiungiRigaComp();
             }
@@ -772,9 +783,14 @@
                 let prz = rigaUff ? rigaUff.querySelector('.uff-prezzo').value : (compMemoria.prezzo || '0.00');
                 let unP = rigaUff ? rigaUff.querySelector('.uff-u-prezzo').value : (compMemoria.unitaPrezzo || '€/Pz');
 
+                // FIX BUG: Legge il numero di riga esatto (es. 1_A) dalla grafica
+                let spanNum = r.querySelector('.numero-riga');
+                let numeroRigaEsatto = spanNum ? spanNum.innerText : (index + 1);
+
                 comps.push({
+                    numeroRiga: numeroRigaEsatto,
                     iconaBase64: imgData,
-                    fornitore: inps[1] ? inps[1].value : "", 
+                    fornitore: inps[1] ? inps[1].value : "",
                     matricola: inps[2] ? inps[2].value : "", 
                     disegno: inps[3] ? inps[3].value : "",
                     revPesa: inps[4] ? inps[4].value : "",
@@ -969,13 +985,39 @@
         r.onload = e => { currentArtImg = e.target.result; document.getElementById('art-preview').src = currentArtImg; document.getElementById('art-preview').style.display='block'; document.getElementById('art-placeholder').style.display='none'; };
         r.readAsDataURL(f);
     }
-    window.aggiungiRigaComp = function(data) {
-        let tbody = document.getElementById('comp-body'); let idx = tbody.children.length + 1;
+
+
+    
+    window.aggiungiRigaComp = function(data, numeroForzato) {
+        let tbody = document.getElementById('comp-body');
+        
+        // Calcolo del numero riga. Se non è forzato (es. sdoppiamento), prende l'ultimo e fa +1
+        let numeroRiga = numeroForzato;
+        if (!numeroRiga) {
+            let righeEsistenti = tbody.querySelectorAll('tr');
+            let maxNum = 0;
+            righeEsistenti.forEach(r => {
+                let numText = r.querySelector('.numero-riga').innerText;
+                let numInt = parseInt(numText); // Prende la parte intera (es. da "21_A" prende 21)
+                if (!isNaN(numInt) && numInt > maxNum) maxNum = numInt;
+            });
+            numeroRiga = maxNum + 1;
+        }
+
         let coloreForn = getColoreFornitore(data ? data.fornitore : ''); 
-        let imgHtml = (data && (data.iconaBase64 || data.iconaBase)) ? `<img src="${data.iconaBase64 || data.iconaBase}" class="icon-thumb-mat">` : '<span style="font-size:50px; color:#555;">📷</span>';
-        let row = `<tr>
-            <td style="color:#666; text-align:center;">${idx}</td>
-            <td style="padding:5px; text-align:center;"><div class="icon-cell-materiale" onclick="attivaIncollaRiga(this)" ondblclick="this.nextElementSibling.click()" ondragover="event.preventDefault(); this.style.borderColor='#00ff88';" ondragleave="this.style.borderColor='#555';" ondrop="gestisciDropStandardRiga(event, this)">${imgHtml}</div><input type="file" style="display:none" accept="image/*" onchange="previewCompImg(this)"></td>
+        let imgHtml = (data && (data.iconaBase64 || data.iconaBase)) ? `<img src="${data.iconaBase64 || data.iconaBase}" class="icon-thumb-mat">` : '<span style="font-size:30px; color:#555;">📷</span>'; // Ridotta leggermente l'icona placeholder
+        
+        let row = document.createElement('tr');
+        row.innerHTML = `
+            <td style="color:#666; text-align:center; position:relative; min-width: 60px;">
+                <div style="display:flex; flex-direction:column; position:absolute; left:0; top:50%; transform:translateY(-50%); gap:2px;">
+                    <button style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px; padding:0;" title="Sposta Su" onclick="spostaRiga(this, -1)">▲</button>
+                    <button style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px; padding:0;" title="Sposta Giù" onclick="spostaRiga(this, 1)">▼</button>
+                </div>
+                <span class="numero-riga" style="font-weight:bold; margin-left: 15px;">${numeroRiga}</span>
+                <button style="background:transparent; border:none; color:#3498db; cursor:pointer; font-size:10px; display:block; margin: 2px auto 0 auto;" title="Sdoppia questa riga (es. A/B)" onclick="sdoppiaRiga(this)">⧉</button>
+            </td>
+            <td style="padding:5px; text-align:center;"><div class="icon-cell-materiale" style="width:35px; height:35px;" onclick="attivaIncollaRiga(this)" ondblclick="this.nextElementSibling.click()" ondragover="event.preventDefault(); this.style.borderColor='#00ff88';" ondragleave="this.style.borderColor='#555';" ondrop="gestisciDropStandardRiga(event, this)">${imgHtml}</div><input type="file" style="display:none" accept="image/*" onchange="previewCompImg(this)"></td>
             <td><input type="text" value="${data ? data.fornitore : ''}" list="lista-classi" placeholder="Classe" style="color: #00e5ff; font-weight: bold; text-align:center;"></td>
             <td><input type="text" value="${data?data.matricola:''}" placeholder="Matricola" style="text-align:center;"></td>
             <td><input type="text" value="${data?data.disegno:''}" placeholder="Disegno"  style="color: #756070;  font-weight:Light; text-align:center; "></td>
@@ -989,19 +1031,243 @@
             <td><input type="text" value="${data?data.denominazione:''}" placeholder="Descrizione" style="color:white; font-weight:Light; text-align:center; "></td>
             <td><input type="text" value="${data && data.note ? data.note : ''}" placeholder="Note..." style="color:white; font-weight:Light; text-align:center; "></td>
             <td><input type="text" value="${data && data.noteCarpenteria ? data.noteCarpenteria : ''}" placeholder="Note Carp..." style="color:#f1c40f; font-weight:Light; text-align:center; "></td>
-            <td onclick="this.parentElement.remove()" style="color:red; cursor:pointer; text-align:center; font-weight:bold;">x</td>
-        </tr>`;
-        tbody.insertAdjacentHTML('beforeend', row);
+            <td onclick="this.parentElement.remove(); ricalcolaNumeriRiga();" style="color:red; cursor:pointer; text-align:center; font-weight:bold;">x</td>
+        `;
+        tbody.appendChild(row);
     }
+
+
+
+
+    // --- FUNZIONI PER GESTIONE RIGHE DISTINTA BASE ---
+
+    // 1. Sposta la riga Su o Giù
+    window.spostaRiga = function(bottone, direzione) {
+        let riga = bottone.closest('tr');
+        let tbody = riga.parentElement;
+        
+        if (direzione === -1 && riga.previousElementSibling) {
+            // Sposta Su
+            tbody.insertBefore(riga, riga.previousElementSibling);
+        } else if (direzione === 1 && riga.nextElementSibling) {
+            // Sposta Giù
+            tbody.insertBefore(riga.nextElementSibling, riga);
+        }
+        // Dopo lo spostamento, riordina i numeri
+        ricalcolaNumeriRiga();
+    }
+
+    // 2. Ricalcola i numeri principali (1, 2, 3...) mantenendo intatti gli sdoppiamenti (es. 21_A, 21_B)
+    window.ricalcolaNumeriRiga = function() {
+        let righe = document.querySelectorAll('#comp-body tr');
+        let contatore = 1;
+
+        for (let i = 0; i < righe.length; i++) {
+            let spanNumero = righe[i].querySelector('.numero-riga');
+            let testoAttuale = spanNumero.innerText;
+            
+            // Se la riga attuale è uno sdoppiamento (es. finisce con _A, _B), aggiorna solo il numero principale
+            if (testoAttuale.includes('_')) {
+                let lettera = testoAttuale.split('_')[1];
+                // Prende il numero base dalla riga precedente se esiste, altrimenti usa il contatore
+                let numeroBase = i > 0 ? parseInt(righe[i-1].querySelector('.numero-riga').innerText) : contatore;
+                spanNumero.innerText = numeroBase + '_' + lettera;
+            } else {
+                // Riga normale
+                spanNumero.innerText = contatore;
+                
+                // Incrementa il contatore SOLO se la riga successiva NON è uno sdoppiamento di questa
+                let rigaSuccessivaSdoppiata = false;
+                if (i + 1 < righe.length) {
+                     let testoSuccessivo = righe[i+1].querySelector('.numero-riga').innerText;
+                     if (testoSuccessivo.includes('_') && testoSuccessivo.startsWith(contatore + '_')) {
+                         rigaSuccessivaSdoppiata = true;
+                     }
+                }
+                if (!rigaSuccessivaSdoppiata) {
+                     contatore++;
+                }
+            }
+        }
+    }
+
+    // 3. Sdoppia la riga (Crea la variante _A, _B, ecc.)
+    window.sdoppiaRiga = function(bottone) {
+        let rigaOriginale = bottone.closest('tr');
+        let spanNumero = rigaOriginale.querySelector('.numero-riga');
+        let numeroBaseAttuale = spanNumero.innerText.split('_')[0]; // Prende il numero, ignorando lettere esistenti
+
+        // Se la riga originale non aveva lettere, aggiungiamo la "_A"
+        if (!spanNumero.innerText.includes('_')) {
+            spanNumero.innerText = numeroBaseAttuale + '_A';
+        }
+
+        // Troviamo quale lettera assegnare alla nuova riga
+        let letteraNuova = 'B';
+        let righe = document.querySelectorAll('#comp-body tr');
+        let indiceInizio = Array.from(righe).indexOf(rigaOriginale);
+        
+        for(let i = indiceInizio + 1; i < righe.length; i++) {
+             let testoNum = righe[i].querySelector('.numero-riga').innerText;
+             if (testoNum.startsWith(numeroBaseAttuale + '_')) {
+                 // Ha già una lettera, passo alla successiva (da B a C, ecc.)
+                 letteraNuova = String.fromCharCode(testoNum.split('_')[1].charCodeAt(0) + 1);
+             } else {
+                 break; // Finita la sequenza di sdoppiamenti
+             }
+        }
+
+        // Recuperiamo i dati della riga originale per clonarli
+        let inps = rigaOriginale.querySelectorAll('input');
+        let imgTag = rigaOriginale.querySelector('img');
+        
+        let datiClonati = {
+            fornitore: inps[1] ? inps[1].value : "",
+            matricola: inps[2] ? inps[2].value : "",
+            disegno: inps[3] ? inps[3].value : "",
+            revPesa: inps[4] ? inps[4].value : "",
+            dataRev: inps[5] ? inps[5].value : "",
+            qta: inps[6] ? inps[6].value : "1",
+            materiale: inps[7] ? inps[7].value : "",
+            peso: inps[8] ? inps[8].value : "",
+            spessore: inps[9] ? inps[9].value : "",
+            dimensione: inps[10] ? inps[10].value : "",
+            denominazione: inps[11] ? inps[11].value : "",
+            note: inps[12] ? inps[12].value : "",
+            noteCarpenteria: inps[13] ? inps[13].value : "",
+            iconaBase64: imgTag ? imgTag.src : ""
+        };
+
+        // Chiamiamo la funzione di aggiunta passando i dati e il numero forzato (es. "21_B")
+        window.aggiungiRigaComp(datiClonati, numeroBaseAttuale + '_' + letteraNuova);
+        
+        // Spostiamo la nuova riga (che viene creata in fondo) subito sotto la riga originale
+        let tbody = document.getElementById('comp-body');
+        let nuovaRiga = tbody.lastElementChild;
+        
+        // Trova la posizione esatta in cui inserirla (dopo tutti gli altri sdoppiamenti esistenti)
+        let inserisciPrimaDi = rigaOriginale.nextElementSibling;
+        while (inserisciPrimaDi && inserisciPrimaDi.querySelector('.numero-riga').innerText.startsWith(numeroBaseAttuale + '_')) {
+             inserisciPrimaDi = inserisciPrimaDi.nextElementSibling;
+        }
+        
+        if (inserisciPrimaDi) {
+            tbody.insertBefore(nuovaRiga, inserisciPrimaDi);
+        }
+        
+        // Pulisce la matricola e alcuni campi per evitare duplicati esatti
+        let inpsNuova = nuovaRiga.querySelectorAll('input');
+        if(inpsNuova[2]) inpsNuova[2].value = ""; // Svuota Matricola
+        if(inpsNuova[11]) inpsNuova[11].value += " (Variante)"; // Aggiunge testo alla descrizione
+    }
+
+
+
+
+
+
+
+
+
     window.previewCompImg = function(inp) { let f = inp.files[0]; if(!f) return; let divTarget = inp.previousElementSibling; comprimiEIncollaInRiga(f, divTarget); inp.value = ""; }
     window.gestisciDropStandardRiga = function(e, divTarget) { e.preventDefault(); divTarget.style.borderColor = '#555'; const dt = e.dataTransfer; if (dt.files && dt.files.length > 0) comprimiEIncollaInRiga(dt.files[0], divTarget); }
     var targetIncollaAttivo = null;
+    var targetMainIncollaAttivo = false;
+
+    // Listener globale per il Copia/Incolla (CTRL+V)
     window.addEventListener('paste', function(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var items = (e.clipboardData || e.originalEvent.clipboardData).items;
-        for (var i = 0; i < items.length; i++) { if (items[i].type.indexOf("image") === 0) { e.preventDefault(); var blob = items[i].getAsFile(); if (targetIncollaAttivo) { comprimiEIncollaInRiga(blob, targetIncollaAttivo); } return; } }
+        for (var i = 0; i < items.length; i++) { 
+            if (items[i].type.indexOf("image") === 0) { 
+                e.preventDefault(); 
+                var blob = items[i].getAsFile(); 
+                if (targetIncollaAttivo) { 
+                    comprimiEIncollaInRiga(blob, targetIncollaAttivo); 
+                } else if (targetMainIncollaAttivo) {
+                    comprimiEIncollaMain(blob);
+                }
+                return; 
+            } 
+        }
     });
-    document.addEventListener('click', function(e) { if (!e.target.closest('.icon-cell-materiale')) { var celle = document.querySelectorAll('.icon-cell-materiale'); for(var i=0; i<celle.length; i++) celle[i].classList.remove('active-paste'); targetIncollaAttivo = null; } });
+
+    // Deseleziona le celle se clicchi fuori
+    document.addEventListener('click', function(e) { 
+        if (!e.target.closest('.icon-cell-materiale')) { 
+            var celle = document.querySelectorAll('.icon-cell-materiale'); 
+            for(var i=0; i<celle.length; i++) celle[i].classList.remove('active-paste'); 
+            targetIncollaAttivo = null; 
+        }
+        if (!e.target.closest('#main-art-img-box')) {
+            let mainBox = document.getElementById('main-art-img-box');
+            if(mainBox) mainBox.classList.remove('active-paste-main');
+            targetMainIncollaAttivo = false;
+        }
+    });
+
+    // --- FUNZIONI PER L'IMMAGINE PRINCIPALE ---
+    window.attivaIncollaMainImg = function(divTarget) {
+        // Deseleziona le celle piccole
+        var celle = document.querySelectorAll('.icon-cell-materiale');
+        for(var i=0; i<celle.length; i++) celle[i].classList.remove('active-paste');
+        targetIncollaAttivo = null;
+
+        // Attiva il box principale
+        divTarget.classList.add('active-paste-main');
+        targetMainIncollaAttivo = true;
+        if (window.event) window.event.stopPropagation();
+    }
+
+    window.gestisciDropMainImg = function(e) {
+        e.preventDefault();
+        document.getElementById('main-art-img-box').style.borderColor = '#444';
+        const dt = e.dataTransfer;
+        if (dt.files && dt.files.length > 0) comprimiEIncollaMain(dt.files[0]);
+    }
+
+    window.comprimiEIncollaMain = function(file) {
+        let mainBox = document.getElementById('main-art-img-box');
+        mainBox.classList.remove('active-paste-main');
+        targetMainIncollaAttivo = false;
+
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(event) {
+            var img = new Image();
+            img.src = event.target.result;
+            img.onload = function() {
+                var elem = document.createElement('canvas');
+                // Risoluzione leggermente più alta (600px) per l'immagine master
+                var scaleFactor = 600 / Math.max(img.width, img.height); 
+                var finalScale = scaleFactor < 1 ? scaleFactor : 1;
+                elem.width = img.width * finalScale;
+                elem.height = img.height * finalScale;
+                var ctx = elem.getContext('2d');
+                ctx.drawImage(img, 0, 0, elem.width, elem.height);
+                var dataUrl = elem.toDataURL('image/jpeg', 0.8);
+
+                currentArtImg = dataUrl;
+                document.getElementById('art-preview').src = currentArtImg;
+                document.getElementById('art-preview').style.display = 'block';
+                document.getElementById('art-placeholder').style.display = 'none';
+            }
+        }
+    }
+
+    // --- FUNZIONE STAMPA DISTINTA BASE MASTER ---
+    window.stampaDistintaBase = function() {
+        // Se non c'è un currentArtId significa che stiamo creando un articolo nuovo non ancora salvato
+        if(!currentArtId) {
+            alert("⚠️ Devi prima salvare l'articolo (Tasto 'SALVA ARTICOLO E MAGAZZINO') per poterne generare la Distinta Base in PDF.");
+            return;
+        }
+        
+        // Apre la nuova pagina HTML passandogli l'ID dell'articolo nell'URL
+        window.open('pdfdistintabase.html?id=' + currentArtId, '_blank');
+    }
+
+    
     window.attivaIncollaRiga = function(divCella) { var celle = document.querySelectorAll('.icon-cell-materiale'); for(var i=0; i<celle.length; i++) celle[i].classList.remove('active-paste'); divCella.classList.add('active-paste'); targetIncollaAttivo = divCella; if (window.event) window.event.stopPropagation(); }
     window.comprimiEIncollaInRiga = function(file, divTarget) {
         divTarget.classList.remove('active-paste'); targetIncollaAttivo = null;

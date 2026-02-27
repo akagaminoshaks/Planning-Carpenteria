@@ -243,7 +243,100 @@
         .icon-cell-materiale.active-paste { border: 2px solid #00ff88; box-shadow: 0 0 8px rgba(0, 255, 136, 0.5); background: rgba(0, 255, 136, 0.1); }
         .icon-thumb-mat { width: 100%; height: 100%; object-fit: cover; }
 
+
+
+
+
+
+
+
+
+        /* STILI BOTTONI TAB MODALE OFFICINA */
+        .art-tab-btn { background: transparent; border: 1px solid #444; color: #888; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: all 0.3s ease; }
+        .art-tab-btn:hover { border-color: white; color: white; }
+        .art-tab-btn.active { background: #f1c40f; color: #000; border-color: #f1c40f; box-shadow: 0 0 10px rgba(241, 196, 15, 0.4); }
+        .tab-content-panel { display: none; flex-direction: column; overflow-y: auto; flex: 1; }
+        .tab-content-panel.active { display: flex; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+    <!-- FINE CSS -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
+    <!-- INIZIO HTML -->
 </head>
 <body>
      <div id="editor-popup">
@@ -253,6 +346,17 @@
             <button class="btn-editor" style="background:var(--neon-green); color:black;" onclick="salvaEditor()">SALVA</button>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="modal-articolo" class="modal-overlay" style="display: none;">
         <div class="modal-box" style="width: 98%; height: 95%;">
@@ -438,52 +542,133 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div id="modal-overlay" class="modal-overlay" style="display: none;">
-        <div class="modal-box">
-            <div class="modal-head">
+        <div class="modal-box" style="width: 98%; height: 95vh; display: flex; flex-direction: column;">
+            
+            <div class="modal-head" style="flex-wrap: wrap; gap: 15px;">
                 <div class="mh-left">
                     <div class="mh-icon" id="mh-icon-box">📦</div>
-                    <div class="mh-info">
-                        <span><span class="mh-label">Matr:</span> <span class="mh-val" id="m-matr">---</span></span>
-                        <span><span class="mh-label">N° Dis:</span> <span class="mh-val" id="m-dis">---</span></span>
-                        <span><span class="mh-label">Q.tà:</span> <span class="mh-val" id="m-qta">---</span></span>
+                    <div class="mh-info" style="flex-direction: column; gap: 5px;">
+                        <div class="mh-order-label" id="m-title" style="margin: 0; color: #f1c40f;">N° Ordine: ---</div>
+                        <div style="font-size: 14px;">
+                            <span><span class="mh-label">Matr:</span> <span class="mh-val" id="m-matr">---</span></span> | 
+                            <span><span class="mh-label">Dis:</span> <span class="mh-val" id="m-dis">---</span></span> | 
+                            <span><span class="mh-label">Q.tà:</span> <span class="mh-val" id="m-qta">---</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mh-right" style="flex: 1; justify-content: center;">
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button class="art-tab-btn active" id="btn-tab-distinta" onclick="switchOfficinaTab('distinta')">1. Distinta Base</button>
+                        <button class="art-tab-btn" id="btn-tab-archiviopdf" onclick="switchOfficinaTab('archiviopdf')">📁 2. Archivio PDF</button>
+                        <button class="art-tab-btn" id="btn-tab-box1" onclick="switchOfficinaTab('box1')">3. Box 1</button>
+                        <button class="art-tab-btn" id="btn-tab-box2" onclick="switchOfficinaTab('box2')">4. Box 2</button>
+                        <button class="art-tab-btn" id="btn-tab-box3" onclick="switchOfficinaTab('box3')">5. Box 3</button>
                     </div>
                 </div>
 
                 <div class="mh-right">
-                    <div class="mh-order-label" id="m-title">N° Ordine: ---</div>
-                    <button onclick="apriModalQRStandard()" style="background:#3498db; color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer; margin-left: 20px;">🔲 STAMPA QR</button>
+                    <button onclick="apriModalQRStandard()" style="background:#3498db; color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">🔲 STAMPA QR</button>
                     <button onclick="document.getElementById('modal-overlay').style.display='none'" class="btn-close-modal">X</button>
                 </div>
             </div>
 
-            <div class="modal-body">
-                <div class="col-distinta">
-                    <div style="padding:0 0 10px 5px; font-weight:400; color:#0994E6; font-size:16px; letter-spacing:1px; text-transform:uppercase;">DISTINTA BASE - CHECK MATERIALI</div>
-                    <div class="distinta-list-container">
-                        <div class="distinta-grid-layout distincta-header-row">
-                            <div>CHK</div>
-                            <div>#</div>
-                            <div>IMG</div>
-                            <div>FORNITORI</div>
-                            <div>MATRICOLA</div>
-                            <div>DISEGNO</div>
-                            <div>Q/M</div>
-                            <div style="color:var(--neon-cyan)">Q.TOT</div>
-                            <div style="color:var(--neon-green)">ARRIVATI</div>
-                            <div style="color:var(--neon-green)">DDT</div>
-                            <div>%</div>
-                            <div>DESCRIZIONE</div>
-                            <div>NOTE:</div>
-                            <div>MATERIALE</div>
+            <div class="modal-body" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 20px; background: #111;">
+                
+                <div id="tab-distinta" class="tab-content-panel active" style="flex-direction: row; gap: 20px; height: 100%;">
+                    <div class="col-distinta" style="flex: 4; display: flex; flex-direction: column; overflow: hidden;">
+                        <div style="padding:0 0 10px 5px; font-weight:400; color:#0994E6; font-size:16px; letter-spacing:1px; text-transform:uppercase;">DISTINTA BASE - CHECK MATERIALI</div>
+                        <div class="distinta-list-container">
+                            <div class="distinta-grid-layout distincta-header-row">
+                                <div>CHK</div><div>#</div><div>IMG</div><div>FORNITORI</div><div>MATRICOLA</div><div>DISEGNO</div><div>Q/M</div>
+                                <div style="color:var(--neon-cyan)">Q.TOT</div><div style="color:var(--neon-green)">ARRIVATI</div><div style="color:var(--neon-green)">DDT</div><div>%</div>
+                                <div>DESCRIZIONE</div><div>NOTE:</div><div>MATERIALE</div>
+                            </div>
+                            <div id="distinta-container"></div>
                         </div>
-                        <div id="distinta-container"></div>
+                    </div>
+                    <div class="col-fasi" id="fasi-container" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; max-width: 280px;"></div>
+                </div>
+
+                <div id="tab-archiviopdf" class="tab-content-panel" style="padding: 0; border: none; background: transparent;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h2 style="color: #00e5ff; margin: 0;">📁 Archivio PDF & Checklist</h2>
+                        <span style="color:#888; font-size:12px;">Stato avanzamento documenti.</span>
+                    </div>
+                    
+                    <div style="display: flex; gap: 20px; flex: 1; overflow: hidden;">
+                        <div style="flex: 1; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                            <h3 style="color:#3498db; margin-top:0; margin-bottom: 15px;">📝 Preventivi Generati (RDO)</h3>
+                            <div id="off-tracker-rdo" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #444;"></div>
+                            <div id="off-lista-rdo" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; padding-right:5px;"></div>
+                        </div>
+
+                        <div style="flex: 1; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                            <h3 style="color:#f1c40f; margin-top:0; margin-bottom: 15px;">🛒 Ordini Generati (ODA)</h3>
+                            <div id="off-tracker-oda" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #444;"></div>
+                            <div id="off-lista-oda" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; padding-right:5px;"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-fasi" id="fasi-container"></div>
+
+                <div id="tab-box1" class="tab-content-panel">
+                    <h2 style="color:#e74c3c; margin-top:0;">Area Box 1</h2>
+                    <p style="color:#888;">Spazio predisposto per sviluppi futuri.</p>
+                </div>
+                
+                <div id="tab-box2" class="tab-content-panel">
+                    <h2 style="color:#9b59b6; margin-top:0;">Area Box 2</h2>
+                    <p style="color:#888;">Spazio predisposto per sviluppi futuri.</p>
+                </div>
+                
+                <div id="tab-box3" class="tab-content-panel">
+                    <h2 style="color:#2ecc71; margin-top:0;">Area Box 3</h2>
+                    <p style="color:#888;">Spazio predisposto per sviluppi futuri.</p>
+                </div>
+
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="modal-manage" class="modal-overlay">
         <div class="manage-box-modal">
@@ -508,6 +693,28 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="header-bar">
         <button class="btn-back" onclick="window.location.href='hometreemme.html'">⬅ TORNA ALL'HUB</button>
         <div class="clients-scroll" id="clients-bar"></div>
@@ -516,6 +723,24 @@
         
         <button class="btn-manage" onclick="openManage()">⚙️ GESTISCI CLIENTI</button>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="workspace">
         <div id="view-standard">
@@ -536,7 +761,47 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div id="placeholder" style="text-align:center; padding:100px; color:#444; font-size: 14px; letter-spacing: 1px;">SELEZIONA UN CLIENTE DALLA BARRA IN ALTO</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="modal-fornitori" class="modal-overlay" style="display: none; justify-content: center; align-items: center;">
         <div class="modal-box" style="width: 900px; height: 80%; background: #181818; border: 2px solid #00e5ff; display:flex; flex-direction:column;">
@@ -619,6 +884,24 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div id="modal-qr" class="modal-overlay" style="display: none; justify-content: center; align-items: center; z-index: 10000;">
         <div class="modal-box" style="width: 400px; height: auto; background: #181818; border: 2px solid #3498db; display:flex; flex-direction:column; align-items:center; padding: 30px; border-radius: 10px; box-shadow: 0 0 30px rgba(52, 152, 219, 0.4);">
             <h3 style="color:#3498db; margin-top:0; margin-bottom: 5px;">QR CODE COMMESSA</h3>
@@ -633,6 +916,31 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div id="modal-scanner" class="modal-overlay" style="display: none; justify-content: center; align-items: center; z-index: 10001;">
         <div class="modal-box" style="width: 90%; max-width: 500px; height: auto; background: #181818; border: 2px solid #f1c40f; display:flex; flex-direction:column; align-items:center; padding: 20px; border-radius: 10px;">
             <h3 style="color:#f1c40f; margin-top:0; margin-bottom: 15px;">INQUADRA IL QR CODE</h3>
@@ -642,6 +950,45 @@
             <button onclick="chiudiScanner()" style="margin-top:20px; background:transparent; border:1px solid #555; color:#ccc; padding:15px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;">ANNULLA / CHIUDI FOTOCAMERA</button>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <script>
     const firebaseConfig = { apiKey: "AIzaSyCfFDdtzkZLClamp-Z_iODl8KQbBevEAfg", authDomain: "planner-carpenteria.firebaseapp.com", databaseURL: "https://planner-carpenteria-default-rtdb.europe-west1.firebasedatabase.app", projectId: "planner-carpenteria", storageBucket: "planner-carpenteria.firebasestorage.app", messagingSenderId: "926532216818", appId: "1:926532216818:web:927f43972c81bbf580ed6b" };
@@ -798,6 +1145,12 @@
         currentStandardCommessaId = id;
         currentStandardCommessaNome = d.nomeOrdine;
 
+
+        switchOfficinaTab('distinta'); 
+        caricaArchivioPDFOfficina(id);
+
+
+
         document.getElementById('m-title').innerText = "N° Ordine: " + d.nomeOrdine;
         document.getElementById('m-matr').innerText = (d.matricola || '-');
         document.getElementById('m-dis').innerText = (d.disegno || '-');
@@ -831,12 +1184,20 @@
                 if(art.componenti) {
                     
                     let fornitoriStats = {}; 
+                    let rigaIndex = 1; // Contatore visivo
 
                     art.componenti.forEach((c, idx) => {
                         let cid = `comp_${idx}`;
+                        let fabb = d.fabbisogno && d.fabbisogno[cid];
+                        
+                        // FASE 4: IL FILTRO SEVERO DELL'OFFICINA
+                        // Salta il pezzo se non ha il lucchetto chiuso o se la qta è 0
+                        let isOrdinato = fabb && fabb.ordinato === true;
+                        let qTot = fabb && fabb.qta_da_ordinare !== undefined ? parseFloat(fabb.qta_da_ordinare) : 0;
+                        
+                        if (!isOrdinato || qTot <= 0) return; // <--- SE IL LUCCHETTO E' APERTO, L'OFFICINA NON LO VEDE
+
                         let checked = d.checklist && d.checklist.distintaBase && d.checklist.distintaBase[cid];
-                        let qUnit = parseInt(c.qta)||0;
-                        let qTot = qUnit * (parseInt(d.qtaTotale)||1);
                         let saved = (d.checklist && d.checklist.distintaDati && d.checklist.distintaDati[cid]) || {};
                         let qArr = saved.qtaArr ? parseInt(saved.qtaArr) : 0;
                         let noteVal = saved.note || ''; 
@@ -845,12 +1206,10 @@
                         let imgSrc = c.iconaBase64 || c.iconaBase || c.immagine || "";
                         let iconHtml = imgSrc ? `<img src="${imgSrc}" class="part-icon-thumb">` : `<div class="part-icon-placeholder">📷</div>`;
 
-                        // MAGIA: Leggiamo il fornitore_definitivo salvato negli acquisti. Se non c'è, usiamo la classe base.
-                        let fornitoreReale = (d.fabbisogno && d.fabbisogno[cid] && d.fabbisogno[cid].fornitore_definitivo) ? d.fabbisogno[cid].fornitore_definitivo : (c.fornitore || "NON ASSEGNATO");
-                        
+                        let fornitoreReale = fabb.fornitore_definitivo || c.fornitore || "NON ASSEGNATO";
                         let nomeFornitore = fornitoreReale.trim().toUpperCase();
 
-                        // Popoliamo le statistiche a destra in base al fornitore VERO
+                        // Popoliamo le statistiche a destra SOLO per la roba ordinata
                         if(!fornitoriStats[nomeFornitore]) {
                             fornitoriStats[nomeFornitore] = { total: 0, arrivati: 0 };
                         }
@@ -859,20 +1218,21 @@
                             fornitoriStats[nomeFornitore].arrivati++;
                         }
 
-                        // Usiamo la funzione globale dei colori
                         let coloreFornitore = window.getColoreFornitore ? window.getColoreFornitore(fornitoreReale) : "white";
+                        let qUnitStr = fabb.unitaQta || c.unitaQta || 'Pz';
 
                         let row = document.createElement('div'); row.className = `distinta-row-item ${checked?'checked':''}`;
                         row.setAttribute('data-forn-filter', nomeFornitore); 
+                        
                         row.innerHTML = `
                             <div class="d-cell"><div class="check-box ${checked?'checked':''}" onclick="toggleDist('${id}','${cid}',this)"></div></div>
-                            <div class="d-cell">${idx+1}</div>
+                            <div class="d-cell">${rigaIndex}</div>
                             <div class="d-cell">${iconHtml}</div>
                             <div class="d-cell" style="color: ${coloreFornitore}; font-weight: bold; text-transform:uppercase;">${fornitoreReale}</div>
                             <div class="d-cell" style="color:white;">${c.matricola}</div>
                             <div class="d-cell">${c.disegno}</div>
-                            <div class="d-cell">${qUnit}</div>
-                            <div class="d-cell" style="color:#00ff88; font-weight:bold;">${qTot}</div>
+                            <div class="d-cell" style="color:#aaa;">${qUnitStr}</div>
+                            <div class="d-cell" style="color:#00ff88; font-weight:bold; font-size:15px;">${qTot}</div>
                             <div class="d-cell"><input class="inp-mini" type="number" value="${saved.qtaArr||''}" oninput="updatePerc(this, ${qTot}, this.parentElement.nextElementSibling.nextElementSibling, '${id}', '${cid}')" onchange="saveDistData('${id}','${cid}','qtaArr',this.value)"></div>
                             <div class="d-cell"><input class="inp-mini" type="text" value="${saved.ddt||''}" onchange="saveDistData('${id}','${cid}','ddt',this.value)"></div>
                             <div class="d-cell" style="color:${colorPerc}; font-weight:bold;">${perc}%</div>
@@ -881,6 +1241,7 @@
                             <div class="d-cell">${c.materiale}</div>
                         `;
                         dc.appendChild(row);
+                        rigaIndex++;
                     });
 
                     window.activeFornitoreFilter = null; 
@@ -2046,6 +2407,155 @@
         
         return "#00d26a"; 
     }
+
+
+
+
+
+
+    // ==========================================
+    // SISTEMA A SCHEDE (TABS) PER LA MODALE
+    // ==========================================
+    window.switchOfficinaTab = function(tabName) {
+        const tabs = ['distinta', 'archiviopdf', 'box1', 'box2', 'box3'];
+        tabs.forEach(t => {
+            let btn = document.getElementById('btn-tab-' + t);
+            let panel = document.getElementById('tab-' + t);
+            if(btn) btn.classList.remove('active');
+            if(panel) panel.classList.remove('active');
+        });
+        
+        let btnAttivo = document.getElementById('btn-tab-' + tabName);
+        let panelAttivo = document.getElementById('tab-' + tabName);
+        
+        if(btnAttivo) btnAttivo.classList.add('active');
+        if(panelAttivo) panelAttivo.classList.add('active');
+    };
+
+    window.caricaArchivioPDFOfficina = function(idOrdine) {
+        db.ref(`commesse/${currentClient}/${idOrdine}`).on('value', snap => {
+            let dati = snap.val() || {};
+            let archivio = dati.archivio_pdf || {};
+            let fabbisogno = dati.fabbisogno || {};
+
+            let containerRdo = document.getElementById('off-lista-rdo');
+            let containerOda = document.getElementById('off-lista-oda');
+            let trackerRdo = document.getElementById('off-tracker-rdo');
+            let trackerOda = document.getElementById('off-tracker-oda');
+            
+            if(!containerRdo || !containerOda) return;
+
+            containerRdo.innerHTML = "";
+            containerOda.innerHTML = "";
+            
+            let arrayPdf = Object.values(archivio).sort((a,b) => new Date(b.data) - new Date(a.data));
+            
+            let fornitoriRdoFatti = new Set();
+            let fornitoriOdaFatti = new Set();
+            let fornitoriOdaAttesi = new Set();
+
+            for (let key in fabbisogno) {
+                let f = fabbisogno[key].fornitore_definitivo;
+                let qta = fabbisogno[key].qta_da_ordinare !== undefined ? fabbisogno[key].qta_da_ordinare : 1; 
+                if (f && f !== 'DA ASSEGNARE' && f.trim() !== '' && qta > 0) {
+                    fornitoriOdaAttesi.add(f.toUpperCase());
+                }
+            }
+
+            arrayPdf.forEach(pdf => {
+                let dataFormattata = new Date(pdf.data).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                let nomeForn = pdf.fornitore.toUpperCase();
+
+                if (pdf.tipo === 'RDO') {
+                    fornitoriRdoFatti.add(nomeForn);
+                    let color = '#3498db';
+                    containerRdo.innerHTML += `
+                        <div style="background:#1a1a1a; border-left:4px solid ${color}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333;">
+                            <div>
+                                <strong style="color:${color}; font-size:13px;">${nomeForn}</strong><br>
+                                <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
+                            </div>
+                            <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px;">VISUALIZZA</button>
+                        </div>
+                    `;
+                } else if (pdf.tipo.includes('ODA')) {
+                    fornitoriOdaFatti.add(nomeForn);
+                    let isCieco = pdf.tipo.includes('CIECO');
+                    let color = isCieco ? '#2ecc71' : '#f1c40f';
+                    let label = isCieco ? 'CIECO (Officina)' : 'COMPLETO';
+                    
+                    containerOda.innerHTML += `
+                        <div style="background:#1a1a1a; border-left:4px solid ${color}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333;">
+                            <div>
+                                <strong style="color:${color}; font-size:13px;">${nomeForn} - ${label}</strong><br>
+                                <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
+                            </div>
+                            <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px;">VISUALIZZA</button>
+                        </div>
+                    `;
+                }
+            });
+
+            if(containerRdo.innerHTML === "") containerRdo.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun preventivo generato.</div>";
+            if(containerOda.innerHTML === "") containerOda.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun ordine generato.</div>";
+
+            trackerRdo.innerHTML = "";
+            if(fornitoriRdoFatti.size === 0) {
+                trackerRdo.innerHTML = "<span style='color:#666; font-size:12px;'>Nessun preventivo inviato.</span>";
+            } else {
+                fornitoriRdoFatti.forEach(f => {
+                    trackerRdo.innerHTML += `<span style="background:rgba(52, 152, 219, 0.1); color:#3498db; border:1px solid #3498db; padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">✓ ${f}</span>`;
+                });
+            }
+
+            trackerOda.innerHTML = "";
+            if(fornitoriOdaAttesi.size === 0) {
+                trackerOda.innerHTML = "<span style='color:#666; font-size:12px;'>Fabbisogno non ancora elaborato.</span>";
+            } else {
+                fornitoriOdaAttesi.forEach(f => {
+                    let fatto = fornitoriOdaFatti.has(f);
+                    let stile = fatto 
+                        ? "background:rgba(46, 204, 113, 0.15); color:#2ecc71; border:1px solid #2ecc71;" 
+                        : "background:rgba(255, 255, 255, 0.03); color:#888; border:1px dashed #666; opacity: 0.7;";
+                    let icona = fatto ? "✅" : "⏳";
+                    trackerOda.innerHTML += `<span style="${stile} padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">${icona} ${f}</span>`;
+                });
+            }
+        });
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     </script>
 </body>

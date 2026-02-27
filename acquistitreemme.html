@@ -45,26 +45,138 @@
         .filter-btn { background: #1a1a1a; color: #888; border: 1px solid #444; padding: 6px 15px; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; text-transform: uppercase; }
         .filter-btn:hover { border-color: #00e5ff; color: white; }
         .filter-btn.active { background: #00e5ff; color: black; border-color: #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,0.4); }
+
+
+        /* STILI FASE 2: LUCCHETTO E RIGHE BLOCCATE */
+        .riga-ordinata { background: rgba(46, 204, 113, 0.08) !important; opacity: 0.6; transition: 0.3s; }
+        .riga-ordinata input, .riga-ordinata select { pointer-events: none; border-color: transparent !important; background: transparent !important; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
 </head>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <body>
 
-    <div class="header-bar">
-        <button class="btn-back" onclick="window.location.href='archiviomastertreemme.html'">⬅ TORNA ALL'ARCHIVIO</button>
-        <div class="header-info">
-            <div><span class="h-label">N° Ordine Tre Emme:</span> <span class="h-val-cyan" id="head-ordine">CARICAMENTO...</span></div>
-            <div><span class="h-label">Articolo:</span> <span class="h-val" id="head-articolo">---</span></div>
-            <div><span class="h-label">Q.tà Lotto:</span> <span class="h-val" id="head-qta">---</span></div>
-        </div>
-        <div style="width: 150px;"></div> 
-    </div>
 
-    <div class="tabs-container">
-        <button class="tab-btn active" data-tab="preventivo" onclick="switchAcquistiTab('preventivo')">📝 1. PREVENTIVO (RDO)</button>
-        <button class="tab-btn" data-tab="comparativo" onclick="switchAcquistiTab('comparativo')">⚖️ 2. QUADRO COMPARATIVO</button>
-        <button class="tab-btn" data-tab="ordine" onclick="switchAcquistiTab('ordine')">🛒 3. ORDINE UFFICIALE</button>
-        <button class="tab-btn" data-tab="storico" onclick="switchAcquistiTab('storico')">📚 STORICO PREZZI</button>
-    </div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button class="btn-back" onclick="tornaAllaDashboardConModale()">⬅ TORNA ALLA DASHBOARD</button>
+            <div style="font-size: 20px; font-weight: bold;">
+                N° ORDINE TRE EMME: <span id="titolo-ordine" style="color:#00e5ff;">Caricamento...</span>
+            </div>
+            <div style="font-size: 14px; color: #aaa;">
+                ARTICOLO: <strong id="titolo-articolo" style="color:white;">---</strong> &nbsp;&nbsp;|&nbsp;&nbsp; Q.TÀ LOTTO: <strong id="titolo-qta" style="color:white;">---</strong>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="preventivo" onclick="switchAcquistiTab('preventivo')">📝 1. PREVENTIVO (RDO)</button>
+            <button class="tab-btn" data-tab="comparativo" onclick="switchAcquistiTab('comparativo')">⚖️ 2. QUADRO COMPARATIVO</button>
+            <button class="tab-btn" data-tab="ordine" onclick="switchAcquistiTab('ordine')">🛒 3. ORDINE UFFICIALE</button>
+            <button class="tab-btn" data-tab="archiviopdf" onclick="switchAcquistiTab('archiviopdf')">📁 4. ARCHIVIO PDF</button>
+            <button class="tab-btn" data-tab="storico" onclick="switchAcquistiTab('storico')">📚 STORICO PREZZI</button>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="tab-preventivo" class="tab-content active">
         <div class="workspace-split">
@@ -106,7 +218,7 @@
             <div class="col-tabella" style="flex: 1; display:flex; flex-direction:column;">
                 <div style="color:#9b59b6; font-size:16px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
                     <span>INSERISCI I PREZZI RICEVUTI E CLICCA SULLA CELLA DEL VINCITORE</span>
-                    <button class="btn-azione" style="width:auto; padding:8px 20px; background:#2ecc71; color:black; font-size:12px; margin:0;" onclick="switchAcquistiTab('ordine')">VAI ALL'ORDINE UFFICIALE ➔</button>
+                    <button class="btn-azione" style="width:auto; padding:8px 20px; background:#2ecc71; color:black; font-size:12px; margin:0;" onclick="disegnaTabellaOrdine(); switchAcquistiTab('ordine');">VAI ALL'ORDINE UFFICIALE ➔</button>
                 </div>
                 <div style="overflow-y:auto; flex:1;">
                     <table class="comp-table" id="table-gara">
@@ -143,6 +255,7 @@
                                 <th style="width:100px; color:#f1c40f;">€ / Cad.</th>
                                 <th style="width:90px; color:#2ecc71;">Unità €</th>
                                 <th style="width:100px; color:#00e5ff;">Totale Riga €</th>
+                                <th style="width:50px; color:#2ecc71;">Stato</th>
                             </tr>
                         </thead>
                         <tbody id="ordine-body"></tbody>
@@ -179,7 +292,7 @@
                     <span id="uff-totale-finito" style="color: #2ecc71; font-size: 20px; font-weight: bold;">0.00 €</span>
                 </div>
                 <button class="btn-azione" style="background:#f1c40f; color:black; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3);" onclick="apriModalGenerazioneODA()">📄 1. GENERA PDF ORDINI D'ACQUISTO (ODA)</button>
-                <button class="btn-azione btn-ord" onclick="confermaEInviaInOfficina()">✔️ 2. BLOCCA PREZZI E INVIA IN OFFICINA</button>
+                <button class="btn-azione btn-ord" onclick="confermaEInviaInOfficina()">✔️ 2. CHIUDI FASE ACQUISTI E INVIA IN OFFICINA</button>
             </div>
         </div>
     </div>
@@ -188,6 +301,32 @@
         <h2 style="color: #f1c40f; margin-top: 0;">📚 Storico Prezzi Acquisti</h2>
         <p style="color: #888;">Qui vedrai lo storico dei prezzi pagati per i materiali presenti in questo ordine.</p>
     </div>
+
+    <div id="tab-archiviopdf" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+            <h2 style="color: #00e5ff; margin: 0;">📁 Archivio PDF & Checklist</h2>
+            <span style="color:#888; font-size:12px;">Controlla i badge per assicurarti di aver inviato tutto.</span>
+        </div>
+        
+        <div style="display: flex; gap: 20px; height: 100%; overflow: hidden;">
+            <div style="flex: 1; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                <h3 style="color:#3498db; margin-top:0; margin-bottom: 15px;">📝 Preventivi Generati (RDO)</h3>
+                <div id="tracker-rdo" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #444;"></div>
+                <div id="lista-rdo" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; padding-right:5px;"></div>
+            </div>
+
+            <div style="flex: 1; background: #151515; border: 1px solid #333; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                <h3 style="color:#f1c40f; margin-top:0; margin-bottom: 15px;">🛒 Ordini Generati (ODA)</h3>
+                <div id="tracker-oda" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; padding-bottom:15px; border-bottom:1px dashed #444;"></div>
+                <div id="lista-oda" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; padding-right:5px;"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
 
     <div id="modal-rdo-fornitori" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:3000; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
         <div style="background:#1a1a1a; border:2px solid #3498db; border-radius:12px; padding:30px; width:100%; max-width:600px; box-shadow:0 15px 40px rgba(52,152,219,0.3); text-align:center;">
@@ -215,6 +354,40 @@
             <button style="margin-top: 20px; background:none; border:none; color:#666; cursor:pointer; text-decoration:underline;" onclick="document.getElementById('modal-oda').style.display='none'">Annulla e chiudi</button>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -260,9 +433,15 @@
                 datiOrdineOriginali = snap.val();
                 if(!datiOrdineOriginali) { alert("Ordine non trovato nel database!"); return; }
 
-                document.getElementById('head-ordine').innerText = datiOrdineOriginali.nomeOrdine || ordineCorrenteId;
-                document.getElementById('head-articolo').innerText = datiOrdineOriginali.nome_articolo || datiOrdineOriginali.matricola;
-                document.getElementById('head-qta').innerText = datiOrdineOriginali.qtaTotale || "1";
+                // Aggiornamento sicuro dei titoli a prova di crash
+                let boxOrdine = document.getElementById('titolo-ordine') || document.getElementById('head-ordine');
+                if(boxOrdine) boxOrdine.innerText = datiOrdineOriginali.nomeOrdine || ordineCorrenteId;
+
+                let boxArticolo = document.getElementById('titolo-articolo') || document.getElementById('head-articolo');
+                if(boxArticolo) boxArticolo.innerText = datiOrdineOriginali.nome_articolo || datiOrdineOriginali.matricola || "---";
+
+                let boxQta = document.getElementById('titolo-qta') || document.getElementById('head-qta');
+                if(boxQta) boxQta.innerText = datiOrdineOriginali.qtaTotale || "1";
 
                 if(datiOrdineOriginali.costiExtra) {
                     document.getElementById('uff-lav-meccaniche').value = datiOrdineOriginali.costiExtra.lavMeccaniche || "0.00";
@@ -276,6 +455,114 @@
             });
         }
 
+        function disegnaArchivioPDF() {
+            const idOrdSicuro = new URLSearchParams(window.location.search).get('ordine');
+            if(!idOrdSicuro) return;
+
+            // Restiamo in ascolto sull'intero ordine per avere sia i PDF che i Fornitori Definitivi
+            db.ref(`commesse/Tre Emme/${idOrdSicuro}`).on('value', snap => {
+                let dati = snap.val() || {};
+                let archivio = dati.archivio_pdf || {};
+                let fabbisogno = dati.fabbisogno || {};
+
+                let containerRdo = document.getElementById('lista-rdo');
+                let containerOda = document.getElementById('lista-oda');
+                let trackerRdo = document.getElementById('tracker-rdo');
+                let trackerOda = document.getElementById('tracker-oda');
+                
+                if(!containerRdo || !containerOda) return;
+
+                containerRdo.innerHTML = "";
+                containerOda.innerHTML = "";
+                
+                let arrayPdf = Object.values(archivio).sort((a,b) => new Date(b.data) - new Date(a.data));
+                
+                // Set per tenere memoria di chi abbiamo stampato e chi dobbiamo stampare
+                let fornitoriRdoFatti = new Set();
+                let fornitoriOdaFatti = new Set();
+                let fornitoriOdaAttesi = new Set();
+
+                // 1. Capiamo a CHI dobbiamo fare l'ordine (Leggendo il Tab 3 / Fabbisogno)
+                for (let key in fabbisogno) {
+                    let f = fabbisogno[key].fornitore_definitivo;
+                    let qta = fabbisogno[key].qta_da_ordinare !== undefined ? fabbisogno[key].qta_da_ordinare : 1; 
+                    if (f && f !== 'DA ASSEGNARE' && f.trim() !== '' && qta > 0) {
+                        fornitoriOdaAttesi.add(f.toUpperCase());
+                    }
+                }
+
+                // 2. Smistiamo i PDF nelle rispettive colonne e registriamo i "Fatti"
+                arrayPdf.forEach(pdf => {
+                    let dataFormattata = new Date(pdf.data).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    let nomeForn = pdf.fornitore.toUpperCase();
+
+                    if (pdf.tipo === 'RDO') {
+                        fornitoriRdoFatti.add(nomeForn);
+                        let color = '#3498db';
+                        containerRdo.innerHTML += `
+                            <div style="background:#1a1a1a; border-left:4px solid ${color}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333;">
+                                <div>
+                                    <strong style="color:${color}; font-size:13px;">${nomeForn}</strong><br>
+                                    <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
+                                </div>
+                                <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px; transition:0.2s;" onmouseover="this.style.background='${color}'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='${color}';">VISUALIZZA</button>
+                            </div>
+                        `;
+                    } else if (pdf.tipo.includes('ODA')) {
+                        fornitoriOdaFatti.add(nomeForn);
+                        let isCieco = pdf.tipo.includes('CIECO');
+                        let color = isCieco ? '#2ecc71' : '#f1c40f';
+                        let label = isCieco ? 'CIECO (Officina)' : 'COMPLETO';
+                        
+                        containerOda.innerHTML += `
+                            <div style="background:#1a1a1a; border-left:4px solid ${color}; padding:12px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; border:1px solid #333;">
+                                <div>
+                                    <strong style="color:${color}; font-size:13px;">${nomeForn} - ${label}</strong><br>
+                                    <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
+                                </div>
+                                <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px; transition:0.2s;" onmouseover="this.style.background='${color}'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='${color}';">VISUALIZZA</button>
+                            </div>
+                        `;
+                    }
+                });
+
+                // Se le liste sono vuote, metti un testo segnaposto
+                if(containerRdo.innerHTML === "") containerRdo.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun preventivo generato.</div>";
+                if(containerOda.innerHTML === "") containerOda.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun ordine generato.</div>";
+
+                // 3. DISEGNO TRACKER RDO (Informa su chi abbiamo contattato)
+                trackerRdo.innerHTML = "";
+                if(fornitoriRdoFatti.size === 0) {
+                    trackerRdo.innerHTML = "<span style='color:#666; font-size:12px;'>Crea i preventivi nel Tab 1.</span>";
+                } else {
+                    fornitoriRdoFatti.forEach(f => {
+                        trackerRdo.innerHTML += `<span style="background:rgba(52, 152, 219, 0.1); color:#3498db; border:1px solid #3498db; padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold; box-shadow:0 0 8px rgba(52,152,219,0.3);">✓ ${f}</span>`;
+                    });
+                }
+
+                // 4. DISEGNO TRACKER ODA (LA VERA CHECKLIST)
+                trackerOda.innerHTML = "";
+                if(fornitoriOdaAttesi.size === 0) {
+                    trackerOda.innerHTML = "<span style='color:#666; font-size:12px;'>Assegna i fornitori definitivi nel Tab 3.</span>";
+                } else {
+                    fornitoriOdaAttesi.forEach(f => {
+                        let fatto = fornitoriOdaFatti.has(f);
+                        // Se fatto: Verde brillante. Se da fare: Grigio semitrasparente.
+                        let stile = fatto 
+                            ? "background:rgba(46, 204, 113, 0.15); color:#2ecc71; border:1px solid #2ecc71; box-shadow:0 0 10px rgba(46,204,113,0.4);" 
+                            : "background:rgba(255, 255, 255, 0.03); color:#888; border:1px dashed #666; opacity: 0.7;";
+                        let icona = fatto ? "✅" : "⏳";
+                        trackerOda.innerHTML += `<span style="${stile} padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold; transition:0.3s;">${icona} ${f}</span>`;
+                    });
+                }
+            });
+        }
+        setTimeout(disegnaArchivioPDF, 1000);
+
+
+        // ==========================================
+        // TABELLA PREVENTIVI (RIPARATA E ORIGINALE)
+        // ==========================================
         function disegnaTabellaPreventivo() {
             const tbody = document.getElementById('preventivo-body');
             tbody.innerHTML = "";
@@ -347,10 +634,6 @@
         // ==========================================
         // MOTORE QUADRO COMPARATIVO DINAMICO
         // ==========================================
-        
-// ==========================================
-        // MOTORE QUADRO COMPARATIVO DINAMICO V2 (INTELLIGENTE)
-        // ==========================================
         function disegnaTabellaComparativa() {
             const thead = document.getElementById('gara-head');
             const tbody = document.getElementById('comparativo-body');
@@ -359,7 +642,6 @@
             let fabbisogno = datiOrdineOriginali.fabbisogno || {};
             let rdoInviate = datiOrdineOriginali.rdo_inviate || {}; 
             
-            // FILTRO ANTI-BUG: Prende solo fornitori veri, escludendo "undefined" o vuoti
             let fornitoriInGara = Object.keys(rdoInviate).filter(f => f !== 'undefined' && f !== 'null' && f.trim() !== '');
 
             if (fornitoriInGara.length === 0) {
@@ -369,7 +651,6 @@
                 return;
             }
 
-            // INTESTAZIONI AMPLIATE
             let thHtml = `<tr>
                 <th style="width:30px; color:#9b59b6;">IMG</th>
                 <th style="color:#00e5ff;">Classe</th>
@@ -388,14 +669,13 @@
             thHtml += `<th style="width:130px; color:#2ecc71;">🏆 VINCITORE</th></tr>`;
             thead.innerHTML = thHtml;
 
-            // RIGHE CON DATI COMPLETI
             for (let compId in fabbisogno) {
                 let c = fabbisogno[compId];
                 let qtaOrdinare = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
                 if (qtaOrdinare <= 0) continue; 
 
                 let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="width:30px; height:30px; object-fit:contain; border-radius:4px;">` : `📷`;
-                let nomeClasse = c.fornitore || '-'; // La classe è salvata in questo campo
+                let nomeClasse = c.fornitore || '-'; 
                 let desc = c.denominazione || c.nome || '';
 
                 let tr = document.createElement('tr');
@@ -414,11 +694,16 @@
                     <td style="color:#00ff88; font-weight:bold; font-size:14px;" class="gara-qta">${qtaOrdinare}</td>
                 `;
                 
-                // CELLE PREZZO (Auto-calcolo al cambio input)
+                let prezziSalvati = datiOrdineOriginali.prezzi_gara || {};
+
                 fornitoriInGara.forEach(forn => {
                     let haRicevutoRdo = rdoInviate[forn] && rdoInviate[forn][compId];
                     if (haRicevutoRdo) {
-                        tdHtml += `<td><input type="number" class="inp-mini gara-prz" data-forn="${forn}" placeholder="0.00" oninput="ricalcolaVincitoreRiga('${compId}', this.closest('tr')); calcolaTotaliGara();" style="font-weight:bold;"></td>`;
+                        let prz = (prezziSalvati[compId] && prezziSalvati[compId][forn]) ? prezziSalvati[compId][forn] : "";
+                        tdHtml += `<td><input type="number" class="inp-mini gara-prz" data-forn="${forn}" value="${prz}" placeholder="0.00" 
+                        oninput="ricalcolaVincitoreRiga('${compId}', this.closest('tr')); calcolaTotaliGara();" 
+                        onchange="salvaPrezzoGara('${compId}', '${forn}', this.value)" 
+                        style="font-weight:bold;"></td>`;
                     } else {
                         tdHtml += `<td><div style="background:rgba(255,255,255,0.02); color:#444; padding:5px; border-radius:4px; font-size:11px;">-</div></td>`;
                     }
@@ -427,17 +712,24 @@
                 tdHtml += `<td><div id="vincitore-${compId}" style="background:rgba(255,255,255,0.05); border:1px solid #444; padding:6px; border-radius:6px; font-size:11px; color:#aaa; min-height:16px;">...</div></td>`;
                 tr.innerHTML = tdHtml;
                 tbody.appendChild(tr);
+                
+                ricalcolaVincitoreRiga(compId, tr);
             }
-            calcolaTotaliGara();
         }
 
-        // AUTO-ELEZIONE DEL VINCITORE PIU' BASSO PER RIGA
+        window.salvaPrezzoGara = function(compId, fornitore, valore) {
+            let prz = parseFloat(valore) || 0;
+            db.ref(`commesse/Tre Emme/${ordineCorrenteId}/prezzi_gara/${compId}/${fornitore}`).set(prz);
+            if (!datiOrdineOriginali.prezzi_gara) datiOrdineOriginali.prezzi_gara = {};
+            if (!datiOrdineOriginali.prezzi_gara[compId]) datiOrdineOriginali.prezzi_gara[compId] = {};
+            datiOrdineOriginali.prezzi_gara[compId][fornitore] = prz;
+        }
+
         window.ricalcolaVincitoreRiga = function(compId, tr) {
             let inputs = tr.querySelectorAll('.gara-prz');
             let minPrz = Infinity;
             let bestInput = null;
 
-            // Scansiona tutti i prezzi inseriti in quella riga e trova il più basso (> 0)
             inputs.forEach(inp => {
                 inp.style.backgroundColor = "rgba(0,0,0,0.3)";
                 inp.style.borderColor = "#444";
@@ -454,7 +746,6 @@
             let rigaOrdine = document.querySelector(`#ordine-body tr[data-comp-id="${compId}"]`);
 
             if (bestInput) {
-                // Illumina di verde l'input vincente
                 bestInput.style.backgroundColor = "rgba(46, 204, 113, 0.2)";
                 bestInput.style.borderColor = "#2ecc71";
                 bestInput.style.boxShadow = "0 0 10px rgba(46, 204, 113, 0.5)";
@@ -463,7 +754,12 @@
                 boxVincitore.style.borderColor = "#2ecc71";
                 boxVincitore.innerHTML = `<strong style="color:#2ecc71; text-transform:uppercase;">${nomeFornitore}</strong><br><span style="color:#fff;">${minPrz.toFixed(2)} €</span>`;
                 
-                // Aggiorna Ordine Ufficiale in automatico
+                // SALVATAGGIO IN MEMORIA (Così il Tab 3 lo trova quando si disegna!)
+                if(datiOrdineOriginali.fabbisogno[compId]) {
+                    datiOrdineOriginali.fabbisogno[compId].fornitore_definitivo = nomeFornitore;
+                    datiOrdineOriginali.fabbisogno[compId].prezzo = minPrz;
+                }
+
                 if (rigaOrdine) {
                     let inputForn = rigaOrdine.querySelector('.field-fornitore');
                     let inputPrezzo = rigaOrdine.querySelector('.field-prezzo');
@@ -473,9 +769,15 @@
                     calcolaRiga(inputPrezzo);
                 }
             } else {
-                // Se sono tutti a 0, resetta
                 boxVincitore.innerHTML = "...";
                 boxVincitore.style.borderColor = "#444";
+                
+                // PULIZIA IN MEMORIA SE NESSUN VINCITORE
+                if(datiOrdineOriginali.fabbisogno[compId]) {
+                    datiOrdineOriginali.fabbisogno[compId].fornitore_definitivo = "";
+                    datiOrdineOriginali.fabbisogno[compId].prezzo = 0;
+                }
+
                 if (rigaOrdine) {
                     rigaOrdine.querySelector('.field-fornitore').value = "";
                     let inputPrezzo = rigaOrdine.querySelector('.field-prezzo');
@@ -485,7 +787,6 @@
             }
         }
 
-        // CALCOLO GLOBALE E RISPARMIO
         window.calcolaTotaliGara = function() {
             let rdoInviate = datiOrdineOriginali.rdo_inviate || {};
             let fornitoriInGara = Object.keys(rdoInviate).filter(f => f !== 'undefined' && f !== 'null' && f.trim() !== '');
@@ -532,7 +833,7 @@
        
 
         // ==========================================
-        // TABELLA ORDINE UFFICIALE
+        // TABELLA ORDINE UFFICIALE E LUCCHETTI (LA VERA MAGIA)
         // ==========================================
         function disegnaTabellaOrdine() {
             const tbody = document.getElementById('ordine-body');
@@ -550,16 +851,23 @@
                 let tr = document.createElement('tr');
                 tr.setAttribute('data-comp-id', compId);
 
+                // --- LOGICA DEL LUCCHETTO ---
+                let isOrdinato = c.ordinato === true;
+                tr.className = isOrdinato ? "riga-ordinata" : "";
+                let iconaLucchetto = isOrdinato ? "🔒" : "🔓";
+                let titleLucchetto = isOrdinato ? "Ordine generato. Clicca per sbloccare la riga." : "Non ancora ordinato. Clicca per bloccare manualmente.";
+
                 tr.innerHTML = `
                     <td style="color:#666; text-align:center;">${index}</td>
                     <td style="text-align:center;">${imgHtml}</td> 
-                    <td><input type="text" class="inp-mini field-fornitore" value="${c.fornitore_definitivo || ''}" style="color:${getColoreFornitore(c.fornitore_definitivo)}; font-weight:bold; text-align:center;" oninput="this.style.color=getColoreFornitore(this.value); calcolaTotaliAcquisti();"></td>
+                    <td><input type="text" class="inp-mini field-fornitore" value="${c.fornitore_definitivo || ''}" style="color:${getColoreFornitore(c.fornitore_definitivo)}; font-weight:bold; text-align:center;" oninput="this.style.color=getColoreFornitore(this.value); calcolaTotaliAcquisti();" ${isOrdinato ? 'readonly' : ''}></td>
                     <td style="color:#fff; text-align:left; padding-left:10px;">${c.matricola || '-'} <span style="font-weight:normal; color:#ccc; font-size:11px; display:block;">${c.nome || ''}</span></td>
-                    <td><input type="number" class="inp-mini inp-ordina field-qta" value="${qtaOrdinare}" min="0" oninput="calcolaRiga(this)"></td>
-                    <td><select class="inp-mini field-u-qta" onchange="calcolaRiga(this)"><option value="Pz" ${c.unitaQta === 'Pz'?'selected':''}>Pz</option><option value="Kg" ${c.unitaQta === 'Kg'?'selected':''}>Kg</option><option value="m" ${c.unitaQta === 'm'?'selected':''}>m</option></select></td>
-                    <td><input type="number" class="inp-mini inp-prezzo field-prezzo" value="${c.prezzo || '0.00'}" oninput="calcolaRiga(this)"></td>
-                    <td><select class="inp-mini field-u-prz" onchange="calcolaRiga(this)"><option value="€/Pz" ${c.unitaPrezzo === '€/Pz'?'selected':''}>€/Pz</option><option value="€/Kg" ${c.unitaPrezzo === '€/Kg'?'selected':''}>€/Kg</option></select></td>
+                    <td><input type="number" class="inp-mini inp-ordina field-qta" value="${qtaOrdinare}" min="0" oninput="calcolaRiga(this)" ${isOrdinato ? 'readonly' : ''}></td>
+                    <td><select class="inp-mini field-u-qta" onchange="calcolaRiga(this)" ${isOrdinato ? 'disabled' : ''}><option value="Pz" ${c.unitaQta === 'Pz'?'selected':''}>Pz</option><option value="Kg" ${c.unitaQta === 'Kg'?'selected':''}>Kg</option><option value="m" ${c.unitaQta === 'm'?'selected':''}>m</option></select></td>
+                    <td><input type="number" class="inp-mini inp-prezzo field-prezzo" value="${c.prezzo || '0.00'}" oninput="calcolaRiga(this)" ${isOrdinato ? 'readonly' : ''}></td>
+                    <td><select class="inp-mini field-u-prz" onchange="calcolaRiga(this)" ${isOrdinato ? 'disabled' : ''}><option value="€/Pz" ${c.unitaPrezzo === '€/Pz'?'selected':''}>€/Pz</option><option value="€/Kg" ${c.unitaPrezzo === '€/Kg'?'selected':''}>€/Kg</option></select></td>
                     <td><input type="text" class="inp-mini field-tot-riga" value="0.00" readonly style="color:#00e5ff; font-weight:bold; background:transparent; border:none; text-align:right;"></td>
+                    <td><button onclick="toggleLucchettoRiga('${compId}', ${isOrdinato})" style="background:transparent; border:none; font-size:20px; cursor:pointer;" title="${titleLucchetto}">${iconaLucchetto}</button></td>
                 `;
                 tbody.appendChild(tr);
                 calcolaRiga(tr.querySelector('.field-prezzo'));
@@ -608,8 +916,18 @@
             }
         }
 
+        window.toggleLucchettoRiga = function(compId, statoAttuale) {
+            let nuovoStato = !statoAttuale;
+            db.ref(`commesse/Tre Emme/${ordineCorrenteId}/fabbisogno/${compId}/ordinato`).set(nuovoStato).then(() => {
+                if (datiOrdineOriginali.fabbisogno[compId]) {
+                    datiOrdineOriginali.fabbisogno[compId].ordinato = nuovoStato;
+                }
+                disegnaTabellaOrdine(); 
+            });
+        }
+
         window.confermaEInviaInOfficina = function() {
-            if(!confirm("Confermare l'acquisto dei materiali e sbloccare la commessa in Officina?")) return;
+            if(!confirm("Vuoi chiudere ufficialmente la fase acquisti e inviare l'ordine in Officina?\n\nSolo i componenti che hai effettivamente ordinato (quelli con il lucchetto chiuso 🔒) appariranno in Officina!")) return;
 
             let fabbisognoAggiornato = {};
             document.querySelectorAll('#ordine-body tr').forEach(r => {
@@ -628,9 +946,11 @@
             let extra = { lavMeccaniche: document.getElementById('uff-lav-meccaniche').value, lavEsterne: document.getElementById('uff-lav-esterne').value, verniciatura: document.getElementById('uff-verniciatura').value };
 
             db.ref('commesse/Tre Emme/' + ordineCorrenteId).update({
-                stato: 1, fabbisogno: fabbisognoAggiornato, costiExtra: extra
+                stato: 1, 
+                fabbisogno: fabbisognoAggiornato, 
+                costiExtra: extra
             }).then(() => {
-                alert("✅ Prezzi bloccati! La commessa è ora sbloccata e visibile in Officina.");
+                alert("✅ Fase Acquisti Chiusa! La commessa è passata in 'Attesa Materiale'.");
                 window.location.href = "dashboardordini.html"; 
             }).catch(err => alert("Errore: " + err));
         }
@@ -646,7 +966,7 @@
         }
 
         // ==========================================
-        // GESTIONE PDF RDO (CON FILTRO "ANTI-CRASH" FIREBASE)
+        // GESTIONE PDF RDO E ODA
         // ==========================================
         window.apriModalSceltaFornitori = function() {
             let selezionati = document.querySelectorAll('.chk-prev:checked');
@@ -703,18 +1023,21 @@
                 window.listaFornitoriDaAprire.shift();
             } 
             else if (azione === 'stampa') {
+                const idOrdSicuro = new URLSearchParams(window.location.search).get('ordine');
+
                 let fornitore = window.listaFornitoriDaAprire.shift();
-                
-                // LA MAGIA ANTI-CRASH: Rimuoviamo i punti (.) e altri simboli vietati da Firebase per la chiave!
                 let fornitoreKeyPulita = fornitore.replace(/[\.\#\$\[\]\/]/g, ""); 
 
                 let pezziRichiesti = {};
                 window.compsPerRdo.split(',').forEach(cid => pezziRichiesti[cid] = true);
-                
-                // Salviamo usando il nome pulito senza punti, così Firebase non va in blocco
-                db.ref(`commesse/Tre Emme/${ordineCorrenteId}/rdo_inviate/${fornitoreKeyPulita}`).update(pezziRichiesti);
+                db.ref(`commesse/Tre Emme/${idOrdSicuro}/rdo_inviate/${fornitoreKeyPulita}`).update(pezziRichiesti);
 
-                let urlPdf = `pdfmastertreemme.html?ordine=${ordineCorrenteId}&fornitore=${encodeURIComponent(fornitore)}&comps=${window.compsPerRdo}`;
+                let urlPdf = `pdfmastertreemme.html?ordine=${idOrdSicuro}&fornitore=${encodeURIComponent(fornitore)}&comps=${window.compsPerRdo}`;
+                
+                db.ref(`commesse/Tre Emme/${idOrdSicuro}/archivio_pdf`).push({
+                    tipo: 'RDO', fornitore: fornitore, data: new Date().toISOString(), url: urlPdf
+                });
+
                 window.open(urlPdf, '_blank');
             }
 
@@ -745,15 +1068,7 @@
             }
         }
 
-
-
-
-
-        // ==========================================
-        // GESTIONE PDF ODA (ORDINI UFFICIALI)
-        // ==========================================
         window.apriModalGenerazioneODA = function() {
-            // 1. Salva la tabella in background prima di stampare
             let fabbisognoAggiornato = {};
             let fornitoriAssegnati = {}; 
 
@@ -773,14 +1088,12 @@
                     unitaPrezzo: r.querySelector('.field-u-prz').value
                 };
 
-                // Raggruppa i pezzi in base al fornitore
                 if(forn && forn !== 'DA ASSEGNARE' && qta > 0) {
                     if(!fornitoriAssegnati[forn]) fornitoriAssegnati[forn] = [];
                     fornitoriAssegnati[forn].push(cId);
                 }
             });
 
-            // 2. Salva nel database e apri il popup
             db.ref('commesse/Tre Emme/' + ordineCorrenteId + '/fabbisogno').set(fabbisognoAggiornato).then(() => {
                 datiOrdineOriginali.fabbisogno = fabbisognoAggiornato; 
                 let keysFornitori = Object.keys(fornitoriAssegnati);
@@ -793,54 +1106,100 @@
             });
         }
 
-        window.mostraPopupODA = function(azione) {
+        window.mostraPopupODA = function(azione, tipoPdf = 'completo') {
             if (azione === 'salta') {
                 window.listaFornitoriODA.shift();
-            } else if (azione === 'stampa') {
-                let fornitore = window.listaFornitoriODA.shift();
-                let comps = window.mappaFornitoriODA[fornitore].join(',');
-                let urlPdf = `pdfoda_treemme.html?ordine=${ordineCorrenteId}&fornitore=${encodeURIComponent(fornitore)}&comps=${comps}`;
-                window.open(urlPdf, '_blank');
+            } else if (azione === 'stampa' || azione === 'entrambi') {
+                const idOrdSicuro = new URLSearchParams(window.location.search).get('ordine');
+
+                let fornitore = window.listaFornitoriODA.shift(); // Rimuove dalla coda
+                let arrayComps = window.mappaFornitoriODA[fornitore];
+                let comps = arrayComps.join(',');
+                
+                // AUTO-BLOCCO DELLE RIGHE (ordinato: true)
+                let updates = {};
+                arrayComps.forEach(cid => {
+                    updates[`fabbisogno/${cid}/ordinato`] = true;
+                    if(datiOrdineOriginali.fabbisogno[cid]) datiOrdineOriginali.fabbisogno[cid].ordinato = true;
+                });
+                
+                db.ref(`commesse/Tre Emme/${idOrdSicuro}`).update(updates).then(() => {
+                    disegnaTabellaOrdine(); 
+                });
+
+                if (azione === 'stampa') {
+                    // Stampa singola
+                    let filePdfTarget = tipoPdf === 'cieco' ? 'pdfordinemastertreemm.html' : 'pdfoda_treemme.html';
+                    let tagArchivio = tipoPdf === 'cieco' ? 'ODA CIECO' : 'ODA COMPLETO';
+                    let urlPdf = `${filePdfTarget}?ordine=${idOrdSicuro}&fornitore=${encodeURIComponent(fornitore)}&comps=${comps}`;
+                    
+                    db.ref(`commesse/Tre Emme/${idOrdSicuro}/archivio_pdf`).push({
+                        tipo: tagArchivio, fornitore: fornitore, data: new Date().toISOString(), url: urlPdf
+                    });
+                    window.open(urlPdf, '_blank');
+
+                } else if (azione === 'entrambi') {
+                    // Stampa doppia (Apre due schede contemporaneamente)
+                    let urlCieco = `pdfordinemastertreemm.html?ordine=${idOrdSicuro}&fornitore=${encodeURIComponent(fornitore)}&comps=${comps}`;
+                    let urlCompleto = `pdfoda_treemme.html?ordine=${idOrdSicuro}&fornitore=${encodeURIComponent(fornitore)}&comps=${comps}`;
+                    
+                    // Salva entrambi nell'archivio
+                    db.ref(`commesse/Tre Emme/${idOrdSicuro}/archivio_pdf`).push({
+                        tipo: 'ODA CIECO', fornitore: fornitore, data: new Date().toISOString(), url: urlCieco
+                    });
+                    db.ref(`commesse/Tre Emme/${idOrdSicuro}/archivio_pdf`).push({
+                        tipo: 'ODA COMPLETO', fornitore: fornitore, data: new Date().toISOString(), url: urlCompleto
+                    });
+
+                    window.open(urlCieco, '_blank');
+                    window.open(urlCompleto, '_blank');
+                }
             }
 
-            let box = document.getElementById('lista-fornitori-oda');
+            let box = document.getElementById('modal-oda');
             if (window.listaFornitoriODA && window.listaFornitoriODA.length > 0) {
                 let prossimo = window.listaFornitoriODA[0];
-                document.getElementById('modal-oda').style.display = 'flex';
-                box.innerHTML = `<h2 style="color:#f1c40f; margin:10px 0; text-transform:uppercase;">${prossimo}</h2>`;
+                box.style.display = 'flex';
+                
+                // Aggiornamento antiproiettile della grafica del popup
+                let boxContent = box.children[0]; 
+                boxContent.innerHTML = `
+                    <h2 style="color:#f1c40f; margin-top:0;">🛒 Stampa Ordini d'Acquisto</h2>
+                    <p style="color:#aaa; font-size:14px;">In coda per la stampa del PDF:</p>
+                    <h2 style="color:#00e5ff; margin:20px 0; text-transform:uppercase; font-size:26px;">${prossimo}</h2>
+                    <p style="color:#ccc; font-size:14px; margin-bottom: 20px;">Scegli la versione del PDF da generare:</p>
+                    
+                    <div style="display:flex; flex-direction: column; gap:10px; margin-bottom: 20px;">
+                        <button class="btn-azione" style="background:#3498db; color:white; width:100%; padding:15px; font-size:14px;" onclick="mostraPopupODA('entrambi')">
+                            📄 STAMPA ENTRAMBI (Cieco per Officina + Completo con Prezzi)
+                        </button>
+                        <button class="btn-azione" style="background:#2ecc71; color:black; width:100%; padding:15px; font-size:14px;" onclick="mostraPopupODA('stampa', 'cieco')">
+                            📄 SOLO CIECO (Senza Prezzi x Officina)
+                        </button>
+                        <button class="btn-azione" style="background:#f1c40f; color:black; width:100%; padding:15px; font-size:14px;" onclick="mostraPopupODA('stampa', 'completo')">
+                            📄 SOLO COMPLETO (Con Prezzi per Fornitore)
+                        </button>
+                    </div>
+
+                    <div style="border-top: 1px solid #444; padding-top: 15px; display:flex; justify-content:space-between; align-items:center;">
+                        <button style="background:transparent; border:1px solid #666; color:#aaa; padding:10px 20px; border-radius:4px; cursor:pointer;" onclick="document.getElementById('modal-oda').style.display='none'">Chiudi / Annulla</button>
+                        <button style="background:transparent; border:1px solid #e74c3c; color:#e74c3c; padding:10px 20px; border-radius:4px; cursor:pointer;" onclick="mostraPopupODA('salta')">⏭️ SALTA FORNITORE</button>
+                    </div>
+                `;
             } else {
-                document.getElementById('modal-oda').style.display = 'none';
+                box.style.display = 'none';
                 if(azione) alert("✅ Generazione PDF Ordini completata!");
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        window.tornaAllaDashboardConModale = function() {
+            const idOrdSicuro = new URLSearchParams(window.location.search).get('ordine');
+            if(idOrdSicuro) {
+                window.location.href = "dashboardordini.html?open=" + idOrdSicuro;
+            } else {
+                window.location.href = "dashboardordini.html";
+            }
+        }
     </script>
 </body>
 </html>
