@@ -57,57 +57,70 @@
     </div>
 
     <div class="form-container">
-        <h2 class="form-title"><span>📦</span> Crea Nuovo Ordine</h2>
+        <h2 class="form-title"><span>📝</span> Crea Nuovo Ordine Tre Emme   </h2>
 
-        <div class="form-grid">
+
+
+
+
+
+        <div class="form-grid" style="display: flex; flex-direction: column; gap: 25px;">
             
-            <div style="grid-column: 1 / -1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; background: rgba(0, 229, 255, 0.05); padding: 20px; border-radius: 8px; border: 1px dashed #00e5ff;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; background: rgba(0, 229, 255, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(0, 229, 255, 0.3);">
                 <div class="form-group">
-                    <label style="color:#00e5ff;">1. Ricerca Articolo (Da Archivio Master) *</label>
-                    <input type="text" id="ord-matr" class="form-input" list="lista-articoli-master" placeholder="Digita matricola o descrizione..." style="border-color:#00e5ff; font-weight:bold; font-size:20px; color:#00e5ff;">
+                    <label style="color:#00e5ff;">1. Ricerca Articolo (Master) *</label>
+                    <input type="text" id="ord-matr" class="form-input" list="lista-articoli-master" placeholder="Digita matricola o descrizione..." oninput="autocompilaDatiMaster()" style="width: 100%; box-sizing: border-box;">
                     <datalist id="lista-articoli-master"></datalist>
                     <span style="font-size: 12px; color: #666; margin-top: 5px;">*Il sistema importerà l'intera distinta.</span>
                 </div>
                 <div class="form-group">
                     <label style="color:#00e5ff;">N° Disegno (Opzionale)</label>
-                    <input type="text" id="ord-disegno" class="form-input" placeholder="Es. X00163_2N" style="border-color:#00e5ff; font-weight:bold; font-size:20px; color:#00e5ff;">
+                    <input type="text" id="ord-disegno" class="form-input" placeholder="Es. X00163_2N" style="width: 100%; box-sizing: border-box;">
+                </div>
+                <div class="form-group">
+                    <label style="color:#00e5ff;">Prezzo di Vendita (€)</label>
+                    <input type="number" step="0.01" id="ord-prezzo" class="form-input" placeholder="0.00" style="width: 100%; box-sizing: border-box;">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>N° Ordine Cliente *</label>
-                <input type="text" id="ord-num" class="form-input" placeholder="Es. ORD-2026-001">
+
+
+
+
+
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(46, 204, 113, 0.3);">
+                <div class="form-group">
+                    <label style="color:#2ecc71;">Quantità Lotto da Produrre *</label>
+                    <input type="number" id="ord-qta" class="form-input" value="1" min="1" style="width: 100%; box-sizing: border-box;">
+                </div>         
+                           
+                <div class="form-group">
+                    <label style="color:#2ecc71;">N° Ordine Cliente *</label>
+                    <input type="text" id="ord-num" class="form-input" placeholder="Es. ORD-2026-001" style="width: 100%; box-sizing: border-box;">
+                </div>
+                
+                <div class="form-group">
+                    <label style="color:#2ecc71;">Codice IDE (Rif. Esterno)</label>
+                    <input type="text" id="ord-ide" class="form-input" placeholder="Opzionale" style="width: 100%; box-sizing: border-box;">
+                </div>
             </div>
             
-            <div class="form-group">
-                <label>Quantità Lotto da Produrre *</label>
-                <input type="number" id="ord-qta" class="form-input" value="1" min="1" style="color:#2ecc71; font-weight:bold; font-size:20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: rgba(241, 196, 15, 0.05); padding: 20px; border-radius: 8px; border: 1px solid rgba(241, 196, 15, 0.3);">
+                <div class="form-group">
+                    <label style="color:#f1c40f;">Data di Inserimento</label>
+                    <input type="date" id="ord-data" class="form-input" style="width: 100%; box-sizing: border-box;">
+                </div>
+                <div class="form-group">
+                    <label style="color:#f1c40f;">Data Scadenza / Consegna</label>
+                    <input type="date" id="ord-scadenza" class="form-input" style="width: 100%; box-sizing: border-box;">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label style="color:#f1c40f;">Note Interne Ordine / Commessa</label>
+                    <textarea id="ord-note" class="form-input" style="resize:vertical; min-height:80px; width: 100%; box-sizing: border-box;" placeholder="Scrivi qui eventuali note urgenti, specifiche del cliente, o dettagli per l'officina..."></textarea>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label>Data di Inserimento</label>
-                <input type="date" id="ord-data" class="form-input">
-            </div>
-            
-            <div class="form-group">
-                <label>Data Scadenza / Consegna</label>
-                <input type="date" id="ord-scadenza" class="form-input" style="color:#f1c40f; border-color:#f1c40f;">
-            </div>
-            
-            <div class="form-group">
-                <label>Prezzo di Vendita Pattuito (€)</label>
-                <input type="number" id="ord-prezzo" class="form-input" placeholder="0.00">
-            </div>
-            
-            <div class="form-group">
-                <label>Codice IDE (Rif. Esterno)</label>
-                <input type="text" id="ord-ide" class="form-input" placeholder="Opzionale">
-            </div>
-            
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Note Interne Ordine / Commessa</label>
-                <textarea id="ord-note" class="form-input" style="resize:vertical; min-height:80px;" placeholder="Scrivi qui eventuali note urgenti, specifiche del cliente, o dettagli per l'officina..."></textarea>
-            </div>
+
         </div>
 
         <div id="loading-msg">Elaborazione Distinta Base e creazione Contenitore in corso... ⏳</div>
@@ -213,13 +226,68 @@
             let keyCommessa = db.ref('commesse/Tre Emme').push().key; 
             db.ref('commesse/Tre Emme/' + keyCommessa).set(nuovoContenitore).then(() => {
                 alert("✅ Ordine Creato! Il contenitore è pronto e in attesa degli Acquisti.");
-                window.location.href = "commessetreemme.html"; // Redirige alla visualizzazione officina
+                window.location.href = "dashboardordini.html"; // Redirige alla visualizzazione officina
             }).catch(e => {
                 alert("Errore di connessione: " + e);
                 document.getElementById('btn-save').style.display = 'block';
                 document.getElementById('loading-msg').style.display = 'none';
             });
         }
+
+
+
+
+
+
+        window.autocompilaDatiMaster = function() {
+            let matricolaScelta = document.getElementById('ord-matr').value.trim();
+            let artMaster = null;
+            
+            // Cerca l'articolo in memoria nell'archivio precaricato
+            for(let key in archivioArticoli) {
+                if(archivioArticoli[key].matricola === matricolaScelta) {
+                    artMaster = archivioArticoli[key];
+                    break;
+                }
+            }
+
+            // Se trova la matricola, riempie in automatico i campi (se presenti)
+            if(artMaster) {
+                document.getElementById('ord-disegno').value = artMaster.disegno || "";
+                document.getElementById('ord-prezzo').value = artMaster.prezzoVendita || ""; 
+            } else {
+                // Se cancelli la matricola, svuota i campi di fianco per sicurezza
+                document.getElementById('ord-disegno').value = "";
+                document.getElementById('ord-prezzo').value = "";
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
 </body>
 </html>

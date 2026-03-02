@@ -455,7 +455,7 @@
             });
         }
 
-        function disegnaArchivioPDF() {
+function disegnaArchivioPDF() {
             const idOrdSicuro = new URLSearchParams(window.location.search).get('ordine');
             if(!idOrdSicuro) return;
 
@@ -464,6 +464,7 @@
                 let dati = snap.val() || {};
                 let archivio = dati.archivio_pdf || {};
                 let fabbisogno = dati.fabbisogno || {};
+                let rdoInviate = dati.rdo_inviate || {}; // Necessario per tracciare le classi nelle RDO
 
                 let containerRdo = document.getElementById('lista-rdo');
                 let containerOda = document.getElementById('lista-oda');
@@ -477,17 +478,43 @@
                 
                 let arrayPdf = Object.values(archivio).sort((a,b) => new Date(b.data) - new Date(a.data));
                 
-                // Set per tenere memoria di chi abbiamo stampato e chi dobbiamo stampare
                 let fornitoriRdoFatti = new Set();
                 let fornitoriOdaFatti = new Set();
                 let fornitoriOdaAttesi = new Set();
 
-                // 1. Capiamo a CHI dobbiamo fare l'ordine (Leggendo il Tab 3 / Fabbisogno)
+                // Nuovi Set per tracciare le Classi Merceologiche (To-Do List Visiva)
+                let classiTotali = new Set();
+                let classiGestiteRDO = new Set();
+                let classiGestiteODA = new Set();
+
+                // 1. Capiamo a CHI dobbiamo fare l'ordine e QUALI CLASSI ci sono nel Fabbisogno
                 for (let key in fabbisogno) {
-                    let f = fabbisogno[key].fornitore_definitivo;
-                    let qta = fabbisogno[key].qta_da_ordinare !== undefined ? fabbisogno[key].qta_da_ordinare : 1; 
-                    if (f && f !== 'DA ASSEGNARE' && f.trim() !== '' && qta > 0) {
-                        fornitoriOdaAttesi.add(f.toUpperCase());
+                    let c = fabbisogno[key];
+                    let f = c.fornitore_definitivo;
+                    // Quantità da ordinare verificata live
+                    let qta = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
+                    let classeMerceologica = c.fornitore || 'Senza Classe'; // La classe è salvata in 'fornitore' nel Master
+                    
+                    if (qta > 0) {
+                        // Aggiunge la classe all'elenco generale di quelle da gestire
+                        classiTotali.add(classeMerceologica);
+
+                        // Tracker Fornitori Attesi (Tab 3)
+                        if (f && f !== 'DA ASSEGNARE' && f.trim() !== '') {
+                            fornitoriOdaAttesi.add(f.toUpperCase());
+                        }
+
+                        // Verifica se questa Classe ha ricevuto almeno una RDO
+                        let inRdo = false;
+                        for(let fornRdo in rdoInviate) {
+                            if(rdoInviate[fornRdo][key]) { inRdo = true; break; }
+                        }
+                        if(inRdo) classiGestiteRDO.add(classeMerceologica);
+
+                        // Verifica se questa Classe è già assegnata in ODA o ordinata (Lucchetto chiuso)
+                        if (c.ordinato === true || (f && f !== 'DA ASSEGNARE' && f.trim() !== '')) {
+                            classiGestiteODA.add(classeMerceologica);
+                        }
                     }
                 }
 
@@ -526,35 +553,45 @@
                     }
                 });
 
-                // Se le liste sono vuote, metti un testo segnaposto
                 if(containerRdo.innerHTML === "") containerRdo.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun preventivo generato.</div>";
                 if(containerOda.innerHTML === "") containerOda.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun ordine generato.</div>";
 
-                // 3. DISEGNO TRACKER RDO (Informa su chi abbiamo contattato)
+                // 3. DISEGNO TRACKER RDO (Misto: Fornitori Fatti + Classi Da Fare)
                 trackerRdo.innerHTML = "";
-                if(fornitoriRdoFatti.size === 0) {
-                    trackerRdo.innerHTML = "<span style='color:#666; font-size:12px;'>Crea i preventivi nel Tab 1.</span>";
-                } else {
-                    fornitoriRdoFatti.forEach(f => {
-                        trackerRdo.innerHTML += `<span style="background:rgba(52, 152, 219, 0.1); color:#3498db; border:1px solid #3498db; padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold; box-shadow:0 0 8px rgba(52,152,219,0.3);">✓ ${f}</span>`;
-                    });
-                }
+                // Prima i Fornitori a cui abbiamo già mandato i PDF
+                fornitoriRdoFatti.forEach(f => {
+                    trackerRdo.innerHTML += `<span style="background:rgba(52, 152, 219, 0.1); color:#3498db; border:1px solid #3498db; padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold; box-shadow:0 0 8px rgba(52,152,219,0.3);">✓ ${f}</span>`;
+                });
+                // Poi le Classi Merceologiche in attesa
+                classiTotali.forEach(c => {
+                    if(!classiGestiteRDO.has(c)) {
+                        trackerRdo.innerHTML += `<span style="background:rgba(255, 255, 255, 0.05); color:#888; border:1px dashed #666; padding:5px 12px; border-radius:15px; font-size:11px; opacity:0.7;">⏳ ${c}</span>`;
+                    }
+                });
 
-                // 4. DISEGNO TRACKER ODA (LA VERA CHECKLIST)
+                if(trackerRdo.innerHTML === "") trackerRdo.innerHTML = "<span style='color:#666; font-size:12px;'>Nessun materiale da ordinare.</span>";
+
+                // 4. DISEGNO TRACKER ODA (LA VERA CHECKLIST MISTA)
                 trackerOda.innerHTML = "";
-                if(fornitoriOdaAttesi.size === 0) {
-                    trackerOda.innerHTML = "<span style='color:#666; font-size:12px;'>Assegna i fornitori definitivi nel Tab 3.</span>";
-                } else {
-                    fornitoriOdaAttesi.forEach(f => {
-                        let fatto = fornitoriOdaFatti.has(f);
-                        // Se fatto: Verde brillante. Se da fare: Grigio semitrasparente.
-                        let stile = fatto 
-                            ? "background:rgba(46, 204, 113, 0.15); color:#2ecc71; border:1px solid #2ecc71; box-shadow:0 0 10px rgba(46,204,113,0.4);" 
-                            : "background:rgba(255, 255, 255, 0.03); color:#888; border:1px dashed #666; opacity: 0.7;";
-                        let icona = fatto ? "✅" : "⏳";
-                        trackerOda.innerHTML += `<span style="${stile} padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold; transition:0.3s;">${icona} ${f}</span>`;
-                    });
-                }
+                // Prima i Fornitori definitivi (Attesi o Fatti)
+                let tuttiFornitoriOda = new Set([...fornitoriOdaAttesi, ...fornitoriOdaFatti]);
+                tuttiFornitoriOda.forEach(f => {
+                    let fatto = fornitoriOdaFatti.has(f);
+                    let stile = fatto 
+                        ? "background:rgba(46, 204, 113, 0.15); color:#2ecc71; border:1px solid #2ecc71; box-shadow:0 0 10px rgba(46,204,113,0.4);" 
+                        : "background:rgba(255, 255, 255, 0.03); color:#888; border:1px dashed #666; opacity: 0.7;";
+                    let icona = fatto ? "✅" : "🛒";
+                    trackerOda.innerHTML += `<span style="${stile} padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold; transition:0.3s;">${icona} ${f}</span>`;
+                });
+                
+                // Poi le Classi Merceologiche ancora completamente ignorate
+                classiTotali.forEach(c => {
+                    if(!classiGestiteODA.has(c)) {
+                        trackerOda.innerHTML += `<span style="background:rgba(255, 255, 255, 0.05); color:#888; border:1px dashed #666; padding:5px 12px; border-radius:15px; font-size:11px; opacity:0.7;">⏳ ${c}</span>`;
+                    }
+                });
+
+                if(trackerOda.innerHTML === "") trackerOda.innerHTML = "<span style='color:#666; font-size:12px;'>Nessun materiale da ordinare.</span>";
             });
         }
         setTimeout(disegnaArchivioPDF, 1000);
@@ -594,13 +631,38 @@
                     <td style="color:#f39c12; text-align:center; font-size:11px;">${c.dataRev || '-'}</td>
                     <td style="color:#aaa; text-align:center;">${c.qta_totale_teorica}</td>
                     <td style="color:#f39c12; text-align:center;">${c.qta_in_magazzino}</td>
-                    <td style="color:#00ff88; font-weight:bold; font-size:16px; text-align:center;">${qtaOrdinare}</td>
-                `;
+                    <td style="text-align:center;">
+                        <input type="number" class="inp-mini" style="color:#ccc;  font-size:12px; width:50px;  border-color:#00ff88;" value="${qtaOrdinare}" min="0" onchange="aggiornaQtaDaOrdinare('${compId}', this.value)">
+                    </td>
+                    `;
                 tbody.appendChild(tr);
                 index++;
             }
             disegnaFiltriClassi(Array.from(classiTrovate));
         }
+
+
+        window.aggiornaQtaDaOrdinare = function(compId, nuovaQta) {
+            let val = parseFloat(nuovaQta) || 0;
+            
+            // 1. Aggiorna in memoria così non si perde cambiando Tab
+            if(datiOrdineOriginali && datiOrdineOriginali.fabbisogno && datiOrdineOriginali.fabbisogno[compId]) {
+                datiOrdineOriginali.fabbisogno[compId].qta_da_ordinare = val;
+            }
+
+            // 2. Salva istantaneamente nel Database
+            db.ref('commesse/Tre Emme/' + ordineCorrenteId + '/fabbisogno/' + compId + '/qta_da_ordinare').set(val).then(() => {
+                // Se ricalcoliamo le tabelle in background restano allineate
+                if (document.getElementById('tab-comparativo').classList.contains('active')) disegnaTabellaComparativa();
+                if (document.getElementById('tab-ordine').classList.contains('active')) disegnaTabellaOrdine();
+            });
+        }
+
+
+
+
+
+
 
         window.selezionaTuttoPreventivo = function() {
             let checkboxes = document.querySelectorAll('.chk-prev');
@@ -1039,6 +1101,8 @@
                 });
 
                 window.open(urlPdf, '_blank');
+                // --> NUOVA RIGA AGGIUNTA PER OUTLOOK <--
+                apriMailPrecompilata(fornitore, "Richiesta d'Offerta (RDO)");
             }
 
             let box = document.getElementById('lista-fornitori-compatibili');
@@ -1153,6 +1217,8 @@
 
                     window.open(urlCieco, '_blank');
                     window.open(urlCompleto, '_blank');
+                    // --> NUOVA RIGA AGGIUNTA PER OUTLOOK <--
+                    apriMailPrecompilata(fornitore, "Ordine d'Acquisto (ODA)");
                 }
             }
 
@@ -1200,6 +1266,104 @@
                 window.location.href = "dashboardordini.html";
             }
         }
+
+
+
+
+
+        // ==========================================
+        // AUTO-COMPILAZIONE MAIL (OUTLOOK)
+        // ==========================================
+        window.apriMailPrecompilata = function(nomeFornitore, tipoDoc) {
+            db.ref('anagrafica_fornitori').once('value').then(snap => {
+                let fornitori = snap.val() || {};
+                let emailTrovata = "";
+                
+                // Cerca l'email corrispondente alla Ragione Sociale o all'Alias
+                for(let key in fornitori) {
+                    if(fornitori[key].ragioneSociale === nomeFornitore || fornitori[key].alias === nomeFornitore) {
+                        emailTrovata = fornitori[key].email || "";
+                        break;
+                    }
+                }
+                
+                let numOrdine = datiOrdineOriginali.nomeOrdine || ordineCorrenteId;
+                let oggetto = encodeURIComponent(`Tre Emme - ${tipoDoc} - Rif. Ordine: ${numOrdine}`);
+                
+                let testoMail = "";
+                if (tipoDoc === "Richiesta d'Offerta (RDO)") {
+                    testoMail = `Buongiorno,\n\nVi preghiamo di farci avere la vostra migliore quotazione per i materiali indicati nel documento che trovate in allegato.\n\nIn attesa di un vostro riscontro, porgiamo cordiali saluti.`;
+                } else {
+                    testoMail = `Buongiorno,\n\nIn allegato vi inviamo il nostro Ordine d'Acquisto ufficiale.\nVi preghiamo di prenderne visione e procedere con l'evasione, inviandoci per cortesia la vostra conferma d'ordine.\n\nCordiali saluti.`;
+                }
+                
+                let corpo = encodeURIComponent(testoMail);
+                
+                // Crea un link invisibile e lo "clicca" per bypassare i blocchi di sicurezza
+                let linkMail = document.createElement('a');
+                linkMail.href = `mailto:${emailTrovata}?subject=${oggetto}&body=${corpo}`;
+                document.body.appendChild(linkMail);
+                linkMail.click();
+                document.body.removeChild(linkMail);
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
 </body>
 </html>

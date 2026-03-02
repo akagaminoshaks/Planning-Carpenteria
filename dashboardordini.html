@@ -834,6 +834,7 @@
                 let dati = snap.val() || {};
                 let archivio = dati.archivio_pdf || {};
                 let fabbisogno = dati.fabbisogno || {};
+                let rdoInviate = dati.rdo_inviate || {}; // Necessario per tracciare le classi nelle RDO
 
                 let containerRdo = document.getElementById('dash-lista-rdo');
                 let containerOda = document.getElementById('dash-lista-oda');
@@ -851,14 +852,43 @@
                 let fornitoriOdaFatti = new Set();
                 let fornitoriOdaAttesi = new Set();
 
+                // Nuovi Set per tracciare le Classi Merceologiche (To-Do List Visiva)
+                let classiTotali = new Set();
+                let classiGestiteRDO = new Set();
+                let classiGestiteODA = new Set();
+
+                // 1. Capiamo a CHI dobbiamo fare l'ordine e QUALI CLASSI ci sono nel Fabbisogno
                 for (let key in fabbisogno) {
-                    let f = fabbisogno[key].fornitore_definitivo;
-                    let qta = fabbisogno[key].qta_da_ordinare !== undefined ? fabbisogno[key].qta_da_ordinare : 1; 
-                    if (f && f !== 'DA ASSEGNARE' && f.trim() !== '' && qta > 0) {
-                        fornitoriOdaAttesi.add(f.toUpperCase());
+                    let c = fabbisogno[key];
+                    let f = c.fornitore_definitivo;
+                    // Quantità da ordinare verificata live
+                    let qta = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
+                    let classeMerceologica = c.fornitore || 'Senza Classe'; // La classe è salvata in 'fornitore' nel Master
+                    
+                    if (qta > 0) {
+                        // Aggiunge la classe all'elenco generale di quelle da gestire
+                        classiTotali.add(classeMerceologica);
+
+                        // Tracker Fornitori Attesi (Tab 3)
+                        if (f && f !== 'DA ASSEGNARE' && f.trim() !== '') {
+                            fornitoriOdaAttesi.add(f.toUpperCase());
+                        }
+
+                        // Verifica se questa Classe ha ricevuto almeno una RDO
+                        let inRdo = false;
+                        for(let fornRdo in rdoInviate) {
+                            if(rdoInviate[fornRdo][key]) { inRdo = true; break; }
+                        }
+                        if(inRdo) classiGestiteRDO.add(classeMerceologica);
+
+                        // Verifica se questa Classe è già assegnata in ODA o ordinata (Lucchetto chiuso)
+                        if (c.ordinato === true || (f && f !== 'DA ASSEGNARE' && f.trim() !== '')) {
+                            classiGestiteODA.add(classeMerceologica);
+                        }
                     }
                 }
 
+                // 2. Smistiamo i PDF nelle rispettive colonne e registriamo i "Fatti"
                 arrayPdf.forEach(pdf => {
                     let dataFormattata = new Date(pdf.data).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     let nomeForn = pdf.fornitore.toUpperCase();
@@ -896,28 +926,42 @@
                 if(containerRdo.innerHTML === "") containerRdo.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun preventivo generato.</div>";
                 if(containerOda.innerHTML === "") containerOda.innerHTML = "<div style='color:#666; font-size:13px; text-align:center; padding:20px;'>Nessun ordine generato.</div>";
 
+                // 3. DISEGNO TRACKER RDO (Misto: Fornitori Fatti + Classi Da Fare)
                 trackerRdo.innerHTML = "";
-                if(fornitoriRdoFatti.size === 0) {
-                    trackerRdo.innerHTML = "<span style='color:#666; font-size:12px;'>Nessun preventivo inviato.</span>";
-                } else {
-                    fornitoriRdoFatti.forEach(f => {
-                        trackerRdo.innerHTML += `<span style="background:rgba(52, 152, 219, 0.1); color:#3498db; border:1px solid #3498db; padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">✓ ${f}</span>`;
-                    });
-                }
+                // Prima i Fornitori a cui abbiamo già mandato i PDF
+                fornitoriRdoFatti.forEach(f => {
+                    trackerRdo.innerHTML += `<span style="background:rgba(52, 152, 219, 0.1); color:#3498db; border:1px solid #3498db; padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">✓ ${f}</span>`;
+                });
+                // Poi le Classi Merceologiche in attesa
+                classiTotali.forEach(c => {
+                    if(!classiGestiteRDO.has(c)) {
+                        trackerRdo.innerHTML += `<span style="background:rgba(255, 255, 255, 0.05); color:#888; border:1px dashed #666; padding:5px 12px; border-radius:15px; font-size:11px; opacity:0.7;">⏳ ${c}</span>`;
+                    }
+                });
 
+                if(trackerRdo.innerHTML === "") trackerRdo.innerHTML = "<span style='color:#666; font-size:12px;'>Nessun materiale da ordinare.</span>";
+
+                // 4. DISEGNO TRACKER ODA (LA VERA CHECKLIST MISTA)
                 trackerOda.innerHTML = "";
-                if(fornitoriOdaAttesi.size === 0) {
-                    trackerOda.innerHTML = "<span style='color:#666; font-size:12px;'>Fabbisogno non ancora elaborato in Acquisti.</span>";
-                } else {
-                    fornitoriOdaAttesi.forEach(f => {
-                        let fatto = fornitoriOdaFatti.has(f);
-                        let stile = fatto 
-                            ? "background:rgba(46, 204, 113, 0.15); color:#2ecc71; border:1px solid #2ecc71;" 
-                            : "background:rgba(255, 255, 255, 0.03); color:#888; border:1px dashed #666; opacity: 0.7;";
-                        let icona = fatto ? "✅" : "⏳";
-                        trackerOda.innerHTML += `<span style="${stile} padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">${icona} ${f}</span>`;
-                    });
-                }
+                // Prima i Fornitori definitivi (Attesi o Fatti)
+                let tuttiFornitoriOda = new Set([...fornitoriOdaAttesi, ...fornitoriOdaFatti]);
+                tuttiFornitoriOda.forEach(f => {
+                    let fatto = fornitoriOdaFatti.has(f);
+                    let stile = fatto 
+                        ? "background:rgba(46, 204, 113, 0.15); color:#2ecc71; border:1px solid #2ecc71;" 
+                        : "background:rgba(255, 255, 255, 0.03); color:#888; border:1px dashed #666; opacity: 0.7;";
+                    let icona = fatto ? "✅" : "🛒";
+                    trackerOda.innerHTML += `<span style="${stile} padding:5px 12px; border-radius:15px; font-size:11px; font-weight:bold;">${icona} ${f}</span>`;
+                });
+                
+                // Poi le Classi Merceologiche ancora completamente ignorate
+                classiTotali.forEach(c => {
+                    if(!classiGestiteODA.has(c)) {
+                        trackerOda.innerHTML += `<span style="background:rgba(255, 255, 255, 0.05); color:#888; border:1px dashed #666; padding:5px 12px; border-radius:15px; font-size:11px; opacity:0.7;">⏳ ${c}</span>`;
+                    }
+                });
+
+                if(trackerOda.innerHTML === "") trackerOda.innerHTML = "<span style='color:#666; font-size:12px;'>Nessun materiale da ordinare.</span>";
             });
         }
 
