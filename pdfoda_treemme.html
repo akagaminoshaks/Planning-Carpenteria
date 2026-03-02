@@ -148,6 +148,10 @@
         const loadingMsg = document.getElementById('loading-msg');
         const loadingSub = document.getElementById('loading-sub');
         const actionBar = document.getElementById('action-bar');
+        
+
+        // NUOVA VARIABILE: Salverà l'email del fornitore per Outlook
+        let emailFornitoreDaInviare = ""; // NUOVA VARIABILE: Salverà l'email del fornitore per Outlook
 
         window.onload = function() {
             if(!ordineId || !nomeFornitore || !componentiSelezionati) {
@@ -180,11 +184,19 @@
                 let tuttiFornitori = snapFornitori.val() || {};
                 let datiFornitore = { ragioneSociale: nomeFornitore }; 
                 
+                // Rimuove qualsiasi cosa scritta tra parentesi per la ricerca nel database
+                let nomeFornitorePulito = nomeFornitore.replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
+
                 for(let id in tuttiFornitori) {
-                    let nomeTrovato = tuttiFornitori[id].ragioneSociale || "";
-                    let aliasTrovato = tuttiFornitori[id].alias || "";
-                    if(nomeTrovato.toUpperCase() === nomeFornitore.toUpperCase() || aliasTrovato.toUpperCase() === nomeFornitore.toUpperCase()) {
-                        datiFornitore = tuttiFornitori[id]; break;
+                    let nomeTrovato = (tuttiFornitori[id].ragioneSociale || "").toUpperCase();
+                    let aliasTrovato = (tuttiFornitori[id].alias || "").toUpperCase();
+                    
+                    // Controlla sia il nome esatto che il nome pulito
+                    if(nomeTrovato === nomeFornitore.toUpperCase() || aliasTrovato === nomeFornitore.toUpperCase() || nomeTrovato === nomeFornitorePulito || aliasTrovato === nomeFornitorePulito) {
+                        datiFornitore = tuttiFornitori[id]; 
+                        // RECUPERA E SALVA L'EMAIL
+                        emailFornitoreDaInviare = datiFornitore.email || datiFornitore.mail || ""; 
+                        break;
                     }
                 }
 
@@ -201,8 +213,12 @@
                 if(datiFornitore.piva) document.getElementById('pdf-forn-piva').innerText = datiFornitore.piva;
 
                 // RIFERIMENTI
-                document.getElementById('pdf-articolo-master').innerText = datiArticolo.matricola || datiOrdine.nome_articolo || "Senza Matricola";
-                document.getElementById('pdf-id-ordine').innerText = datiOrdine.nomeOrdine || datiOrdine.nome_ordine_cliente || ordineId;
+                let matricolaMaster = datiArticolo.matricola || datiOrdine.nome_articolo || "Senza Matricola";
+                document.getElementById('pdf-articolo-master').innerText = matricolaMaster;
+
+                let idOrd = datiOrdine.nomeOrdine || datiOrdine.nome_ordine_cliente || ordineId;
+                // ECCO LA MODIFICA: Concateniamo ID + Matricola
+                document.getElementById('pdf-id-ordine').innerText = `${idOrd} - MATR. ${matricolaMaster}`;
 
                 // TABELLA E CALCOLI
                 let idsSelezionati = componentiSelezionati.split(',');
@@ -272,8 +288,30 @@
 
         function avviaDownloadPDF() {
             let nomeFilePulito = nomeFornitore.replace(/[^a-zA-Z0-9]/g, "_");
-            document.title = `ODA_${nomeFilePulito}_${document.getElementById('pdf-id-ordine').innerText}`;
+            let idOrdineTesto = document.getElementById('pdf-id-ordine') ? document.getElementById('pdf-id-ordine').innerText : "Sconosciuto";
+            
+            // Imposta il nome del file per il salvataggio
+            document.title = `ODA_${nomeFilePulito}_${idOrdineTesto}`;
+            
+            // 1. Apri la finestra di stampa/salvataggio PDF
             window.print();
+
+            // 2. Dopo 1 secondo lancia Outlook (se c'è la mail)
+            setTimeout(() => {
+                if(emailFornitoreDaInviare !== "") {
+                    let destinatario = emailFornitoreDaInviare;
+                    let oggetto = encodeURIComponent(`Tre Emme - Ordine d'Acquisto (ODA) - Rif. Ordine: ${idOrdineTesto}`);
+                    let corpo = encodeURIComponent(`Buongiorno,\n\nin allegato vi inviamo il nostro Ordine d'Acquisto ufficiale.\nVi preghiamo di prenderne visione e procedere con l'evasione, inviandoci per cortesia la vostra conferma d'ordine.\n\nCordiali saluti,\nTre Emme / Carpenteria Pesa srl`);
+                    
+                    let mailLink = document.createElement('a');
+                    mailLink.href = `mailto:${destinatario}?subject=${oggetto}&body=${corpo}`;
+                    document.body.appendChild(mailLink);
+                    mailLink.click();
+                    document.body.removeChild(mailLink);
+                } else {
+                    alert("⚠️ Attenzione: Email del fornitore non trovata in anagrafica. Compila la mail a mano sul client di posta.");
+                }
+            }, 1000); 
         }
     </script>
 </body>

@@ -71,20 +71,36 @@
         .col-head { padding: 15px; text-align: center; font-weight: 300; color: #0994E6; border-bottom: 1px solid rgba(255,255,255,0.05); letter-spacing: 1px; font-size: 16px; text-transform: uppercase; font-family: 'Segoe UI Light', sans-serif; text-shadow: 0 0 10px rgba(9, 148, 230, 0.3); }
         .col-body { padding: 10px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; }
         
-        /* CARD */
-        .card { background: linear-gradient(145deg, #252525, #1e1e1e); border: 1px solid rgba(255,255,255,0.5); border-radius: 15px; padding: 12px; cursor: pointer; position: relative; transition: all 0.2s ease; box-shadow: 0 0 10px rgba(255,255,255,0.05); min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; }
-        .card:hover { transform: translateY(-3px); border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
-        .card-details { padding: 0 0 5px 0; font-size: 12px; color: #fff; font-weight: 300; display: flex; align-items: center; gap: 10px; opacity: 0.9; }
-        .detail-sep { color: #555; font-size: 10px; }
-        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .card-title { font-size: 15px; font-weight: normal; color: #fff; text-transform: uppercase; line-height: 1.1; flex: 1; padding-right: 5px; font-family: 'Segoe UI', sans-serif; letter-spacing: 0.5px; }
-        .card-badge { background: transparent; border: 1px solid #00ff88; color: #00ff88; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: normal; white-space: nowrap; box-shadow: 0 0 5px rgba(0, 255, 136, 0.2); }
-        .card-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 8px; }
-        .btn-group-right { display: flex; gap: 5px; }
-        .btn-mini { width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 12px; font-weight: bold; }
-        .btn-mini:hover { background: rgba(255,255,255,0.15); color: white; border-color: white; }
-        .btn-del { color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); } .btn-del:hover { background: rgba(231, 76, 60, 0.2); border-color: #e74c3c; color: #e74c3c; }
-        .btn-move { color: #3498db; border-color: rgba(52, 152, 219, 0.3); } .btn-move:hover { background: rgba(52, 152, 219, 0.2); border-color: #3498db; color: #3498db; }
+        /* CARD FASE 6 - NUOVO LAYOUT A 3 COLONNE (FRECCE A SX) */
+        .card { background: #222; border: 1px solid #444; border-radius: 12px; padding: 12px; cursor: pointer; position: relative; transition: all 0.2s ease; display: flex; flex-direction: row; gap: 15px; min-height: 130px; }
+        .card:hover { transform: translateY(-3px); border-color: #777; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        
+        /* PARTE SX - Icona + Frecce */
+        .card-left { width: 75px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; }
+        .card-left img { width: 100%; height: 70px; object-fit: contain; background: white; border-radius: 6px; padding: 2px; }
+        .card-left .placeholder { width: 100%; height: 70px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #666; }
+        .btn-group-arrows { display: flex; gap: 5px; width: 100%; justify-content: center; }
+        
+        /* PARTE CENTRALE - Dati */
+        .card-center { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; overflow: hidden; }
+        .card-c-matr { font-size: 18px; font-weight: bold; color: #3498db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; margin-bottom: 4px; }
+        .card-c-row { font-size: 11px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+        .card-c-row strong { color: #ccc; font-weight: normal; }
+        .card-perc-container { display: flex; align-items: center; gap: 8px; margin: 2px 0 6px 0; }
+        .card-perc-bar { flex: 1; max-width: 80px; height: 4px; background: #111; border: 1px solid #333; border-radius: 2px; overflow: hidden; display: flex; }
+        .card-perc-fill { height: 100%; transition: width 0.3s ease-in-out; }
+
+        /* PARTE DX - Quantità + Elimina */
+        .card-right { width: 45px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; flex-shrink: 0; }
+        .card-badge { color: #e74c3c; font-size: 13px; white-space: nowrap; margin-top: 2px; }
+        
+        /* BOTTONI MINI AGGIORNATI */
+        .btn-mini { width: 30px; height: 30px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: #1a1a1a; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 14px; font-weight: bold; }
+        .btn-mini:hover { background: rgba(255,255,255,0.15); }
+        .btn-del { color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); background: rgba(231, 76, 60, 0.1); } 
+        .btn-del:hover { background: rgba(231, 76, 60, 0.3); border-color: #e74c3c; }
+        .btn-move { color: #3498db; border-color: rgba(52, 152, 219, 0.3); } 
+        .btn-move:hover { background: rgba(52, 152, 219, 0.2); border-color: #3498db; }
 
         /* ARCHIVIO STYLES */
         .archive-list { padding: 20px; overflow-y: auto; }
@@ -155,13 +171,23 @@
         }
 
         .distinta-row-item:hover { background: rgba(255,255,255,0.05); }
-        .distinta-row-item.checked { border-left: 3px solid #27ae60; background: rgba(39, 174, 96, 0.05); }
+        /* MAGIA COLORI DINAMICI FORNITORI */
+        .distinta-row-item.checked { 
+            border-left: 3px solid var(--forn-color, #27ae60); 
+            background: var(--forn-bg, rgba(39, 174, 96, 0.15)); 
+        }
+        .distinta-row-item.checked .check-box { 
+            background: var(--forn-color, #27ae60); 
+            border-color: var(--forn-color, #27ae60); 
+            color: #000; /* Testo nero sul check colorato per il massimo contrasto */
+            box-shadow: 0 0 2px var(--forn-color, #27ae60); /* Effetto neon/illuminato */
+        }
 
         .d-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .d-cell.left { text-align: left; padding-left: 5px; }
         
         .check-box { width: 18px; height: 18px; border: 1px solid #666; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0 auto; }
-        .checked .check-box { background: #27ae60; border-color: #27ae60; color: white; }
+        
         .checked .check-box::after { content: '✓'; font-size: 12px; font-weight: bold; }
         
         .part-icon-thumb { width: 65px; height: 65px; object-fit: contain; background: #fff; border-radius: 4px; margin: 0 auto; display: block; }
@@ -1017,9 +1043,31 @@
     let currentStandardCommessaId = null; 
     let currentStandardCommessaNome = null;
 
+    window.coloriFornitori = {}; // Variabile globale per i colori
+
     window.onload = function() {
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
+                // --- 🎨 CARICAMENTO COLORI ANAGRAFICA ---
+                db.ref('anagrafica_fornitori').on('value', snap => {
+                    let fornitori = snap.val() || {};
+                    window.coloriFornitori = {}; 
+                    for(let key in fornitori) {
+                        let f = fornitori[key];
+                        let coloreSalvato = f.colore || "#00d26a"; 
+                        if(f.ragioneSociale) window.coloriFornitori[f.ragioneSociale.toUpperCase()] = coloreSalvato;
+                        if(f.alias) window.coloriFornitori[f.alias.toUpperCase()] = coloreSalvato;
+                    }
+                    // Se la modale è aperta, forza il ridisegno per aggiornare i colori live
+                    if (currentStandardCommessaId) {
+                        db.ref('commesse/' + currentClient + '/' + currentStandardCommessaId).once('value').then(snap => {
+                            let d = snap.val();
+                            if(d) openModal(currentStandardCommessaId, d);
+                        });
+                    }
+                });
+                // ----------------------------------------
+
                 try {
                     const parametriUrl = new URLSearchParams(window.location.search);
                     const idDalQR = parametriUrl.get('qr');
@@ -1114,22 +1162,61 @@
             for(let id in data) {
                 let d = data[id];
 
+                // --- CALCOLO PERCENTUALE COMPLETAMENTO ---
+                let totalRows = 0;
+                let checkedRows = 0;
+                if (d.fabbisogno) {
+                    for (let cid in d.fabbisogno) {
+                        let fabb = d.fabbisogno[cid];
+                        let isOrdinato = fabb.ordinato === true;
+                        let qTot = (fabb.qta_da_ordinare !== undefined) ? parseFloat(fabb.qta_da_ordinare) : (fabb.qta_totale_teorica ? Math.max(0, parseFloat(fabb.qta_totale_teorica) - (parseFloat(fabb.qta_in_magazzino)||0)) : 1);
+                        
+                        // Ignoriamo le righe vuote o non ordinate, esattamente come nella distinta base
+                        if (!isOrdinato && qTot <= 0) continue; 
+                        
+                        totalRows++;
+                        if (d.checklist && d.checklist.distintaBase && d.checklist.distintaBase[cid]) {
+                            checkedRows++;
+                        }
+                    }
+                }
+                let percCompl = totalRows > 0 ? Math.round((checkedRows / totalRows) * 100) : 0;
+                let colorPerc = percCompl === 100 ? '#00ff88' : (percCompl > 0 ? '#f1c40f' : '#888');
+
+                // --- FORMATTAZIONE DATE E ALTRI CAMPI ---
+                let dataOrd = d.data ? d.data.split('T')[0].split('-').reverse().join('/') : '-';
+                let dataScad = d.scadenza ? d.scadenza.split('-').reverse().join('/') : '-';
+                let imgHtml = d.immagine ? `<img src="${d.immagine}">` : `<div class="placeholder">📦</div>`;
+
+                // --- CREAZIONE HTML A 3 COLONNE (LAYOUT DEFINITIVO) ---
                 let card = document.createElement('div'); card.className = 'card';
                 card.onclick = () => openModal(id, d);
                 card.innerHTML = `
-                    <div class="card-details">
-                        <span>Matr: ${d.matricola}</span><span class="detail-sep">|</span><span>N° Dis: ${d.disegno}</span>
-                    </div>
-                    <div class="card-top">
-                        <div class="card-title">${d.nomeOrdine}</div>
-                        <div class="card-badge">Q.tà: ${d.qtaTotale}</div>
-                    </div>
-                    <div class="card-foot">
-                        <button class="btn-mini btn-del" onclick="del('${id}', event)">✖</button>
-                        <div class="btn-group-right">
-                            ${d.stato > 0 ? `<button class="btn-mini btn-move" onclick="move('${id}', ${d.stato-1}, event)">◀</button>` : ''}
-                            ${d.stato < stati.length-1 ? `<button class="btn-mini btn-move" onclick="move('${id}', ${d.stato+1}, event)">▶</button>` : ''}
+                    <div class="card-left">
+                        ${imgHtml}
+                        <div class="btn-group-arrows" onclick="event.stopPropagation()">
+                            ${d.stato > 0 ? `<button class="btn-mini btn-move" onclick="move('${id}', ${d.stato-1}, event)">◀</button>` : '<div style="width:30px;"></div>'}
+                            ${d.stato < stati.length-1 ? `<button class="btn-mini btn-move" onclick="move('${id}', ${d.stato+1}, event)">▶</button>` : '<div style="width:30px;"></div>'}
                         </div>
+                    </div>
+                    
+                    <div class="card-center">
+                        <div class="card-c-matr">${d.matricola || '-'}</div>
+                        
+                        <div class="card-perc-container">
+                            <span style="font-size:12px; color:${colorPerc}; font-weight:bold; min-width: 30px;">${percCompl}%</span>
+                            <div class="card-perc-bar"><div class="card-perc-fill" style="width:${percCompl}%; background:${colorPerc};"></div></div>
+                        </div>
+
+                        <div class="card-c-row">Dis: <strong>${d.disegno || '-'}</strong></div>
+                        <div class="card-c-row">Ord. N° <strong>${d.nomeOrdine || 'Senza Nome'}</strong></div>
+                        <div class="card-c-row">Ord: <strong>${dataOrd}</strong></div>
+                        <div class="card-c-row">Scad: <strong style="color:#f1c40f;">${dataScad}</strong></div>
+                    </div>
+
+                    <div class="card-right">
+                        <div class="card-badge">Q.tà: ${d.qtaTotale || '1'}</div>
+                        <button class="btn-mini btn-del" onclick="del('${id}', event)">✖</button>
                     </div>
                 `;
                 let col = document.getElementById(`col-${d.stato}`);
@@ -1190,19 +1277,41 @@
                         let cid = `comp_${idx}`;
                         let fabb = d.fabbisogno && d.fabbisogno[cid];
                         
-                        // FASE 4: IL FILTRO SEVERO DELL'OFFICINA
-                        // Salta il pezzo se non ha il lucchetto chiuso o se la qta è 0
+                        // FASE 4: IL FILTRO SEVERO DELL'OFFICINA (CORRETTO)
                         let isOrdinato = fabb && fabb.ordinato === true;
-                        let qTot = fabb && fabb.qta_da_ordinare !== undefined ? parseFloat(fabb.qta_da_ordinare) : 0;
                         
-                        if (!isOrdinato || qTot <= 0) return; // <--- SE IL LUCCHETTO E' APERTO, L'OFFICINA NON LO VEDE
+                        // Recupero la quantità in modo sicuro (sia per ordini vecchi che nuovi)
+                        let qTot = 0;
+                        if (fabb && fabb.qta_da_ordinare !== undefined) {
+                            qTot = parseFloat(fabb.qta_da_ordinare);
+                        } else if (fabb && fabb.qta_totale_teorica !== undefined) {
+                            let mag = parseFloat(fabb.qta_in_magazzino) || 0;
+                            qTot = Math.max(0, parseFloat(fabb.qta_totale_teorica) - mag);
+                        } else {
+                            let qSingola = parseFloat(c.qta) || 1;
+                            let qLotto = parseFloat(d.qtaTotale) || 1;
+                            qTot = qSingola * qLotto;
+                        }
+
+                        // IL FILTRO SALVAVITA:
+                        // 1. Se il lucchetto è chiuso, passa sempre (anche se è 0).
+                        // 2. Se non c'è lucchetto (ordini vecchi o appena creati), passa SOLO se la quantità > 0.
+                        if (!isOrdinato && qTot <= 0) return;
 
                         let checked = d.checklist && d.checklist.distintaBase && d.checklist.distintaBase[cid];
                         let saved = (d.checklist && d.checklist.distintaDati && d.checklist.distintaDati[cid]) || {};
                         let qArr = saved.qtaArr ? parseInt(saved.qtaArr) : 0;
-                        let noteVal = saved.note || ''; 
-                        let perc = qTot > 0 ? Math.min(100, Math.round((qArr / qTot) * 100)) : 0;
-                        let colorPerc = perc === 100 ? '#00ff88' : (perc > 0 ? '#f1c40f' : '#666');
+                        let noteVal = saved.note || '';
+
+                        
+                        
+                        // Se qTot è 0, il pezzo è già al 100% (non stiamo aspettando nulla). 
+                        // Cambiamo la scritta in "0 ORD." e la facciamo grigia per l'officina.
+                        let perc = qTot > 0 ? Math.min(100, Math.round((qArr / qTot) * 100)) : 100;
+                        let txtPerc = qTot === 0 ? '0 ORD.' : perc + '%';
+                        let colorPerc = qTot === 0 ? '#888' : (perc === 100 ? '#00ff88' : (perc > 0 ? '#f1c40f' : '#666'));
+                        
+                        
                         let imgSrc = c.iconaBase64 || c.iconaBase || c.immagine || "";
                         let iconHtml = imgSrc ? `<img src="${imgSrc}" class="part-icon-thumb">` : `<div class="part-icon-placeholder">📷</div>`;
 
@@ -1218,11 +1327,18 @@
                             fornitoriStats[nomeFornitore].arrivati++;
                         }
 
-                        let coloreFornitore = window.getColoreFornitore ? window.getColoreFornitore(fornitoreReale) : "white";
+                        // CALCOLO COLORI E TRASPARENZA
+                        let coloreFornitore = window.getColoreFornitore ? window.getColoreFornitore(fornitoreReale) : "#00ff88";
+                        let bgTrasparente = window.aggiungiTrasparenzaHex ? window.aggiungiTrasparenzaHex(coloreFornitore, 0.05) : "rgba(0, 255, 136, 0.05)";
                         let qUnitStr = fabb.unitaQta || c.unitaQta || 'Pz';
 
-                        let row = document.createElement('div'); row.className = `distinta-row-item ${checked?'checked':''}`;
+                        let row = document.createElement('div'); 
+                        row.className = `distinta-row-item ${checked?'checked':''}`;
                         row.setAttribute('data-forn-filter', nomeFornitore); 
+                        
+                        // INIEZIONE VARIABILI CSS NELLA RIGA
+                        row.style.setProperty('--forn-color', coloreFornitore);
+                        row.style.setProperty('--forn-bg', bgTrasparente);
                         
                         row.innerHTML = `
                             <div class="d-cell"><div class="check-box ${checked?'checked':''}" onclick="toggleDist('${id}','${cid}',this)"></div></div>
@@ -1273,11 +1389,14 @@
                         let bgBarra = percentuale === 100 ? "#00ff88" : "#f1c40f";
                         let icona = percentuale === 100 ? "✅" : "⏳";
                         
+                        // RECUPERIAMO IL COLORE DEL FORNITORE SOLO PER IL TESTO
+                        let coloreFornitoreTesto = window.getColoreFornitore ? window.getColoreFornitore(forn) : "#ffffff";
+
                         boxMaterialiHTML += `
                             <div class="box-fornitore-filter" style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; border-radius: 4px;" onclick="filtraDistintaStandard('${forn}', this)">
                                 <div style="display:flex; justify-content:space-between; margin-bottom: 5px; align-items:center;">
-                                    <span style="font-size: 11px; font-weight: bold; color: ${colore}; text-transform:uppercase; pointer-events: none;">
-                                        ${icona} ${forn} ${testoData}
+                                    <span style="font-size: 11px; font-weight: bold; color: ${coloreFornitoreTesto}; text-transform:uppercase; pointer-events: none;">
+                                        ${icona} ${forn} <span style="color:#aaa; font-weight:normal;">${testoData}</span>
                                     </span>
                                     <span style="font-size: 12px; font-weight: bold; color: ${colore}; pointer-events: none;">
                                         ${percentuale}%
@@ -1301,9 +1420,10 @@
 
     window.updatePerc = function(input, qTot, percCell, id, cid) {
         let val = parseInt(input.value) || 0;
-        let p = qTot > 0 ? Math.min(100, Math.round((val/qTot)*100)) : 0;
-        percCell.innerText = p + "%";
-        percCell.style.color = p === 100 ? '#00ff88' : (p > 0 ? '#f1c40f' : '#666');
+        let p = qTot > 0 ? Math.min(100, Math.round((val/qTot)*100)) : 100;
+        
+        percCell.innerText = qTot === 0 ? '0 ORD.' : p + "%";
+        percCell.style.color = qTot === 0 ? '#888' : (p === 100 ? '#00ff88' : (p > 0 ? '#f1c40f' : '#666'));
 
         let row = input.closest('.distinta-row-item');
         let box = row.querySelector('.check-box');
@@ -1363,9 +1483,14 @@
             righe.forEach(r => r.style.display = 'grid'); 
         } else {
             window.activeFornitoreFilter = fornitoreTarget; 
+            
+            // PRENDE IL COLORE E APPLICA IL FILTRO CON QUELLO
+            let colFiltro = window.getColoreFornitore ? window.getColoreFornitore(fornitoreTarget) : "#00e5ff";
+            let bgFiltroTrasp = window.aggiungiTrasparenzaHex ? window.aggiungiTrasparenzaHex(colFiltro, 0.15) : "rgba(0, 229, 255, 0.1)";
+            
             btnElement.classList.add('active-filter');
-            btnElement.style.background = 'rgba(0, 229, 255, 0.1)';
-            btnElement.style.borderLeft = '3px solid #00e5ff';
+            btnElement.style.background = bgFiltroTrasp;
+            btnElement.style.borderLeft = `3px solid ${colFiltro}`;
             
             righe.forEach(r => {
                 if (r.getAttribute('data-forn-filter') === fornitoreTarget) {
@@ -1422,18 +1547,22 @@
                 let bgBarra = percentuale === 100 ? "#00ff88" : "#f1c40f";
                 let icona = percentuale === 100 ? "✅" : "⏳";
                 
+                // RECUPERIAMO IL COLORE DEL FORNITORE SOLO PER IL TESTO E PER LO SFONDO DI SELEZIONE
+                let coloreFornitoreTesto = window.getColoreFornitore ? window.getColoreFornitore(forn) : "#ffffff";
+                
                 let extraStyle = "";
                 let activeClass = "";
                 if (window.activeFornitoreFilter === forn) {
                     activeClass = "active-filter";
-                    extraStyle = "background: rgba(0, 229, 255, 0.1); border-left: 3px solid #00e5ff;";
+                    let bgTrasparente = window.aggiungiTrasparenzaHex ? window.aggiungiTrasparenzaHex(coloreFornitoreTesto, 0.15) : "rgba(255,255,255,0.1)";
+                    extraStyle = `background: ${bgTrasparente}; border-left: 3px solid ${coloreFornitoreTesto};`;
                 }
 
                 boxHTML += `
                     <div class="box-fornitore-filter ${activeClass}" style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; border-radius: 4px; ${extraStyle}" onclick="filtraDistintaStandard('${forn}', this)">
                         <div style="display:flex; justify-content:space-between; margin-bottom: 5px; align-items:center;">
-                            <span style="font-size: 11px; font-weight: bold; color: ${colore}; text-transform:uppercase; pointer-events: none;">
-                                ${icona} ${forn} ${testoData}
+                            <span style="font-size: 11px; font-weight: bold; color: ${coloreFornitoreTesto}; text-transform:uppercase; pointer-events: none;">
+                                ${icona} ${forn} <span style="color:#aaa; font-weight:normal;">${testoData}</span>
                             </span>
                             <span style="font-size: 12px; font-weight: bold; color: ${colore}; pointer-events: none;">
                                 ${percentuale}%
@@ -2394,18 +2523,27 @@
     }
 
     window.getColoreFornitore = function(nome) {
-        if (!nome) return "#00d26a"; 
+        if (!nome || nome === 'DA ASSEGNARE' || nome === '-') return "#888888"; 
         
-        let n = nome.toUpperCase().trim();
+        let nPulito = nome.replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
+        let nOrig = nome.toUpperCase().trim();
         
-        if (n.includes("C. LAVORO")) return "#00ff88"; 
-        if (n.includes("BG LAMIERE")) return "#3498db"; 
-        if (n.includes("TOMATIS")) return "#f1c40f"; 
-        if (n.includes("OFFICINA")) return "#e74c3c"; 
-        if (n.includes("CIVALLERI")) return "#d35400"; 
-        if (n.includes("BULLONERIA")) return "#9b59b6"; 
-        
-        return "#00d26a"; 
+        if (window.coloriFornitori && window.coloriFornitori[nOrig]) return window.coloriFornitori[nOrig];
+        if (window.coloriFornitori && window.coloriFornitori[nPulito]) return window.coloriFornitori[nPulito];
+
+        if (nOrig.includes("LAMIERE")) return "#3498db"; 
+        if (nOrig.includes("TOMATIS")) return "#f1c40f"; 
+        if (nOrig.includes("OFFICINA")) return "#e74c3c"; 
+        if (nOrig.includes("CIVALLERI")) return "#d35400"; 
+        return "#00ff88"; // Verde fallback
+    }
+
+    // Funzione helper per aggiungere trasparenza a un colore HEX (es. #ff0000 -> rgba(255,0,0,0.1))
+    window.aggiungiTrasparenzaHex = function(hex, alpha) {
+        let r = parseInt(hex.slice(1, 3), 16);
+        let g = parseInt(hex.slice(3, 5), 16);
+        let b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
 

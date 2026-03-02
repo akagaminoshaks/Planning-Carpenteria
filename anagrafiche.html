@@ -112,7 +112,7 @@
 <body>
 
     <div class="header">
-        <button class="btn-back" onclick="window.location.href='menutreemme.html'">⬅ TORNA AL MENU</button>
+        <button class="btn-back" onclick="window.location.href='index.html'">⬅ TORNA AL MENU</button>
         <div class="top-nav">
             <button class="nav-btn active" onclick="showSection('azienda')" id="btn-azienda">🏢 IMPOSTAZIONI AZIENDA</button>
             <button class="nav-btn" onclick="showSection('fornitori')" id="btn-fornitori">🤝 FORNITORI</button>
@@ -222,6 +222,13 @@
                     <label>Alias / Nome Breve (Per tabelle)</label>
                     <input type="text" id="forn-alias" class="form-input" placeholder="Es. BG">
                 </div>
+
+                <div class="form-group">
+                    <label>Colore Etichetta Fornitore</label>
+                    <input type="color" id="forn-colore" class="form-input" value="#00e5ff" style="padding:0; height:40px; cursor:pointer;">
+                </div>
+
+
                 
                 <div class="form-group" style="grid-column: 1 / -1;">
                     <label>Categorie Merceologiche (Spunta cosa ci vende)</label>
@@ -383,9 +390,12 @@
                             catHtml = f.categorie.map(c => `<span class="badge-cat">${c}</span>`).join('');
                         }
 
+                        // AGGIUNTA LOGICA COLORE: Prendi il colore salvato, altrimenti usa l'azzurro
+                        let coloreTesto = f.colore ? f.colore : '#00e5ff';
+
                         tbody.innerHTML += `
                             <tr>
-                                <td style="font-weight:bold; color:#00e5ff;">${f.ragioneSociale || ''}</td>
+                                <td style="font-weight:bold; color:${coloreTesto};">${f.ragioneSociale || ''}</td>
                                 <td>${f.alias || ''}</td>
                                 <td>${catHtml}</td>
                                 <td>${f.piva || ''}</td>
@@ -412,6 +422,10 @@
                     let f = snap.val();
                     document.getElementById('forn-nome').value = f.ragioneSociale || '';
                     document.getElementById('forn-alias').value = f.alias || '';
+                    
+                    // IL COLORE VA QUI, DOPO CHE 'f' È STATO CREATO:
+                    document.getElementById('forn-colore').value = f.colore || '#00e5ff';
+                    
                     document.getElementById('forn-piva').value = f.piva || '';
                     document.getElementById('forn-indirizzo').value = f.indirizzo || '';
                     document.getElementById('forn-citta').value = f.citta || '';
@@ -426,6 +440,10 @@
                 // Resetto i campi
                 document.getElementById('forn-nome').value = '';
                 document.getElementById('forn-alias').value = '';
+                
+                // IL COLORE DI DEFAULT VA QUI:
+                document.getElementById('forn-colore').value = '#00e5ff';
+                
                 document.getElementById('forn-piva').value = '';
                 document.getElementById('forn-indirizzo').value = '';
                 document.getElementById('forn-citta').value = '';
@@ -483,7 +501,8 @@
                 citta: document.getElementById('forn-citta').value.trim(),
                 email: document.getElementById('forn-email').value.trim(),
                 telefono: document.getElementById('forn-tel').value.trim(),
-                pagamento: document.getElementById('forn-pagamento').value.trim()
+                pagamento: document.getElementById('forn-pagamento').value.trim(),
+                colore: document.getElementById('forn-colore').value
             };
 
             let rif = id ? db.ref('anagrafica_fornitori/' + id) : db.ref('anagrafica_fornitori').push();

@@ -430,14 +430,37 @@
 
 
 
-        // VARIABILI ORDINAMENTO
-        let campoOrdinamento = 'data'; // Ordina per Data Ordine di default
-        let ordineCrescente = false;   // Dal più recente al più vecchio di default
+        // VARIABILI ORDINAMENTO E COLORI FORNITORI
+        let campoOrdinamento = 'data'; 
+        let ordineCrescente = false;   
+        window.coloriFornitori = {}; // Dichiariamo la scatola dei colori globale
 
         window.onload = function() {
             firebase.auth().onAuthStateChanged((user) => {
-                if (!user) window.location.href = 'index.html';
-                else caricaOrdini();
+                if (!user) { window.location.href = 'index.html'; return; }
+                
+                // --- 🎨 CARICAMENTO COLORI ANAGRAFICA ---
+                db.ref('anagrafica_fornitori').on('value', snap => {
+                    let fornitori = snap.val() || {};
+                    window.coloriFornitori = {}; // Resetta l'oggetto ad ogni aggiornamento
+                    
+                    for(let key in fornitori) {
+                        let f = fornitori[key];
+                        // Prendi il colore dal db, se non c'è usa un verde fallback
+                        let coloreSalvato = f.colore || "#00d26a"; 
+                        
+                        if(f.ragioneSociale) window.coloriFornitori[f.ragioneSociale.toUpperCase()] = coloreSalvato;
+                        if(f.alias) window.coloriFornitori[f.alias.toUpperCase()] = coloreSalvato;
+                    }
+                    
+                    // Se la modale è aperta quando cambiano i colori, ridisegnala live!
+                    if(ordineCorrenteModale) {
+                        caricaDistintaModale(ordineCorrenteModale);
+                    }
+                });
+                // ----------------------------------------
+
+                caricaOrdini();
             });
             impostaFiltri();
         };
@@ -766,22 +789,28 @@
                 for (let cid in fabbisogno) {
                     let c = fabbisogno[cid];
                     
-                    // IL FILTRO SUPREMO: Mostra solo quelli con il lucchetto chiuso
-                    if (c.ordinato !== true || c.qta_da_ordinare <= 0) continue;
+                    // IL FILTRO SUPREMO: Mostra tutti i lucchetti chiusi (anche quelli con qta a 0)
+                    let qtaMostrata = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : (c.qta_totale_teorica || 0);
+                    // IL FILTRO SALVAVITA:
+                    if (c.ordinato !== true && qtaMostrata <= 0) continue;
                     
                     pezziMostrati++;
 
                     let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="max-width:40px; max-height:40px; object-fit:contain; background:#fff; border-radius:3px;">` : `📷`;
                     
+                    // CALCOLIAMO IL COLORE DEL FORNITORE
+                    let fornitoreDefinitivo = c.fornitore_definitivo || '-';
+                    let coloreFornitore = getColoreFornitore(fornitoreDefinitivo);
+                    
                     tbody.innerHTML += `
                         <tr style="background: rgba(255,255,255,0.02);">
                             <td style="color:#666;">${index}</td>
                             <td>${imgHtml}</td>
-                            <td style="color:#2ecc71; font-weight:bold; text-transform:uppercase;">${c.fornitore_definitivo || '-'}</td>
+                            <td style="color:${coloreFornitore}; font-weight:bold; text-transform:uppercase; text-shadow: 0 0 8px ${coloreFornitore}40;">${fornitoreDefinitivo}</td>
                             <td style="color:#fff; font-weight:bold;">${c.matricola || '-'}</td>
                             <td style="text-align:left;">${c.nome || c.denominazione || '-'}</td>
                             <td style="color:#ccc;">${c.disegno || '-'}</td>
-                            <td style="color:#00ff88; font-weight:bold; font-size:15px;">${c.qta_da_ordinare}</td>
+                            <td style="color:#00ff88; font-weight:bold; font-size:15px;">${qtaMostrata}</td>
                             <td style="color:#aaa;">${c.unitaQta || 'Pz'}</td>
                             <td style="color:#aaa; text-align:left; font-size:11px;">${c.note || '-'}</td>
                         </tr>
@@ -804,6 +833,40 @@
             document.getElementById('modal-dettaglio').style.display = 'none';
             ordineCorrenteModale = null;
         }
+
+
+
+        // ==========================================
+        // RECUPERO COLORE FORNITORE
+        // ==========================================
+        window.getColoreFornitore = function(nome) {
+            if (!nome || nome === 'DA ASSEGNARE' || nome === '-') return "#888888"; 
+            
+            let nPulito = nome.replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
+            let nOrig = nome.toUpperCase().trim();
+            
+            if (window.coloriFornitori && window.coloriFornitori[nOrig]) return window.coloriFornitori[nOrig];
+            if (window.coloriFornitori && window.coloriFornitori[nPulito]) return window.coloriFornitori[nPulito];
+
+            if (nOrig.includes("LAMIERE")) return "#3498db"; 
+            if (nOrig.includes("TOMATIS")) return "#f1c40f"; 
+            if (nOrig.includes("OFFICINA")) return "#e74c3c"; 
+            if (nOrig.includes("CIVALLERI")) return "#d35400"; 
+            return "#00ff88"; // Verde standard di fallback
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         window.vaiAdAcquistiDaModale = function() {
             if(ordineCorrenteModale) {

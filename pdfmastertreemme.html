@@ -76,9 +76,8 @@
         </div>
 
         <div class="doc-references">
-            <div>Richiesta di Offerta N° <strong id="pdf-id-ordine"></strong> del <strong id="pdf-data-oggi"></strong></div>
-            <div>MATRICOLA: <strong id="pdf-articolo-master">---</strong></div>
-            <div><strong><span id="pdf-forn-nome-2"></span> Ordine N° <span id="pdf-id-ordine-2"></span> (<span id="pdf-articolo-master-2"></span>, <span id="pdf-data-oggi-2"></span>)</strong></div>
+            <div style="font-size: 15px; margin-bottom: 8px;">Richiesta di Offerta <strong id="pdf-riga1">---</strong> del <strong id="pdf-data-oggi"></strong></div>
+            <div style="font-size: 14px;">Matricola: <strong id="pdf-riga2">---</strong></div>
         </div>
 
         <table>
@@ -125,7 +124,7 @@
             
             let dataOggi = new Date().toLocaleDateString('it-IT');
             document.getElementById('pdf-data-oggi').innerText = dataOggi;
-            document.getElementById('pdf-data-oggi-2').innerText = dataOggi;
+            
 
             firebase.auth().onAuthStateChanged((user) => {
                 if (user) recuperaDatiDaDatabase();
@@ -153,10 +152,15 @@
                 let tuttiFornitori = snapFornitori.val() || {};
                 let datiFornitore = { ragioneSociale: nomeFornitore }; 
                 
+                // Rimuove qualsiasi cosa scritta tra parentesi per la ricerca nel database
+                let nomeFornitorePulito = nomeFornitore.replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
+
                 for(let id in tuttiFornitori) {
-                    let nomeTrovato = tuttiFornitori[id].ragioneSociale || "";
-                    let aliasTrovato = tuttiFornitori[id].alias || "";
-                    if(nomeTrovato.toUpperCase() === nomeFornitore.toUpperCase() || aliasTrovato.toUpperCase() === nomeFornitore.toUpperCase()) {
+                    let nomeTrovato = (tuttiFornitori[id].ragioneSociale || "").toUpperCase();
+                    let aliasTrovato = (tuttiFornitori[id].alias || "").toUpperCase();
+                    
+                    // Controlla sia il nome esatto che il nome pulito
+                    if(nomeTrovato === nomeFornitore.toUpperCase() || aliasTrovato === nomeFornitore.toUpperCase() || nomeTrovato === nomeFornitorePulito || aliasTrovato === nomeFornitorePulito) {
                         datiFornitore = tuttiFornitori[id]; break;
                     }
                 }
@@ -172,18 +176,22 @@
                 document.getElementById('pdf-my-email').innerText = datiAzienda.email || "";
 
                 document.getElementById('pdf-forn-nome').innerText = datiFornitore.ragioneSociale || nomeFornitore;
-                document.getElementById('pdf-forn-nome-2').innerText = datiFornitore.ragioneSociale || nomeFornitore;
                 if(datiFornitore.indirizzo) document.getElementById('pdf-forn-address').innerText = datiFornitore.indirizzo;
                 if(datiFornitore.piva) document.getElementById('pdf-forn-piva').innerText = datiFornitore.piva;
 
                 // COMPILAZIONE RIFERIMENTI
-                let matricolaMaster = datiArticolo.matricola || datiOrdine.nome_articolo || "Senza Matricola";
-                document.getElementById('pdf-articolo-master').innerText = matricolaMaster;
-                document.getElementById('pdf-articolo-master-2').innerText = matricolaMaster;
-                
-                let idOrd = datiOrdine.nomeOrdine || datiOrdine.nome_ordine_cliente || ordineId;
-                document.getElementById('pdf-id-ordine').innerText = idOrd;
-                document.getElementById('pdf-id-ordine-2').innerText = idOrd;
+                // 1. Recupero tutte le variabili che mi servono
+                let fornitoreNome = datiFornitore.ragioneSociale || nomeFornitore;
+                let numOrdine = datiOrdine.nomeOrdine || ordineId;
+                let matricolaMaster = datiArticolo.matricola || "N/D";
+                let disegnoMaster = datiArticolo.disegno || "N/D";
+                let descMaster = datiArticolo.desc || datiOrdine.nome_articolo || "Senza Descrizione";
+
+                // 2. Compilo la Riga 1: (Fornitore): (N° ordine) - (Matricola)
+                document.getElementById('pdf-riga1').innerText = `${fornitoreNome}: ${numOrdine} - ${matricolaMaster}`;
+
+                // 3. Compilo la Riga 2: (Matricola) - (N° Disegno) - (Descrizione)
+                document.getElementById('pdf-riga2').innerText = `${matricolaMaster} - Dis. ${disegnoMaster} - ${descMaster}`;
 
                 // COMPILAZIONE TABELLA 
                 let idsSelezionati = componentiSelezionati.split(',');

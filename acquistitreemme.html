@@ -411,12 +411,27 @@
         let ordineCorrenteId = null;
         let datiOrdineOriginali = null;
 
+        window.coloriFornitori = {};
         window.onload = function() {
             firebase.auth().onAuthStateChanged((user) => {
                 if (!user) { window.location.href = 'index.html'; return; }
                 const urlParams = new URLSearchParams(window.location.search);
                 ordineCorrenteId = urlParams.get('ordine');
                 if(!ordineCorrenteId) { alert("Nessun ordine selezionato!"); window.location.href = 'archiviomastertreemme.html'; return; }
+                db.ref('anagrafica_fornitori').on('value', snap => {
+                    let fornitori = snap.val() || {};
+                    for(let key in fornitori) {
+                        let f = fornitori[key];
+                        if(f.ragioneSociale) window.coloriFornitori[f.ragioneSociale.toUpperCase()] = f.colore || "#00d26a";
+                        if(f.alias) window.coloriFornitori[f.alias.toUpperCase()] = f.colore || "#00d26a";
+                    }
+                    // Ridisegna le tabelle se i dati sono già caricati
+                    if(datiOrdineOriginali) {
+                        if(typeof calcolaTotaliAcquisti === 'function') calcolaTotaliAcquisti();
+                        if(typeof disegnaTabellaPreventivo === 'function') disegnaTabellaPreventivo();
+                        if(typeof disegnaTabellaOrdine === 'function') disegnaTabellaOrdine();
+                    }
+                });
                 caricaDatiOrdine();
             });
         };
@@ -476,7 +491,7 @@ function disegnaArchivioPDF() {
                 containerRdo.innerHTML = "";
                 containerOda.innerHTML = "";
                 
-                let arrayPdf = Object.values(archivio).sort((a,b) => new Date(b.data) - new Date(a.data));
+                let arrayPdf = Object.keys(archivio).map(k => ({ key: k, ...archivio[k] })).sort((a,b) => new Date(b.data) - new Date(a.data));
                 
                 let fornitoriRdoFatti = new Set();
                 let fornitoriOdaFatti = new Set();
@@ -532,7 +547,10 @@ function disegnaArchivioPDF() {
                                     <strong style="color:${color}; font-size:13px;">${nomeForn}</strong><br>
                                     <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
                                 </div>
-                                <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px; transition:0.2s;" onmouseover="this.style.background='${color}'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='${color}';">VISUALIZZA</button>
+                                <div style="display:flex; gap:5px;">
+                                    <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px; transition:0.2s;" onmouseover="this.style.background='${color}'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='${color}';">VISUALIZZA</button>
+                                    <button onclick="eliminaPdfDaArchivio('${pdf.key}')" style="background:transparent; color:#e74c3c; border:1px solid #e74c3c; padding:6px 10px; border-radius:15px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#e74c3c'; this.style.color='#000';">❌</button>
+                                </div>
                             </div>
                         `;
                     } else if (pdf.tipo.includes('ODA')) {
@@ -547,7 +565,10 @@ function disegnaArchivioPDF() {
                                     <strong style="color:${color}; font-size:13px;">${nomeForn} - ${label}</strong><br>
                                     <span style="color:#aaa; font-size:10px;">${dataFormattata}</span>
                                 </div>
-                                <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px; transition:0.2s;" onmouseover="this.style.background='${color}'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='${color}';">VISUALIZZA</button>
+                                <div style="display:flex; gap:5px;">
+                                    <button onclick="window.open('${pdf.url}', '_blank')" style="background:transparent; color:${color}; border:1px solid ${color}; padding:6px 12px; border-radius:15px; font-weight:bold; cursor:pointer; font-size:10px; transition:0.2s;" onmouseover="this.style.background='${color}'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='${color}';">VISUALIZZA</button>
+                                    <button onclick="eliminaPdfDaArchivio('${pdf.key}')" style="background:transparent; color:#e74c3c; border:1px solid #e74c3c; padding:6px 10px; border-radius:15px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#e74c3c'; this.style.color='#000';">❌</button>
+                                </div>
                             </div>
                         `;
                     }
@@ -906,7 +927,7 @@ function disegnaArchivioPDF() {
             for (let compId in fabbisogno) {
                 let c = fabbisogno[compId];
                 let qtaOrdinare = c.qta_da_ordinare !== undefined ? c.qta_da_ordinare : Math.max(0, c.qta_totale_teorica - c.qta_in_magazzino);
-                if (qtaOrdinare <= 0) continue;
+                
 
                 let imgHtml = c.iconaBase64 ? `<img src="${c.iconaBase64}" style="width:40px; height:40px; object-fit:contain; background:#000; border-radius:4px; border:1px solid #444;">` : `<div style="font-size:20px; color:#555;">📷</div>`;
 
@@ -922,7 +943,7 @@ function disegnaArchivioPDF() {
                 tr.innerHTML = `
                     <td style="color:#666; text-align:center;">${index}</td>
                     <td style="text-align:center;">${imgHtml}</td> 
-                    <td><input type="text" class="inp-mini field-fornitore" value="${c.fornitore_definitivo || ''}" style="color:${getColoreFornitore(c.fornitore_definitivo)}; font-weight:bold; text-align:center;" oninput="this.style.color=getColoreFornitore(this.value); calcolaTotaliAcquisti();" ${isOrdinato ? 'readonly' : ''}></td>
+                    <td><input type="text" class="inp-mini field-fornitore" value="${c.fornitore_definitivo || ''}" style="color:${getColoreFornitore(c.fornitore_definitivo)}; font-weight:bold; text-align:center;" oninput="this.style.color=getColoreFornitore(this.value); calcolaRiga(this);" ${isOrdinato ? 'readonly' : ''}></td>
                     <td style="color:#fff; text-align:left; padding-left:10px;">${c.matricola || '-'} <span style="font-weight:normal; color:#ccc; font-size:11px; display:block;">${c.nome || ''}</span></td>
                     <td><input type="number" class="inp-mini inp-ordina field-qta" value="${qtaOrdinare}" min="0" oninput="calcolaRiga(this)" ${isOrdinato ? 'readonly' : ''}></td>
                     <td><select class="inp-mini field-u-qta" onchange="calcolaRiga(this)" ${isOrdinato ? 'disabled' : ''}><option value="Pz" ${c.unitaQta === 'Pz'?'selected':''}>Pz</option><option value="Kg" ${c.unitaQta === 'Kg'?'selected':''}>Kg</option><option value="m" ${c.unitaQta === 'm'?'selected':''}>m</option></select></td>
@@ -940,9 +961,22 @@ function disegnaArchivioPDF() {
 
         window.calcolaRiga = function(elemento) {
             let riga = elemento.closest('tr');
+            let compId = riga.getAttribute('data-comp-id'); // Prende l'ID del pezzo
+            
             let qta = parseFloat(riga.querySelector('.field-qta').value) || 0;
             let prezzo = parseFloat(riga.querySelector('.field-prezzo').value) || 0;
+            let fornitore = riga.querySelector('.field-fornitore').value;
+
+            // Calcola il totale visivo
             riga.querySelector('.field-tot-riga').value = (qta * prezzo).toFixed(2);
+
+            // SALVA IN MEMORIA LE TUE MODIFICHE MANUALI IN TEMPO REALE
+            if (datiOrdineOriginali && datiOrdineOriginali.fabbisogno && datiOrdineOriginali.fabbisogno[compId]) {
+                datiOrdineOriginali.fabbisogno[compId].qta_da_ordinare = qta;
+                datiOrdineOriginali.fabbisogno[compId].prezzo = prezzo;
+                datiOrdineOriginali.fabbisogno[compId].fornitore_definitivo = fornitore;
+            }
+
             calcolaTotaliAcquisti();
         }
 
@@ -980,16 +1014,31 @@ function disegnaArchivioPDF() {
 
         window.toggleLucchettoRiga = function(compId, statoAttuale) {
             let nuovoStato = !statoAttuale;
-            db.ref(`commesse/Tre Emme/${ordineCorrenteId}/fabbisogno/${compId}/ordinato`).set(nuovoStato).then(() => {
-                if (datiOrdineOriginali.fabbisogno[compId]) {
-                    datiOrdineOriginali.fabbisogno[compId].ordinato = nuovoStato;
-                }
-                disegnaTabellaOrdine(); 
-            });
+            
+            // PRIMA DI RICARICARE, PRENDE I VALORI ESATTI CHE HAI SCRITTO NELLA RIGA
+            let riga = document.querySelector(`#ordine-body tr[data-comp-id="${compId}"]`);
+            if (riga) {
+                let qta = parseFloat(riga.querySelector('.field-qta').value) || 0;
+                let prz = parseFloat(riga.querySelector('.field-prezzo').value) || 0;
+                let forn = riga.querySelector('.field-fornitore').value;
+
+                // Aggiorna Firebase salvando contemporaneamente il lucchetto E le tue digitazioni manuali
+                db.ref(`commesse/Tre Emme/${ordineCorrenteId}/fabbisogno/${compId}`).update({
+                    ordinato: nuovoStato,
+                    qta_da_ordinare: qta,
+                    prezzo: prz,
+                    fornitore_definitivo: forn
+                }).then(() => {
+                    if (datiOrdineOriginali.fabbisogno[compId]) {
+                        datiOrdineOriginali.fabbisogno[compId].ordinato = nuovoStato;
+                    }
+                    disegnaTabellaOrdine(); 
+                });
+            }
         }
 
         window.confermaEInviaInOfficina = function() {
-            if(!confirm("Vuoi chiudere ufficialmente la fase acquisti e inviare l'ordine in Officina?\n\nSolo i componenti che hai effettivamente ordinato (quelli con il lucchetto chiuso 🔒) appariranno in Officina!")) return;
+            if(!confirm("Vuoi chiudere ufficialmente la fase acquisti e inviare l'ordine in Officina?\n\nTutti i componenti con il lucchetto chiuso 🔒 (inclusi quelli con quantità a 0) verranno trasferiti in Officina!")) return;
 
             let fabbisognoAggiornato = {};
             document.querySelectorAll('#ordine-body tr').forEach(r => {
@@ -1019,12 +1068,21 @@ function disegnaArchivioPDF() {
 
         window.getColoreFornitore = function(nome) {
             if (!nome || nome === 'DA ASSEGNARE') return "#888888"; 
-            let n = nome.toUpperCase().trim();
-            if (n.includes("LAMIERE")) return "#3498db"; 
-            if (n.includes("TOMATIS")) return "#f1c40f"; 
-            if (n.includes("OFFICINA")) return "#e74c3c"; 
-            if (n.includes("CIVALLERI")) return "#d35400"; 
-            return "#00d26a"; 
+            
+            // Togliamo eventuali descrizioni tra parentesi per trovare il colore giusto
+            let nPulito = nome.replace(/\s*\(.*?\)\s*/g, '').trim().toUpperCase();
+            let nOrig = nome.toUpperCase().trim();
+            
+            // Cerca nel nostro nuovo "dizionario" dei colori
+            if (window.coloriFornitori && window.coloriFornitori[nOrig]) return window.coloriFornitori[nOrig];
+            if (window.coloriFornitori && window.coloriFornitori[nPulito]) return window.coloriFornitori[nPulito];
+
+            // Se non trova il colore o è un fornitore vecchio, usa il sistema di sicurezza storico
+            if (nOrig.includes("LAMIERE")) return "#3498db"; 
+            if (nOrig.includes("TOMATIS")) return "#f1c40f"; 
+            if (nOrig.includes("OFFICINA")) return "#e74c3c"; 
+            if (nOrig.includes("CIVALLERI")) return "#d35400"; 
+            return "#00d26a"; // Verde standard di default
         }
 
         // ==========================================
@@ -1152,7 +1210,10 @@ function disegnaArchivioPDF() {
                     unitaPrezzo: r.querySelector('.field-u-prz').value
                 };
 
-                if(forn && forn !== 'DA ASSEGNARE' && qta > 0) {
+                // MODIFICA CRITICA: Tolto il vincolo "qta > 0"
+                // Ora verifica solo se il pezzo ha un fornitore E se il lucchetto è chiuso o è stato appena assegnato
+                // (Usiamo la presenza del fornitore come discriminante principale, ma includiamo anche i pezzi a 0)
+                if(forn && forn !== 'DA ASSEGNARE') {
                     if(!fornitoriAssegnati[forn]) fornitoriAssegnati[forn] = [];
                     fornitoriAssegnati[forn].push(cId);
                 }
@@ -1162,7 +1223,7 @@ function disegnaArchivioPDF() {
                 datiOrdineOriginali.fabbisogno = fabbisognoAggiornato; 
                 let keysFornitori = Object.keys(fornitoriAssegnati);
                 
-                if(keysFornitori.length === 0) return alert("Nessun fornitore assegnato o quantità pari a zero!");
+                if(keysFornitori.length === 0) return alert("Nessun fornitore assegnato nelle righe dell'ordine!");
 
                 window.mappaFornitoriODA = fornitoriAssegnati;
                 window.listaFornitoriODA = keysFornitori;
@@ -1237,13 +1298,13 @@ function disegnaArchivioPDF() {
                     
                     <div style="display:flex; flex-direction: column; gap:10px; margin-bottom: 20px;">
                         <button class="btn-azione" style="background:#3498db; color:white; width:100%; padding:15px; font-size:14px;" onclick="mostraPopupODA('entrambi')">
-                            📄 STAMPA ENTRAMBI (Cieco per Officina + Completo con Prezzi)
+                            📄 STAMPA ENTRAMBI
                         </button>
                         <button class="btn-azione" style="background:#2ecc71; color:black; width:100%; padding:15px; font-size:14px;" onclick="mostraPopupODA('stampa', 'cieco')">
-                            📄 SOLO CIECO (Senza Prezzi x Officina)
+                            📄 PDF UFFICIALE (Senza Prezzi - x Fornitore / Officina)
                         </button>
                         <button class="btn-azione" style="background:#f1c40f; color:black; width:100%; padding:15px; font-size:14px;" onclick="mostraPopupODA('stampa', 'completo')">
-                            📄 SOLO COMPLETO (Con Prezzi per Fornitore)
+                            📄 PDF AMMINISTRATIVO (Con Prezzi - Uso Interno)
                         </button>
                     </div>
 
@@ -1313,6 +1374,13 @@ function disegnaArchivioPDF() {
 
 
 
+
+        window.eliminaPdfDaArchivio = function(pdfKey) {
+            if(confirm("Vuoi davvero eliminare questo PDF dall'archivio?")) {
+                const idOrdSicuro = new URLSearchParams(window.location.search).get('ordine');
+                db.ref(`commesse/Tre Emme/${idOrdSicuro}/archivio_pdf/${pdfKey}`).remove();
+            }
+        }
 
 
 
