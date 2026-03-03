@@ -117,6 +117,25 @@
         .icon-cell-materiale.active-paste { border: 2px solid #00ff88; box-shadow: 0 0 8px rgba(0, 255, 136, 0.5); background: rgba(0, 255, 136, 0.1); }
         .icon-thumb-mat { width: 100%; height: 100%; object-fit: cover; }
 
+
+
+
+
+        /* --- NUOVO STILE RIGHE SMART --- */
+        .riga-evidenziata { background-color: rgba(0, 255, 136, 0.15) !important; box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.3); transition: all 0.5s ease-out; }
+        .inp-numero-riga { width: 45px; background: transparent; border: 1px dashed #555; color: #00ff88; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 14px; outline: none; transition: 0.3s; font-family: inherit; }
+        .inp-numero-riga:focus { border-color: #00ff88; background: rgba(0,255,136,0.1); transform: scale(1.1); }
+
+
+
+
+
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -681,8 +700,7 @@
                     let numForzato = c.numeroRiga || null; 
                     aggiungiRigaComp(c, numForzato);
                 });
-                // Ricalcola per sicurezza
-                ricalcolaNumeriRiga();
+                
             } else {
                 aggiungiRigaComp();
             }
@@ -790,9 +808,9 @@
                 let prz = rigaUff ? rigaUff.querySelector('.uff-prezzo').value : (compMemoria.prezzo || '0.00');
                 let unP = rigaUff ? rigaUff.querySelector('.uff-u-prezzo').value : (compMemoria.unitaPrezzo || '€/Pz');
 
-                // FIX BUG: Legge il numero di riga esatto (es. 1_A) dalla grafica
-                let spanNum = r.querySelector('.numero-riga');
-                let numeroRigaEsatto = spanNum ? spanNum.innerText : (index + 1);
+                // FIX PRO: Legge il nuovo input editabile
+                let inputNum = r.querySelector('.inp-numero-riga');
+                let numeroRigaEsatto = inputNum ? inputNum.value.trim() : (index + 1);
 
                 comps.push({
                     numeroRiga: numeroRigaEsatto,
@@ -1005,7 +1023,8 @@
             let righeEsistenti = tbody.querySelectorAll('tr');
             let maxNum = 0;
             righeEsistenti.forEach(r => {
-                let numText = r.querySelector('.numero-riga').innerText;
+                let inputNum = r.querySelector('.inp-numero-riga');
+                let numText = inputNum ? inputNum.value : "0";
                 let numInt = parseInt(numText); // Prende la parte intera (es. da "21_A" prende 21)
                 if (!isNaN(numInt) && numInt > maxNum) maxNum = numInt;
             });
@@ -1017,13 +1036,9 @@
         
         let row = document.createElement('tr');
         row.innerHTML = `
-            <td style="color:#666; text-align:center; position:relative; min-width: 60px;">
-                <div style="display:flex; flex-direction:column; position:absolute; left:0; top:50%; transform:translateY(-50%); gap:2px;">
-                    <button style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px; padding:0;" title="Sposta Su" onclick="spostaRiga(this, -1)">▲</button>
-                    <button style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px; padding:0;" title="Sposta Giù" onclick="spostaRiga(this, 1)">▼</button>
-                </div>
-                <span class="numero-riga" style="font-weight:bold; margin-left: 15px;">${numeroRiga}</span>
-                <button style="background:transparent; border:none; color:#3498db; cursor:pointer; font-size:10px; display:block; margin: 2px auto 0 auto;" title="Sdoppia questa riga (es. A/B)" onclick="sdoppiaRiga(this)">⧉</button>
+            <td style="text-align:center; position:relative; min-width: 60px; padding-top: 10px;">
+                <input type="text" class="inp-numero-riga" value="${numeroRiga}" onfocus="this.dataset.oldValue = this.value" onblur="applicaRiordinoSpazzaneve(this)" onkeydown="if(event.key === 'Enter') { this.blur(); }">
+                <button style="background:transparent; border:none; color:#3498db; cursor:pointer; font-size:14px; display:block; margin: 5px auto 0 auto; transition: 0.2s;" title="Sdoppia questa riga" onclick="sdoppiaRiga(this)" onmouseover="this.style.color='#00ff88'" onmouseout="this.style.color='#3498db'">⧉</button>
             </td>
             <td style="padding:5px; text-align:center;"><div class="icon-cell-materiale" style="width:35px; height:35px;" onclick="attivaIncollaRiga(this)" ondblclick="this.nextElementSibling.click()" ondragover="event.preventDefault(); this.style.borderColor='#00ff88';" ondragleave="this.style.borderColor='#555';" ondrop="gestisciDropStandardRiga(event, this)">${imgHtml}</div><input type="file" style="display:none" accept="image/*" onchange="previewCompImg(this)"></td>
             <td><input type="text" value="${data ? data.fornitore : ''}" list="lista-classi" placeholder="Classe" style="color: #00e5ff; font-weight: bold; text-align:center;"></td>
@@ -1039,135 +1054,164 @@
             <td><input type="text" value="${data?data.denominazione:''}" placeholder="Descrizione" style="color:white; font-weight:Light; text-align:center; "></td>
             <td><input type="text" value="${data && data.note ? data.note : ''}" placeholder="Note..." style="color:white; font-weight:Light; text-align:center; "></td>
             <td><input type="text" value="${data && data.noteCarpenteria ? data.noteCarpenteria : ''}" placeholder="Note Carp..." style="color:#f1c40f; font-weight:Light; text-align:center; "></td>
-            <td onclick="this.parentElement.remove(); ricalcolaNumeriRiga();" style="color:red; cursor:pointer; text-align:center; font-weight:bold;">x</td>
+            <td onclick="this.parentElement.remove();" style="color:red; cursor:pointer; text-align:center; font-weight:bold;">x</td>
         `;
         tbody.appendChild(row);
     }
 
 
 
+    // --- MOTORE PRO: GESTIONE RIGHE DISTINTA BASE ---
 
-    // --- FUNZIONI PER GESTIONE RIGHE DISTINTA BASE ---
+    window.applicaRiordinoSpazzaneve = function(inputElement) {
+        let newVal = inputElement.value.trim().toUpperCase();
+        let oldVal = inputElement.dataset.oldValue || "";
+        inputElement.value = newVal; // Forza il maiuscolo (es. 2_a diventa 2_A)
 
-    // 1. Sposta la riga Su o Giù
-    window.spostaRiga = function(bottone, direzione) {
-        let riga = bottone.closest('tr');
-        let tbody = riga.parentElement;
-        
-        if (direzione === -1 && riga.previousElementSibling) {
-            // Sposta Su
-            tbody.insertBefore(riga, riga.previousElementSibling);
-        } else if (direzione === 1 && riga.nextElementSibling) {
-            // Sposta Giù
-            tbody.insertBefore(riga.nextElementSibling, riga);
-        }
-        // Dopo lo spostamento, riordina i numeri
-        ricalcolaNumeriRiga();
-    }
+        if (newVal === oldVal) return; // Se non hai cambiato nulla, stop.
 
-    // 2. Ricalcola i numeri principali (1, 2, 3...) mantenendo intatti gli sdoppiamenti (es. 21_A, 21_B)
-    window.ricalcolaNumeriRiga = function() {
-        let righe = document.querySelectorAll('#comp-body tr');
-        let contatore = 1;
+        let tbody = document.getElementById('comp-body');
+        let righe = Array.from(tbody.querySelectorAll('tr'));
+        let rigaModificata = inputElement.closest('tr');
 
-        for (let i = 0; i < righe.length; i++) {
-            let spanNumero = righe[i].querySelector('.numero-riga');
-            let testoAttuale = spanNumero.innerText;
+        // 1. EFFETTO SPAZZANEVE INTELLIGENTE (A CASCATA - FIX LOOP INFINITO)
+        let isPureNumber = /^\d+$/.test(newVal);
+        if (isPureNumber) {
+            let targetNum = parseInt(newVal);
             
-            // Se la riga attuale è uno sdoppiamento (es. finisce con _A, _B), aggiorna solo il numero principale
-            if (testoAttuale.includes('_')) {
-                let lettera = testoAttuale.split('_')[1];
-                // Prende il numero base dalla riga precedente se esiste, altrimenti usa il contatore
-                let numeroBase = i > 0 ? parseInt(righe[i-1].querySelector('.numero-riga').innerText) : contatore;
-                spanNumero.innerText = numeroBase + '_' + lettera;
-            } else {
-                // Riga normale
-                spanNumero.innerText = contatore;
+            // FOTOGRAFIA: Scattiamo una "foto" dello stato degli altri input prima di toccarli
+            let altriDati = [];
+            righe.forEach(r => {
+                if (r !== rigaModificata) {
+                    let inp = r.querySelector('.inp-numero-riga');
+                    if (inp) {
+                        let match = inp.value.trim().match(/^(\d+)(_.*)?$/);
+                        if (match) {
+                            altriDati.push({
+                                elemento: inp,
+                                numeroBase: parseInt(match[1]),
+                                suffisso: match[2] || ""
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Controlliamo se qualcuno sta già occupando il numero target
+            let numeriEsistenti = new Set(altriDati.map(d => d.numeroBase));
+            
+            if (numeriEsistenti.has(targetNum)) {
+                // Troviamo il blocco continuo da spostare (es. se c'è 5, 6, 7, il blocco si ferma al buco prima dell'8)
+                let bloccoDaSpostare = new Set();
+                let checkNum = targetNum;
                 
-                // Incrementa il contatore SOLO se la riga successiva NON è uno sdoppiamento di questa
-                let rigaSuccessivaSdoppiata = false;
-                if (i + 1 < righe.length) {
-                     let testoSuccessivo = righe[i+1].querySelector('.numero-riga').innerText;
-                     if (testoSuccessivo.includes('_') && testoSuccessivo.startsWith(contatore + '_')) {
-                         rigaSuccessivaSdoppiata = true;
-                     }
+                while (numeriEsistenti.has(checkNum)) {
+                    bloccoDaSpostare.add(checkNum);
+                    checkNum++; // Vado a vedere se anche il numero successivo è occupato
                 }
-                if (!rigaSuccessivaSdoppiata) {
-                     contatore++;
-                }
+
+                // Applichiamo lo spostamento SOLO agli elementi fotografati che rientrano nel blocco
+                altriDati.forEach(d => {
+                    if (bloccoDaSpostare.has(d.numeroBase)) {
+                        d.elemento.value = (d.numeroBase + 1) + d.suffisso;
+                    }
+                });
             }
         }
+
+        // 2. ORDINAMENTO NATURALE (1, 2, 2_A, 3, 10...)
+        righe.sort((a, b) => {
+            let valA = a.querySelector('.inp-numero-riga').value.trim();
+            let valB = b.querySelector('.inp-numero-riga').value.trim();
+            
+            let matchA = valA.match(/^(\d+)(_.*)?$/);
+            let matchB = valB.match(/^(\d+)(_.*)?$/);
+            
+            // Se uno dei due non ha un formato valido (es. lettere pure), lo metto in fondo
+            let numA = matchA ? parseInt(matchA[1]) : 9999;
+            let numB = matchB ? parseInt(matchB[1]) : 9999;
+            let suffA = matchA && matchA[2] ? matchA[2] : "";
+            let suffB = matchB && matchB[2] ? matchB[2] : "";
+
+            if (numA !== numB) return numA - numB; // Ordina per numero
+            return suffA.localeCompare(suffB);     // A parità di numero, ordina per lettera
+        });
+
+        // 3. APPLICA AL DOM E GHOST EFFECT
+        righe.forEach(r => tbody.appendChild(r)); // Riorganizza visivamente le righe
+        
+        // Illumina la riga che ha scatenato il tutto
+        rigaModificata.classList.add('riga-evidenziata');
+        setTimeout(() => rigaModificata.classList.remove('riga-evidenziata'), 1200);
     }
 
-    // 3. Sdoppia la riga (Crea la variante _A, _B, ecc.)
+    // NUOVO SDOPPIA RIGA SMART
     window.sdoppiaRiga = function(bottone) {
         let rigaOriginale = bottone.closest('tr');
-        let spanNumero = rigaOriginale.querySelector('.numero-riga');
-        let numeroBaseAttuale = spanNumero.innerText.split('_')[0]; // Prende il numero, ignorando lettere esistenti
+        let inputOriginale = rigaOriginale.querySelector('.inp-numero-riga');
+        let valoreAttuale = inputOriginale.value.trim();
+        let numeroBaseAttuale = valoreAttuale.split('_')[0]; 
 
-        // Se la riga originale non aveva lettere, aggiungiamo la "_A"
-        if (!spanNumero.innerText.includes('_')) {
-            spanNumero.innerText = numeroBaseAttuale + '_A';
+        // Se la riga master non ha ancora lettere, la trasformo nella "A"
+        if (!valoreAttuale.includes('_')) {
+            inputOriginale.value = numeroBaseAttuale + '_A';
         }
 
-        // Troviamo quale lettera assegnare alla nuova riga
+        // Cerca la prossima lettera disponibile scansionando gli input
         let letteraNuova = 'B';
         let righe = document.querySelectorAll('#comp-body tr');
-        let indiceInizio = Array.from(righe).indexOf(rigaOriginale);
-        
-        for(let i = indiceInizio + 1; i < righe.length; i++) {
-             let testoNum = righe[i].querySelector('.numero-riga').innerText;
-             if (testoNum.startsWith(numeroBaseAttuale + '_')) {
-                 // Ha già una lettera, passo alla successiva (da B a C, ecc.)
-                 letteraNuova = String.fromCharCode(testoNum.split('_')[1].charCodeAt(0) + 1);
-             } else {
-                 break; // Finita la sequenza di sdoppiamenti
-             }
+        let trovatiSdoppiamenti = [];
+
+        righe.forEach(r => {
+            let val = r.querySelector('.inp-numero-riga').value.trim();
+            if (val.startsWith(numeroBaseAttuale + '_')) {
+                let lettera = val.split('_')[1];
+                trovatiSdoppiamenti.push(lettera);
+            }
+        });
+
+        if (trovatiSdoppiamenti.length > 0) {
+            trovatiSdoppiamenti.sort();
+            let ultimaLettera = trovatiSdoppiamenti[trovatiSdoppiamenti.length - 1];
+            // Prende il codice ASCII dell'ultima lettera e fa +1 (Es. da B passa a C)
+            letteraNuova = String.fromCharCode(ultimaLettera.charCodeAt(0) + 1);
         }
 
-        // Recuperiamo i dati della riga originale per clonarli
-        let inps = rigaOriginale.querySelectorAll('input');
+        let inps = rigaOriginale.querySelectorAll('input:not(.inp-numero-riga)');
         let imgTag = rigaOriginale.querySelector('img');
         
         let datiClonati = {
-            fornitore: inps[1] ? inps[1].value : "",
-            matricola: inps[2] ? inps[2].value : "",
-            disegno: inps[3] ? inps[3].value : "",
-            revPesa: inps[4] ? inps[4].value : "",
-            dataRev: inps[5] ? inps[5].value : "",
-            qta: inps[6] ? inps[6].value : "1",
-            materiale: inps[7] ? inps[7].value : "",
-            peso: inps[8] ? inps[8].value : "",
-            spessore: inps[9] ? inps[9].value : "",
-            dimensione: inps[10] ? inps[10].value : "",
-            denominazione: inps[11] ? inps[11].value : "",
-            note: inps[12] ? inps[12].value : "",
-            noteCarpenteria: inps[13] ? inps[13].value : "",
+            fornitore: inps[0] ? inps[0].value : "",
+            matricola: inps[1] ? inps[1].value : "",
+            disegno: inps[2] ? inps[2].value : "",
+            revPesa: inps[3] ? inps[3].value : "",
+            dataRev: inps[4] ? inps[4].value : "",
+            qta: inps[5] ? inps[5].value : "1",
+            materiale: inps[6] ? inps[6].value : "",
+            peso: inps[7] ? inps[7].value : "",
+            spessore: inps[8] ? inps[8].value : "",
+            dimensione: inps[9] ? inps[9].value : "",
+            denominazione: inps[10] ? inps[10].value : "",
+            note: inps[11] ? inps[11].value : "",
+            noteCarpenteria: inps[12] ? inps[12].value : "",
             iconaBase64: imgTag ? imgTag.src : ""
         };
 
-        // Chiamiamo la funzione di aggiunta passando i dati e il numero forzato (es. "21_B")
-        window.aggiungiRigaComp(datiClonati, numeroBaseAttuale + '_' + letteraNuova);
+        // Usa la vecchia funzione di aggiunta passando il nuovo numero calcolato
+        let nuovoIdVisuale = numeroBaseAttuale + '_' + letteraNuova;
+        window.aggiungiRigaComp(datiClonati, nuovoIdVisuale);
         
-        // Spostiamo la nuova riga (che viene creata in fondo) subito sotto la riga originale
+        // Pulisci un po' la riga clonata
         let tbody = document.getElementById('comp-body');
         let nuovaRiga = tbody.lastElementChild;
+        let inpsNuova = nuovaRiga.querySelectorAll('input:not(.inp-numero-riga)');
+        if(inpsNuova[1]) inpsNuova[1].value = ""; // Svuota Matricola
+        if(inpsNuova[10]) inpsNuova[10].value += " (Variante)"; // Segna la variante
         
-        // Trova la posizione esatta in cui inserirla (dopo tutti gli altri sdoppiamenti esistenti)
-        let inserisciPrimaDi = rigaOriginale.nextElementSibling;
-        while (inserisciPrimaDi && inserisciPrimaDi.querySelector('.numero-riga').innerText.startsWith(numeroBaseAttuale + '_')) {
-             inserisciPrimaDi = inserisciPrimaDi.nextElementSibling;
-        }
-        
-        if (inserisciPrimaDi) {
-            tbody.insertBefore(nuovaRiga, inserisciPrimaDi);
-        }
-        
-        // Pulisce la matricola e alcuni campi per evitare duplicati esatti
-        let inpsNuova = nuovaRiga.querySelectorAll('input');
-        if(inpsNuova[2]) inpsNuova[2].value = ""; // Svuota Matricola
-        if(inpsNuova[11]) inpsNuova[11].value += " (Variante)"; // Aggiunge testo alla descrizione
+        // Forza un riordino immediato per far scivolare la riga sdoppiata nella sua posizione naturale
+        applicaRiordinoSpazzaneve(nuovaRiga.querySelector('.inp-numero-riga'));
     }
+    
 
 
 
@@ -1390,7 +1434,7 @@
 
 
 
-
+    
 
 
 
