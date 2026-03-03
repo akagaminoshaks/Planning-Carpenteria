@@ -794,7 +794,8 @@
         let righeMagazzino = document.querySelectorAll('#magazzino-body tr');
 
         document.querySelectorAll('#comp-body tr').forEach((r, index) => {
-            let inps = r.querySelectorAll('input');
+            // FIX COLONNE: Ignora l'input del numero riga per non sballare gli indici
+            let inps = r.querySelectorAll('input:not(.inp-numero-riga)');
             let hasData = (inps[1] && inps[1].value) || (inps[2] && inps[2].value) || (inps[3] && inps[3].value) || (inps[11] && inps[11].value);
             
             if(hasData) { 
@@ -894,7 +895,8 @@
         tbodyUfficio.innerHTML = "";
         let righeMaster = tbodyMaster.querySelectorAll('tr');
         righeMaster.forEach((rigaMaster, index) => {
-            let inps = rigaMaster.querySelectorAll('input');
+            // FIX COLONNE: Ignora l'input del numero riga anche in ufficio
+            let inps = rigaMaster.querySelectorAll('input:not(.inp-numero-riga)');
             let fornitore = inps[1] ? inps[1].value : '';
             let coloreForn = getColoreFornitore(fornitore); 
             let matricola = inps[2] ? inps[2].value : '';
