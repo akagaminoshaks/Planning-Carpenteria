@@ -1363,14 +1363,13 @@
 
 
 
-// =========================================================
+    // =========================================================
     //  CARICAMENTO STORICO ORDINI / COMMESSE PER ARTICOLO
     // =========================================================
     window.caricaStoricoCommesse = function(matricolaArticolo) {
         const storicoBody = document.getElementById('storico-body');
         storicoBody.innerHTML = "<div style='color:#00e5ff; text-align:center;'>Ricerca storico in corso... ⏳</div>";
 
-        // Cerca nel grande contenitore tutte le commesse che hanno questa matricola
         db.ref('commesse/Tre Emme').orderByChild('matricola').equalTo(matricolaArticolo).once('value', snap => {
             let commesse = snap.val();
             storicoBody.innerHTML = "";
@@ -1380,18 +1379,16 @@
                 return;
             }
 
-            // Convertiamo in array e ordiniamo per data (dalla più recente alla più vecchia)
             let arrayCommesse = Object.keys(commesse).map(k => { return { id: k, ...commesse[k] }; });
             arrayCommesse.sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0)).reverse();
 
-            // Mappatura dei colori in base allo stato in cui si trova il contenitore
             let statiMapping = [
-                { testo: "DA ORDINARE", colore: "#e74c3c" }, // 0
-                { testo: "IN ATTESA MAT.", colore: "#f1c40f" }, // 1
-                { testo: "IN PRODUZIONE", colore: "#3498db" }, // 2
-                { testo: "PRONTO SPEDIZ.", colore: "#9b59b6" }, // 3
-                { testo: "CHIUSO", colore: "#2ecc71" }, // 4
-                { testo: "ARCHIVIATO", colore: "#888" }  // 5
+                { testo: "DA ORDINARE", colore: "#e74c3c" },
+                { testo: "IN ATTESA MAT.", colore: "#f1c40f" },
+                { testo: "IN PRODUZIONE", colore: "#3498db" },
+                { testo: "PRONTO SPEDIZ.", colore: "#9b59b6" },
+                { testo: "CHIUSO", colore: "#2ecc71" },
+                { testo: "ARCHIVIATO", colore: "#888" } 
             ];
 
             let tableHtml = `
@@ -1403,6 +1400,7 @@
                             <th style="color:#f1c40f; text-align:center;">Lotto (Pz)</th>
                             <th style="color:#f1c40f; text-align:center;">Prezzo Vendita</th>
                             <th style="color:#f1c40f; text-align:center;">Stato Attuale</th>
+                            <th style="color:#f1c40f; text-align:center;">Azioni</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1424,12 +1422,193 @@
                                 ${statoInfo.testo}
                             </span>
                         </td>
+                        <td style="text-align:center;">
+                            <button class="btn-glass" style="border-color:#3498db; color:#3498db; padding:4px 10px; font-size:10px;" onclick="toggleDettaglioOrdine('${c.id}')">👁️ VEDI DISTINTA</button>
+                        </td>
+                    </tr>
+                    <tr id="riga-dettaglio-${c.id}" style="display:none; background:#161616;">
+                        <td colspan="6" style="padding: 15px; border-bottom: 2px solid #333;" id="box-dettaglio-${c.id}">
+                            <div style="color:#00e5ff; text-align:center; font-size:12px;">Caricamento dettagli in corso... ⏳</div>
+                        </td>
                     </tr>
                 `;
             });
 
             tableHtml += `</tbody></table>`;
             storicoBody.innerHTML = tableHtml;
+        });
+    }
+
+    // =========================================================
+    // MOTORE DI RENDERING DETTAGLIO DISTINTA IN ACCORDION (VERSIONE EDITABILE)
+    // =========================================================
+    window.toggleDettaglioOrdine = function(idOrdine) {
+        let rigaDettaglio = document.getElementById('riga-dettaglio-' + idOrdine);
+        let boxDettaglio = document.getElementById('box-dettaglio-' + idOrdine);
+
+        // Se è aperto, lo chiudo
+        if (rigaDettaglio.style.display === 'table-row') {
+            rigaDettaglio.style.display = 'none';
+            return;
+        }
+
+        // Lo apro
+        rigaDettaglio.style.display = 'table-row';
+
+        // Evito chiamate ridondanti al DB se ho già scaricato i dati
+        if (boxDettaglio.getAttribute('data-caricato') === 'true') return;
+
+        db.ref('commesse/Tre Emme/' + idOrdine + '/fabbisogno').once('value', snap => {
+            let fabbisogno = snap.val();
+            
+            if (!fabbisogno) {
+                boxDettaglio.innerHTML = "<div style='color:#e74c3c; text-align:center; font-size:12px;'>Nessun fabbisogno registrato per questa commessa.</div>";
+                return;
+            }
+
+            let subTable = `
+                <table class="comp-table" style="width:100%; background:#111; border: 1px solid #333; margin-top:5px;" id="tabella-dettaglio-${idOrdine}">
+                    <thead>
+                        <tr>
+                            <th style="color:#00e5ff; font-size:10px; text-align:center; width:40px;">IMG</th>
+                            <th style="color:#00e5ff; font-size:10px; text-align:left;">Matricola / Descrizione</th>
+                            <th style="color:#00ff88; font-size:10px; text-align:center;">Q.tà Ord.</th>
+                            <th style="color:#00e5ff; font-size:10px; text-align:center;">Fornitore Assegnato</th>
+                            <th style="color:#f1c40f; font-size:10px; text-align:center;">€ / Unitario</th>
+                            <th style="color:#f1c40f; font-size:10px; text-align:right; padding-right:10px;">Totale Riga €</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let totaleOrdineCalcolato = 0;
+
+            Object.keys(fabbisogno).forEach(key => {
+                let pezzo = fabbisogno[key];
+                
+                // Ignora nodi malformati
+                if (!pezzo || (!pezzo.matricola && !pezzo.denominazione)) return;
+
+                let img = pezzo.iconaBase64 || pezzo.iconaBase || '';
+                let imgTag = img ? `<img src="${img}" style="width:30px; height:30px; object-fit:contain; border-radius:3px; background:#000;">` : `<span style="font-size:16px;">📦</span>`;
+                
+                let fornitoreDef = pezzo.fornitore_definitivo || pezzo.fornitore || "Non Assegnato";
+                let coloreFornitore = window.getColoreFornitore(fornitoreDef);
+
+                let qta = parseFloat(pezzo.qta_da_ordinare !== undefined ? pezzo.qta_da_ordinare : (pezzo.qta_totale_teorica || pezzo.qta || 0));
+                
+                // GESTIONE PREZZO REVISIONATO
+                let prezzoOriginale = parseFloat(pezzo.prezzo || 0);
+                let prezzoRevisionato = pezzo.prezzo_revisionato !== undefined ? parseFloat(pezzo.prezzo_revisionato) : null;
+                let prezzoAttivo = prezzoRevisionato !== null ? prezzoRevisionato : prezzoOriginale;
+                
+                let totaleRiga = qta * prezzoAttivo;
+                totaleOrdineCalcolato += totaleRiga;
+
+                // Logica visuale: se c'è revisione, barra l'originale ed evidenzia l'input
+                let stilePrezzoOrig = prezzoRevisionato !== null ? "line-through" : "none";
+                let coloreInput = prezzoRevisionato !== null ? "#f1c40f" : "#ccc";
+                let bordoInput = prezzoRevisionato !== null ? "#f1c40f" : "#444";
+
+                subTable += `
+                    <tr style="border-bottom: 1px solid #222;">
+                        <td style="text-align:center; padding:4px;">${imgTag}</td>
+                        <td style="padding:4px;">
+                            <div style="color:white; font-size:11px; font-weight:bold;">${pezzo.matricola || '-'}</div>
+                            <div style="color:#888; font-size:10px;">${pezzo.denominazione || '-'}</div>
+                        </td>
+                        <td style="color:#00ff88; font-weight:bold; text-align:center; font-size:12px;">${qta}</td>
+                        <td style="color:${coloreFornitore}; font-weight:bold; text-align:center; font-size:11px;">${fornitoreDef}</td>
+                        
+                        <td style="text-align:center; padding:4px;">
+                            <div id="orig-${idOrdine}-${key}" style="font-size:9px; color:#666; text-decoration: ${stilePrezzoOrig}; margin-bottom:2px;">${prezzoOriginale.toFixed(2)} €</div>
+                            <input type="number" step="0.01" class="inp-mini" style="width:60px; color:${coloreInput}; border-color:${bordoInput}; text-align:center; padding:2px; font-weight:bold;" value="${prezzoAttivo.toFixed(2)}" onchange="aggiornaPrezzoStorico('${idOrdine}', '${key}', this.value, this, ${prezzoOriginale})">
+                        </td>
+                        
+                        <td style="color:#f1c40f; font-weight:bold; text-align:right; font-size:12px; padding-right:10px;">
+                            <span class="totale-riga-storico" data-qta="${qta}">${totaleRiga.toFixed(2)}</span> €
+                        </td>
+                    </tr>
+                `;
+            });
+
+            subTable += `
+                    </tbody>
+                </table>
+                <div style="text-align:right; margin-top:10px; color:#00e5ff; font-size:14px; font-weight:bold; padding-right:10px; border-top: 1px dashed #333; padding-top: 10px;">
+                    TOTALE VALORE MATERIALI DISTINTA: <span id="totale-ordine-${idOrdine}" style="color:white;">${totaleOrdineCalcolato.toFixed(2)} €</span>
+                </div>
+            `;
+
+            boxDettaglio.innerHTML = subTable;
+            boxDettaglio.setAttribute('data-caricato', 'true');
+        });
+    }
+
+    // =========================================================
+    // UPDATE ASINCRONO DEL PREZZO E RICALCOLO A DOM
+    // =========================================================
+    window.aggiornaPrezzoStorico = function(idOrdine, chiaveComp, nuovoValoreTesto, inputElem, prezzoOriginale) {
+        let nuovoPrezzo = parseFloat(nuovoValoreTesto);
+        
+        // Validazione input
+        if (isNaN(nuovoPrezzo) || nuovoPrezzo < 0) {
+            alert("Errore: Inserire un valore numerico valido e positivo.");
+            inputElem.value = prezzoOriginale.toFixed(2);
+            return;
+        }
+
+        // Payload per Firebase. Se torna uguale all'originale, distrugge la chiave di revisione per pulizia DB
+        let updateData = {};
+        if (nuovoPrezzo === prezzoOriginale) {
+            updateData['prezzo_revisionato'] = null;
+        } else {
+            updateData['prezzo_revisionato'] = nuovoPrezzo;
+        }
+
+        // Feedback visivo di caricamento
+        inputElem.style.borderColor = '#e67e22';
+
+        db.ref('commesse/Tre Emme/' + idOrdine + '/fabbisogno/' + chiaveComp).update(updateData).then(() => {
+            // Aggiorna stili input in base alla presenza di revisione
+            let inRevisione = (nuovoPrezzo !== prezzoOriginale);
+            inputElem.style.color = inRevisione ? '#f1c40f' : '#ccc';
+            inputElem.style.borderColor = inRevisione ? '#f1c40f' : '#444';
+            
+            // Aggiorna sbarratura prezzo originale
+            let labelOrig = document.getElementById(`orig-${idOrdine}-${chiaveComp}`);
+            if(labelOrig) {
+                labelOrig.style.textDecoration = inRevisione ? 'line-through' : 'none';
+            }
+
+            // Ricalcola Totale Riga a DOM
+            let riga = inputElem.closest('tr');
+            let spanTotaleRiga = riga.querySelector('.totale-riga-storico');
+            let qta = parseFloat(spanTotaleRiga.getAttribute('data-qta'));
+            let nuovoTotaleRiga = qta * nuovoPrezzo;
+            spanTotaleRiga.innerText = nuovoTotaleRiga.toFixed(2);
+
+            // Ricalcola Totale Ordine a DOM (Itera su tutte le righe di questa specifica sub-table)
+            let tabella = document.getElementById(`tabella-dettaglio-${idOrdine}`);
+            let tuttiTotaliRiga = tabella.querySelectorAll('.totale-riga-storico');
+            let nuovoTotaleOrdine = 0;
+            tuttiTotaliRiga.forEach(span => {
+                nuovoTotaleOrdine += parseFloat(span.innerText);
+            });
+            
+            let boxTotaleOrdine = document.getElementById(`totale-ordine-${idOrdine}`);
+            if (boxTotaleOrdine) {
+                boxTotaleOrdine.innerText = nuovoTotaleOrdine.toFixed(2) + " €";
+            }
+            
+            // Flash verde per conferma salvataggio avvenuto
+            let originalBg = inputElem.style.backgroundColor;
+            inputElem.style.backgroundColor = 'rgba(46, 204, 113, 0.3)';
+            setTimeout(() => { inputElem.style.backgroundColor = originalBg; }, 500);
+
+        }).catch(err => {
+            alert("Errore critico durante l'aggiornamento del database: " + err);
+            inputElem.style.borderColor = '#e74c3c';
         });
     }
 
